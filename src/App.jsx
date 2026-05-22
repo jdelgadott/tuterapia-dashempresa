@@ -48,7 +48,7 @@ const COMPANIES = {
       {q:"Q1 2026",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
       {q:"Q2 2026",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
     ],
-    nps:null, npsDate:null, consultationReasons:[],
+    nps:null, npsDate:null, consultationReasons:[], firstTimePct:null, firstTimeCount:null,
     workshops:[
       {title:"Activación del beneficio",date:"Ago 2025",speaker:"Juan I. Delgado",initials:"JD",type:"Activación",lang:"Español",rating:4.8},
       {title:"Activación del beneficio",date:"Ago 2025",speaker:"Nico, CEO",initials:"NC",type:"Activación",lang:"Inglés",rating:4.7},
@@ -372,58 +372,75 @@ export default function Dashboard(){
           </BarChart>
         </ResponsiveContainer></div>
       </Section>
-      <Section title="Distribución de cupones canjeados">
-        <div style={{display:"flex",gap:24,flexWrap:"wrap",alignItems:"center"}}>
-          <div style={{position:"relative",width:136,height:136,flexShrink:0}}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart><Pie data={couponD} dataKey="value" innerRadius={36} outerRadius={60} paddingAngle={2}>{couponD.map((_,i)=><Cell key={i} fill={COUPON_COLORS[i]}/>)}</Pie></PieChart>
-            </ResponsiveContainer>
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none"}}>
-              <div style={{fontSize:16,fontWeight:700,color:P.text}}>{fmt(totCoup)}</div>
-              <div style={{fontSize:9,color:P.textMuted,letterSpacing:"0.02em"}}>cupones</div>
-            </div>
-          </div>
-          <div style={{flex:1,display:"flex",flexDirection:"column",gap:7,minWidth:180}}>
-            {couponD.map((d,i)=><div key={d.name} style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{width:8,height:8,borderRadius:2,background:COUPON_COLORS[i],flexShrink:0}}/>
-              <div style={{flex:1,background:P.gray50,borderRadius:4,height:16,overflow:"hidden",position:"relative"}}>
-                <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${Math.round(d.value/couponD[0].value*100)}%`,background:COUPON_COLORS[i],borderRadius:4,opacity:0.85}}/>
-                <span style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",fontSize:9,color:P.white,fontWeight:600,zIndex:1}}>{d.name}</span>
-              </div>
-              <span style={{fontSize:11,fontWeight:600,color:P.text,width:72,textAlign:"right"}}>{d.value} ({Math.round(d.value/totCoup*100)}%)</span>
-            </div>)}
-          </div>
-        </div>
-      </Section>
     </>}
 
-    {mod==="individual"&&sub==="Adherencia"&&<>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-        <KpiCard label="Pacientes únicos" value={totNuev} accent/>
-        <KpiCard label="Nuevos último mes completo" value={lastFull?.nuevos||"—"} sub={lastFull?.month}/>
-        <KpiCard label="Tasa de realización" value={`${compRate}%`} sub="Meses completos"/>
-      </div>
-      <Section title="Funnel de adherencia">
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {[
-            {label:"Sesiones contratadas (acum.)",value:c.monthlyPlan*fullM.length,pct:100},
-            {label:"Sesiones canjeadas",value:totCanj,pct:Math.min(100,Math.round(totCanj/(c.monthlyPlan*fullM.length)*100))},
-            {label:"Sesiones realizadas",value:totReal,pct:Math.round(totReal/(c.monthlyPlan*fullM.length)*100)},
-          ].map((d,i)=><FunnelBar key={d.label} {...d} i={i}/>)}
+    {mod==="individual"&&sub==="Adherencia"&&(()=>{
+      const fullSessions=fullM.reduce((s,m)=>s+m.realizadas,0);
+      const avgPerUser=totNuev>0?Math.round((fullSessions/totNuev)*10)/10:0;
+      const avgPerMonth=fullM.length>0?Math.round((fullSessions/fullM.length)*10)/10:0;
+      const firstTimePct=c.firstTimePct||null;
+      const firstTimeCount=firstTimePct&&totNuev?Math.round(totNuev*firstTimePct/100):c.firstTimeCount||null;
+      return <>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
+          <KpiCard label="Pacientes únicos" value={totNuev} accent/>
+          <KpiCard label="Promedio de sesiones por usuario" value={avgPerUser} sub="Histórico acumulado"/>
+          <KpiCard label="Promedio sesiones por mes" value={avgPerMonth} sub="Meses completos"/>
+          <KpiCard label="Primera vez en terapia" value={firstTimeCount!=null?firstTimeCount:"—"} sub={firstTimePct!=null?`${firstTimePct}% del total`:"Pendiente"}/>
         </div>
-      </Section>
-      <Section title="Nuevos pacientes por mes">
-        <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={c.monthlyData} barSize={13}>
-            <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-            <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            <Bar dataKey="nuevos" name="Nuevos pacientes" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
-          </BarChart>
-        </ResponsiveContainer></div>
-      </Section>
-    </>}
+
+        <Section title="Primera vez en terapia">
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>
+            Colaboradores que accedieron a terapia psicológica por primera vez a través del beneficio de TCS.
+          </div>
+          {firstTimeCount!=null?<>
+            <div style={{display:"flex",gap:20,alignItems:"center",flexWrap:"wrap"}}>
+              <div style={{textAlign:"center",padding:"20px 28px",background:P.lighter,borderRadius:14,border:`1px solid ${P.primary+"44"}`}}>
+                <div style={{fontSize:42,fontWeight:700,color:P.primary,lineHeight:1,letterSpacing:"-2px"}}>{firstTimeCount}</div>
+                <div style={{fontSize:12,color:P.primary,marginTop:4,fontWeight:500}}>personas</div>
+              </div>
+              <div style={{flex:1,minWidth:180}}>
+                <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:6}}>{firstTimePct}% del total de pacientes activos</div>
+                <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>
+                  Estos colaboradores nunca habían accedido a psicología antes de este beneficio. Es uno de los indicadores de mayor impacto social del programa.
+                </div>
+              </div>
+            </div>
+          </>:<div style={{padding:"20px",background:P.gray50,borderRadius:10,textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Dato pendiente</div>
+            <div style={{fontSize:12,color:P.textMuted}}>Se cargará desde el panel admin al tener el relevamiento de TCS.</div>
+          </div>}
+        </Section>
+
+        <Section title="Promedio de sesiones por usuario">
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
+              <div style={{flex:1,padding:"18px",background:P.lighter,borderRadius:12,border:`1px solid ${P.primary+"44"}`,textAlign:"center"}}>
+                <div style={{fontSize:32,fontWeight:700,color:P.primary,letterSpacing:"-1px"}}>{avgPerUser}</div>
+                <div style={{fontSize:12,color:P.primary,fontWeight:500,marginTop:4}}>sesiones por usuario</div>
+                <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>promedio histórico acumulado</div>
+              </div>
+              <div style={{flex:1,padding:"18px",background:P.white,borderRadius:12,border:`1px solid ${P.border}`,textAlign:"center"}}>
+                <div style={{fontSize:32,fontWeight:700,color:P.text,letterSpacing:"-1px"}}>{avgPerMonth}</div>
+                <div style={{fontSize:12,color:P.textMuted,fontWeight:500,marginTop:4}}>sesiones realizadas por mes</div>
+                <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>promedio en meses completos</div>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Nuevos pacientes por mes">
+          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={c.monthlyData} barSize={13}>
+              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
+              <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
+              <Bar dataKey="nuevos" name="Nuevos pacientes" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
+            </BarChart>
+          </ResponsiveContainer></div>
+        </Section>
+      </>;
+    })()}
 
     {/* ── COLECTIVO ── */}
     {mod==="colectivo"&&sub==="Talleres"&&<>
@@ -602,12 +619,40 @@ export default function Dashboard(){
         return dims.length>0?Math.round(dims.reduce((a,b)=>a+b,0)/dims.length*10)/10:null;
       };
       return <>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
-          <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal)}`} sub="UYU · precio de referencia" accent/>
-          <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat)}`} sub={`${totNuev} pacientes únicos`}/>
-          <KpiCard label="Utilización del plan" value={`${compRate}%`} sub="Realizadas / contratadas"/>
-          <KpiCard label="Último mes completo" value={`$ ${fmt(invLastFull)}`} sub={lastFull?.month}/>
-        </div>
+        {(()=>{
+          const dimKeys2=["saludMental","clima","liderazgo","engagement","asistencia","productividad"];
+          const firstQ2=c.roiByQ.find(q=>dimKeys2.some(k=>q[k]!==null));
+          const lastQ2=[...c.roiByQ].reverse().find(q=>dimKeys2.some(k=>q[k]!==null));
+          const hasData2=firstQ2&&lastQ2&&firstQ2!==lastQ2;
+          const avgImp2=hasData2?dimKeys2.map(k=>lastQ2[k]!=null&&firstQ2[k]!=null?lastQ2[k]-firstQ2[k]:null).filter(v=>v!==null).reduce((a,b,_,arr)=>a+b/arr.length,0):null;
+          const normImp2=avgImp2!=null?Math.max(0,Math.min(100,Math.round((avgImp2/9)*100))):null;
+          const utilScore2=Math.round(compRate*0.4);
+          const iii=normImp2!=null?Math.round(normImp2*0.6+utilScore2):null;
+          return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
+            <div
+              onMouseEnter={()=>setShowIII(true)}
+              onMouseLeave={()=>setShowIII(false)}
+              style={{position:"relative",background:iii!=null?"#EAF4F0":"#F0F4F2",border:`1px solid ${iii!=null?"#1A5C4A44":"#DDE8E4"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,cursor:"default"}}
+            >
+              <div style={{fontSize:21,fontWeight:700,color:iii!=null?"#1A5C4A":"#607870",lineHeight:1.1,letterSpacing:"-0.5px"}}>{iii!=null?iii:"—"}<span style={{fontSize:12,fontWeight:400,color:"#607870"}}> /100</span></div>
+              <div style={{fontSize:12,fontWeight:600,color:"#18211E"}}>Índice III</div>
+              <div style={{fontSize:11,color:"#607870"}}>{iii!=null?(iii>=70?"Impacto alto":iii>=50?"Impacto medio":"En desarrollo"):"Pendiente Q1"}</div>
+              <div style={{fontSize:10,color:"#1A5C4A",marginTop:2}}>Hover para ver composición</div>
+              {showIII&&<div style={{position:"absolute",top:"calc(100% + 8px)",left:0,width:280,background:"#FFFFFF",border:"1px solid #DDE8E4",borderRadius:12,padding:"14px 16px",boxShadow:"0 4px 20px rgba(0,0,0,0.10)",zIndex:20}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#607870",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Composición del índice</div>
+                <div style={{fontSize:12,color:"#18211E",marginBottom:6}}><b>60%</b> Mejora en 6 dimensiones de bienestar <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{normImp2!=null?`${Math.round(normImp2*0.6)}pts`:"—"}</span></div>
+                <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>Promedio de evolución Q inicial → Q actual en bienestar, clima, liderazgo, engagement, ausentismo y productividad.</div>
+                <div style={{fontSize:12,color:"#18211E",marginBottom:6}}><b>40%</b> Utilización del plan <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{utilScore2}pts</span></div>
+                <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>Sesiones realizadas sobre total contratado ({compRate}% actual).</div>
+                <div style={{fontSize:10,color:"#607870",background:"#F0F4F2",borderRadius:6,padding:"6px 10px"}}>III = (mejora dimensiones × 0.6) + (utilización × 0.4)</div>
+              </div>}
+            </div>
+            <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal)}`} sub="UYU · precio de referencia" accent/>
+            <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat)}`} sub={`${totNuev} pacientes únicos`}/>
+            <KpiCard label="Utilización del plan" value={`${compRate}%`} sub="Realizadas / contratadas"/>
+            <KpiCard label="Último mes completo" value={`$ ${fmt(invLastFull)}`} sub={lastFull?.month}/>
+          </div>;
+        })()}
 
         <Section title="Inversión mensual (UYU)" warnNote="Cálculo de referencia a UY$ 1.600 por sesión. El valor real depende del precio contratado.">
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
