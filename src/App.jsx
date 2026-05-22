@@ -276,8 +276,11 @@ export default function Dashboard(){
     </div>
 
     {/* Sub nav */}
-    {mod!=="home"&&activeMod?.subs&&<div style={{background:P.white,borderBottom:`1px solid ${P.border}`,padding:"0 28px",display:"flex",overflowX:"auto"}}>
-      {activeMod.subs.map(s=><button key={s} onClick={()=>setSub(s)} style={{fontSize:12,fontWeight:sub===s?600:400,color:sub===s?P.primary:P.textMuted,background:"none",border:"none",borderBottom:sub===s?`2px solid ${P.primary}`:"2px solid transparent",padding:"9px 16px",cursor:"pointer",whiteSpace:"nowrap",letterSpacing:"0.01em"}}>{s}</button>)}
+    {mod!=="home"&&<div style={{background:P.white,borderBottom:`1px solid ${P.border}`,padding:"0 28px",display:"flex",alignItems:"center",overflowX:"auto"}}>
+      <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,color:P.textMuted,background:P.gray50,border:`1px solid ${P.border}`,borderRadius:7,padding:"5px 12px",margin:"6px 12px 6px 0",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
+        ← Inicio
+      </button>
+      {activeMod?.subs&&activeMod.subs.map(s=><button key={s} onClick={()=>setSub(s)} style={{fontSize:12,fontWeight:sub===s?600:400,color:sub===s?P.primary:P.textMuted,background:"none",border:"none",borderBottom:sub===s?`2px solid ${P.primary}`:"2px solid transparent",padding:"9px 16px",cursor:"pointer",whiteSpace:"nowrap",letterSpacing:"0.01em"}}>{s}</button>)}
     </div>}
 
     <div style={{padding:"28px",maxWidth:960,margin:"0 auto"}}>
@@ -415,25 +418,24 @@ export default function Dashboard(){
         </button>)}
       </div>
 
-      {/* Hitos */}
+      {/* Hitos — timeline */}
       <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"24px 28px",marginBottom:20}}>
-        <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:16}}>Hitos de la alianza</div>
-        <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
-          {c.milestones.map((m,i)=><div key={i} style={{
-            display:"flex",alignItems:"center",gap:8,
-            padding:"8px 14px",
-            background:m.reached?P.lighter:P.gray50,
-            border:`1px solid ${m.reached?P.primary+"44":P.border}`,
-            borderRadius:20,
-            opacity:m.reached?1:0.5,
-          }}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:m.reached?P.primary:P.border,flexShrink:0}}/>
-            <div>
-              <div style={{fontSize:12,fontWeight:m.reached?600:400,color:m.reached?P.text:P.textMuted}}>{m.label}</div>
-              {m.reached&&m.date&&<div style={{fontSize:10,color:P.textMuted}}>{m.date}</div>}
-              {!m.reached&&m.date&&<div style={{fontSize:10,color:P.textMuted}}>{m.date}</div>}
-            </div>
-          </div>)}
+        <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:20}}>Hitos de la alianza</div>
+        <div style={{position:"relative",paddingLeft:24}}>
+          {/* Vertical line */}
+          <div style={{position:"absolute",left:7,top:8,bottom:8,width:1.5,background:`linear-gradient(to bottom, ${P.primary}, ${P.border})`}}/>
+          <div style={{display:"flex",flexDirection:"column",gap:0}}>
+            {c.milestones.map((m,i)=><div key={i} style={{display:"flex",alignItems:"flex-start",gap:14,paddingBottom:16,opacity:m.reached?1:0.4}}>
+              {/* Star or dot */}
+              <div style={{position:"absolute",left:0,width:16,height:16,borderRadius:"50%",background:m.reached?P.primary:P.white,border:`2px solid ${m.reached?P.primary:P.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>
+                {m.reached&&<span style={{fontSize:8,color:P.white,lineHeight:1}}>★</span>}
+              </div>
+              <div style={{marginLeft:4}}>
+                <div style={{fontSize:12,fontWeight:m.reached?600:400,color:m.reached?P.text:P.textMuted,lineHeight:1.3}}>{m.label}</div>
+                {m.date&&<div style={{fontSize:10,color:m.reached?P.textMuted:"#bbb",marginTop:2}}>{m.date}</div>}
+              </div>
+            </div>)}
+          </div>
         </div>
       </div>
 
