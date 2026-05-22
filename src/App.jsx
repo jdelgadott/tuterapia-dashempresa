@@ -74,12 +74,13 @@ const COMPANIES = {
       {title:"Pulso rápido de bienestar",desc:"5 preguntas clave · ~3 min · para seguimiento mensual",downloadable:true,isMain:false},
     ],
     content:[
-      {title:"Kit de activación del beneficio Tu Terapia",type:"Campaña",date:"Ago 2025",downloadable:true,isNew:false},
-      {title:"Material 8M — Salud mental y perspectiva de género",type:"Campaña",date:"Mar 2026",downloadable:true,isNew:false},
-      {title:"Guía para líderes: cómo hablar de salud mental",type:"Guía",date:"Sep 2025",downloadable:true,isNew:false},
-      {title:"Protocolo de acompañamiento en crisis",type:"Protocolo",date:"Nov 2025",downloadable:true,isNew:false},
-      {title:"Protocolo de derivación a psicología",type:"Protocolo",date:"Ene 2026",downloadable:true,isNew:false},
+      {title:"Kit de activación del beneficio Tu Terapia",type:"Campaña",date:"Ago 2025",downloaded:true, rating:5,sent:true},
+      {title:"Material 8M — Salud mental y perspectiva de género",type:"Campaña",date:"Mar 2026",downloaded:true, rating:4,sent:true},
+      {title:"Guía para líderes: cómo hablar de salud mental",type:"Guía",date:"Sep 2025",downloaded:true, rating:4,sent:false},
+      {title:"Protocolo de acompañamiento en crisis",type:"Protocolo",date:"Nov 2025",downloaded:false,rating:null,sent:false},
+      {title:"Protocolo de derivación a psicología",type:"Protocolo",date:"Ene 2026",downloaded:false,rating:null,sent:false},
     ],
+    workshopTarget:5,
     reports:[
       {title:"Informe de uso Q3 2025",date:"Oct 2025",downloadable:true},
       {title:"Informe de uso Q4 2025",date:"Ene 2026",downloadable:true},
@@ -473,25 +474,53 @@ export default function Dashboard(){
       </Section>
     </>}
 
-    {mod==="colectivo"&&sub==="Contenido"&&<>
-      {["Campaña","Guía","Protocolo"].map(type=>{
-        const items=c.content.filter(x=>x.type===type);
-        if(!items.length)return null;
-        const col=TYPE_COLORS[type]||{bg:P.lighter,tx:P.primary};
-        return <Section key={type} title={`${type}s`}>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {items.map((item,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
-              <div style={{background:col.bg,color:col.tx,fontSize:10,fontWeight:600,padding:"3px 10px",borderRadius:20,flexShrink:0,letterSpacing:"0.03em"}}>{item.type}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:12,fontWeight:600,color:P.text}}>{item.title}</div>
-                <div style={{fontSize:11,color:P.textMuted}}>{item.date}</div>
-              </div>
-              <button style={{background:P.lighter,color:P.primary,border:`1px solid ${P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0}}>Descargar</button>
-            </div>)}
+    {mod==="colectivo"&&sub==="Contenido"&&(()=>{
+      const [ratings,setRatings]=useState(()=>Object.fromEntries(c.content.map((item,i)=>[i,item.rating])));
+      const [sent,setSent]=useState(()=>Object.fromEntries(c.content.map((item,i)=>[i,item.sent])));
+      const [downloaded,setDownloaded]=useState(()=>Object.fromEntries(c.content.map((item,i)=>[i,item.downloaded])));
+      const ratingLabel={5:"Muy adecuado",4:"Adecuado",3:"Neutral",2:"Poco adecuado",1:"No adecuado"};
+      return <>
+        <Section title="Recursos y material">
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>
+            Descargá el material, evalualo con una puntuación y marcalo como enviado cuando lo compartas con tu equipo.
           </div>
-        </Section>;
-      })}
-    </>}
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {c.content.map((item,i)=>{
+              const col=TYPE_COLORS[item.type]||{bg:P.lighter,tx:P.primary};
+              return <div key={i} style={{padding:"14px 16px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:12,flexWrap:"wrap"}}>
+                  <div style={{background:col.bg,color:col.tx,fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,flexShrink:0,whiteSpace:"nowrap"}}>{item.type}</div>
+                  <div style={{flex:1,minWidth:160}}>
+                    <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:2}}>{item.title}</div>
+                    <div style={{fontSize:11,color:P.textMuted}}>{item.date}</div>
+                  </div>
+                  <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0,flexWrap:"wrap"}}>
+                    <button onClick={()=>setDownloaded(d=>({...d,[i]:true}))}
+                      style={{background:downloaded[i]?P.lighter:P.white,color:downloaded[i]?P.primary:P.textMuted,border:`1px solid ${downloaded[i]?P.primary+"44":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+                      {downloaded[i]?"✓ Descargado":"Descargar"}
+                    </button>
+                    <button onClick={()=>setSent(s=>({...s,[i]:!s[i]}))}
+                      style={{background:sent[i]?"#E8F5E9":P.white,color:sent[i]?"#2E7D32":P.textMuted,border:`1px solid ${sent[i]?"#2E7D3244":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+                      {sent[i]?"✓ Enviado":"Marcar enviado"}
+                    </button>
+                  </div>
+                </div>
+                <div style={{marginTop:12,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                  <span style={{fontSize:11,color:P.textMuted}}>Tu evaluación:</span>
+                  <div style={{display:"flex",gap:3}}>
+                    {[1,2,3,4,5].map(star=><button key={star} onClick={()=>setRatings(r=>({...r,[i]:star}))}
+                      style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:ratings[i]>=star?P.accent:"#DDE8E4",padding:"0 1px",lineHeight:1}}>★</button>)}
+                  </div>
+                  <span style={{fontSize:11,color:ratings[i]?P.textMuted:"#C0C8C4",fontStyle:ratings[i]?"normal":"italic"}}>
+                    {ratings[i]?ratingLabel[ratings[i]]:"Sin evaluar aún"}
+                  </span>
+                </div>
+              </div>;
+            })}
+          </div>
+        </Section>
+      </>;
+    })()}
 
     {/* ── ESTRATÉGICO - Bienestar ── */}
     {mod==="estrategico"&&sub==="Bienestar"&&<>
@@ -626,8 +655,16 @@ export default function Dashboard(){
           const hasData2=firstQ2&&lastQ2&&firstQ2!==lastQ2;
           const avgImp2=hasData2?dimKeys2.map(k=>lastQ2[k]!=null&&firstQ2[k]!=null?lastQ2[k]-firstQ2[k]:null).filter(v=>v!==null).reduce((a,b,_,arr)=>a+b/arr.length,0):null;
           const normImp2=avgImp2!=null?Math.max(0,Math.min(100,Math.round((avgImp2/9)*100))):null;
-          const utilScore2=Math.round(compRate*0.4);
-          const iii=normImp2!=null?Math.round(normImp2*0.6+utilScore2):null;
+          // Component 2: utilization 30%
+          const utilScore2=Math.round(compRate*0.3);
+          // Component 3: workshops 15% — talleres realizados vs target anual (5)
+          const workshopTarget=c.workshopTarget||5;
+          const workshopScore=Math.min(100,Math.round((c.workshops.length/workshopTarget)*100));
+          const workshopPts=Math.round(workshopScore*0.15);
+          // Component 4: content engagement 5% — avg of (downloaded + rated) / total
+          const contentEngagement=c.content.length>0?Math.round((c.content.filter(x=>x.downloaded&&x.rating).length/c.content.length)*100):0;
+          const contentPts=Math.round(contentEngagement*0.05);
+          const iii=normImp2!=null?Math.round(normImp2*0.5+utilScore2+workshopPts+contentPts):null;
           return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
             <div
               onMouseEnter={()=>setShowIII(true)}
@@ -640,11 +677,15 @@ export default function Dashboard(){
               <div style={{fontSize:10,color:"#1A5C4A",marginTop:2}}>Hover para ver composición</div>
               {showIII&&<div style={{position:"absolute",top:"calc(100% + 8px)",left:0,width:280,background:"#FFFFFF",border:"1px solid #DDE8E4",borderRadius:12,padding:"14px 16px",boxShadow:"0 4px 20px rgba(0,0,0,0.10)",zIndex:20}}>
                 <div style={{fontSize:10,fontWeight:700,color:"#607870",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Composición del índice</div>
-                <div style={{fontSize:12,color:"#18211E",marginBottom:6}}><b>60%</b> Mejora en 6 dimensiones de bienestar <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{normImp2!=null?`${Math.round(normImp2*0.6)}pts`:"—"}</span></div>
+                <div style={{fontSize:12,color:"#18211E",marginBottom:4}}><b>50%</b> Mejora en 6 dimensiones de bienestar <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{normImp2!=null?`${Math.round(normImp2*0.5)}pts`:"—"}</span></div>
                 <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>Promedio de evolución Q inicial → Q actual en bienestar, clima, liderazgo, engagement, ausentismo y productividad.</div>
-                <div style={{fontSize:12,color:"#18211E",marginBottom:6}}><b>40%</b> Utilización del plan <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{utilScore2}pts</span></div>
+                <div style={{fontSize:12,color:"#18211E",marginBottom:4}}><b>30%</b> Utilización del plan individual <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{utilScore2}pts</span></div>
                 <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>Sesiones realizadas sobre total contratado ({compRate}% actual).</div>
-                <div style={{fontSize:10,color:"#607870",background:"#F0F4F2",borderRadius:6,padding:"6px 10px"}}>III = (mejora dimensiones × 0.6) + (utilización × 0.4)</div>
+                <div style={{fontSize:12,color:"#18211E",marginBottom:4}}><b>15%</b> Actividad colectiva — talleres <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{workshopPts}pts</span></div>
+                <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>{c.workshops.length} de {workshopTarget} talleres anuales realizados.</div>
+                <div style={{fontSize:12,color:"#18211E",marginBottom:4}}><b>5%</b> Engagement con contenido <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{contentPts}pts</span></div>
+                <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>Piezas descargadas y evaluadas por RRHH sobre el total disponible.</div>
+                <div style={{fontSize:10,color:"#607870",background:"#F0F4F2",borderRadius:6,padding:"6px 10px"}}>III = (bienestar × 50%) + (utilización × 30%) + (talleres × 15%) + (contenido × 5%)</div>
               </div>}
             </div>
             <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal)}`} sub="UYU · precio de referencia" accent/>
