@@ -19,12 +19,14 @@ function monthsDiff(startStr){
   return Math.max(0,(now.getFullYear()-d.getFullYear())*12+now.getMonth()-d.getMonth());
 }
 
+const FLOR_PHOTO = "data:image/png;base64,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";
+
 const COMPANIES = {
   tcs:{
     name:"TCS", industry:"Tecnología",
     planType:"Cuponera Fija", planCoverage:"100%", monthlyPlan:300,
     startDate:"Julio 2025", sessionPriceRef:1600, coveragePct:1.0,
-    accountManager:{name:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:null,initials:"FI"},
+    accountManager:{name:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:"093399250",whatsapp:"59893399250",calendar:"https://calendar.google.com/calendar/r/eventnew?add=firoldi@tuterapia.com.uy&text=Reunión+con+Tu+Terapia&details=Reunión+de+seguimiento+del+beneficio+de+salud+mental",initials:"FI"},
     plan:{type:"Cuponera Fija",sessionsMonth:300,priceRef:1600,start:"Jul 2025",renewal:"Jul 2026",status:"activo"},
     monthlyData:[
       {month:"Jul 25",canjeadas:4,  realizadas:1,  nuevos:0, c1:4,  c2:0, c3:0, c4:0,  c5:0,  partial:true},
@@ -123,15 +125,15 @@ const COMPANIES = {
 };
 
 const TT_TEAM=[
-  {name:"Juan Ignacio Delgado",role:"Desarrollo de Negocio",email:"jdelgado@tuterapia.com.uy",phone:"+598 99 123 456",initials:"JD",area:"Alianzas B2B"},
-  {name:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:null,initials:"FI",area:"Gestión de cuentas"},
-  {name:"Ismael Rodríguez",role:"Prospección y Cuentas",email:"irodriguez@tuterapia.com.uy",phone:null,initials:"IR",area:"Gestión de cuentas"},
+  {name:"Juan Ignacio Delgado",role:"Desarrollo de Negocio",email:"jdelgado@tuterapia.com.uy",phone:"+598 99 123 456",whatsapp:null,calendar:null,initials:"JD",area:"Alianzas B2B"},
+  {name:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:"093399250",whatsapp:"59893399250",calendar:"https://calendar.google.com/calendar/r/eventnew?add=firoldi@tuterapia.com.uy&text=Reunión+con+Tu+Terapia&details=Reunión+de+seguimiento+del+beneficio+de+salud+mental",initials:"FI",area:"Gestión de cuentas",photo:true},
+  {name:"Ismael Rodríguez",role:"Prospección y Cuentas",email:"irodriguez@tuterapia.com.uy",phone:null,whatsapp:null,calendar:null,initials:"IR",area:"Gestión de cuentas"},
 ];
 
 const MODULES=[
-  {id:"individual", label:"Pilar Individual",  subs:["Sesiones","Adherencia"]},
-  {id:"colectivo",  label:"Pilar Colectivo",   subs:["Talleres","Contenido"]},
-  {id:"estrategico",label:"Pilar Estratégico", subs:["Bienestar del equipo","Inversión e impacto","Recursos y reportes"]},
+  {id:"individual", label:"Colaboradores",  subs:["Sesiones","Adherencia"]},
+  {id:"colectivo",  label:"Cultura de Bienestar",   subs:["Talleres","Contenido"]},
+  {id:"estrategico",label:"Estrategia de Bienestar", subs:["Bienestar del equipo","Inversión e impacto","Recursos y reportes"]},
   {id:"gestion",    label:"Gestión",            subs:["Facturación","Plan activo","Equipo TT"],restricted:true},
 ];
 
@@ -238,11 +240,11 @@ export default function Dashboard(){
   const billingPending=c.billing.filter(b=>b.status==="pendiente").reduce((s,b)=>s+b.amount,0);
 
   const QUADRANTS=[
-    {id:"individual", label:"Pilar Individual", color:P.primary, borderColor:P.primary,
+    {id:"individual", label:"Colaboradores", color:P.primary, borderColor:P.primary,
      stats:[`${fmt(totReal)} sesiones realizadas`,`${totNuev} pacientes únicos`,`${compRate}% tasa de realización`]},
-    {id:"colectivo",  label:"Pilar Colectivo",  color:P.purple, borderColor:P.purple,
+    {id:"colectivo",  label:"Cultura de Bienestar",  color:P.purple, borderColor:P.purple,
      stats:[`${c.workshops.length} talleres realizados`,`${c.content.length} recursos disponibles`,"Próximo: Jun 2026"]},
-    {id:"estrategico",label:"Pilar Estratégico",color:P.accent, borderColor:P.accent,
+    {id:"estrategico",label:"Estrategia de Bienestar",color:P.accent, borderColor:P.accent,
      stats:["NPS: pendiente Q2","Bienestar: pendiente Q2",`${c.recommendations.length} recomendaciones activas`]},
     {id:"gestion",    label:"Gestión",          color:P.textMuted, borderColor:P.border, restricted:true,
      stats:[`$ ${fmt(billingPaid)} facturado`,`Renovación ${c.plan.renewal}`,"Plan activo"]},
@@ -281,59 +283,62 @@ export default function Dashboard(){
 
     {/* ── HOME ── */}
     {mod==="home"&&<>
-      {/* Alliance header */}
-      <div style={{background:P.white,borderRadius:16,border:`1px solid ${P.border}`,padding:"36px",marginBottom:20}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,marginBottom:32,flexWrap:"wrap"}}>
-          <button onClick={goHome} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,background:"none",border:"none",cursor:"pointer"}}>
-            <div style={{width:80,height:80,borderRadius:14,background:"#003087",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,48,135,0.18)"}}>
-              <span style={{color:"white",fontWeight:900,fontSize:24,letterSpacing:"-1px"}}>TCS</span>
-            </div>
-            <span style={{fontSize:11,color:P.textMuted,fontWeight:500,letterSpacing:"0.04em",textTransform:"uppercase"}}>TCS</span>
-          </button>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-            <div style={{width:1,height:32,background:P.border}}/>
-            <span style={{fontSize:11,fontWeight:600,color:P.textMuted,letterSpacing:"0.06em",textTransform:"uppercase"}}>{months} meses</span>
-            <div style={{width:1,height:32,background:P.border}}/>
+      {/* Hero */}
+      <div style={{
+        background:"linear-gradient(135deg, #1A5C4A 0%, #267A62 60%, #2D9977 100%)",
+        borderRadius:20, padding:"48px 40px", marginBottom:20, position:"relative", overflow:"hidden"
+      }}>
+        <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:"rgba(255,255,255,0.05)"}}/>
+        <div style={{position:"absolute",bottom:-60,right:80,width:140,height:140,borderRadius:"50%",background:"rgba(255,255,255,0.04)"}}/>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:12}}>TCS · {months} meses de alianza</div>
+          <div style={{fontSize:32,fontWeight:800,color:"#FFFFFF",lineHeight:1.2,letterSpacing:"-1px",marginBottom:8,maxWidth:500}}>
+            Tu equipo se está sintiendo mejor
           </div>
-          <button onClick={goHome} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,background:"none",border:"none",cursor:"pointer"}}>
-            <div style={{width:80,height:80,borderRadius:14,background:P.primary,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(26,92,74,0.18)"}}>
-              <span style={{color:"white",fontWeight:800,fontSize:11,textAlign:"center",lineHeight:1.3,letterSpacing:"-0.2px"}}>Tu{"\n"}Terapia</span>
-            </div>
-            <span style={{fontSize:11,color:P.textMuted,fontWeight:500,letterSpacing:"0.04em",textTransform:"uppercase"}}>Tu Terapia</span>
-          </button>
-        </div>
-
-        {/* 4 quadrants */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14}}>
-          {QUADRANTS.map(q=><button key={q.id} onClick={()=>setModule(q.id)} style={{background:P.bg,border:`1px solid ${P.border}`,borderTop:`3px solid ${q.borderColor}`,borderRadius:10,padding:"20px",textAlign:"left",cursor:"pointer",position:"relative",transition:"border-color 0.15s"}}>
-            {q.restricted&&<span style={{position:"absolute",top:10,right:10,fontSize:9,fontWeight:700,background:P.accentBg,color:P.accent,padding:"2px 6px",borderRadius:4,letterSpacing:"0.04em",textTransform:"uppercase"}}>Restringido</span>}
-            <div style={{fontSize:13,fontWeight:700,color:q.color,marginBottom:12,letterSpacing:"-0.1px"}}>{q.label}</div>
-            {q.stats.map((s,i)=><div key={i} style={{fontSize:11,color:P.textMuted,padding:"5px 0",borderBottom:`1px solid ${P.border}`,lineHeight:1.4}}>{s}</div>)}
-            <div style={{marginTop:12,fontSize:11,fontWeight:600,color:q.color,letterSpacing:"0.01em"}}>Ver detalle →</div>
-          </button>)}
+          <div style={{fontSize:15,color:"rgba(255,255,255,0.75)",marginBottom:32,maxWidth:440,lineHeight:1.6}}>
+            Juntos estamos construyendo una cultura de bienestar en TCS.
+          </div>
+          <div style={{display:"flex",gap:32,flexWrap:"wrap"}}>
+            {[
+              {n:fmt(totReal), label:"sesiones de terapia realizadas"},
+              {n:totNuev, label:"personas acompañadas"},
+              {n:c.workshops.length, label:"talleres de bienestar"},
+              {n:`${compRate}%`, label:"de utilización del plan"},
+            ].map((stat,i)=><div key={i}>
+              <div style={{fontSize:28,fontWeight:700,color:"#FFFFFF",letterSpacing:"-1px",lineHeight:1}}>{stat.n}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.65)",marginTop:3,maxWidth:120,lineHeight:1.4}}>{stat.label}</div>
+            </div>)}
+          </div>
         </div>
       </div>
 
-      {/* Account manager */}
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"22px 28px",display:"flex",alignItems:"center",gap:20,flexWrap:"wrap",marginBottom:20}}>
-        <Avatar initials={c.accountManager.initials} size={50}/>
-        <div style={{flex:1,minWidth:160}}>
-          <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Tu referente en Tu Terapia</div>
-          <div style={{fontSize:15,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{c.accountManager.name}</div>
-          <div style={{fontSize:12,color:P.textMuted}}>{c.accountManager.role}</div>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:6}}>
-          <a href={`mailto:${c.accountManager.email}`} style={{fontSize:12,color:P.primary,textDecoration:"none",fontWeight:500}}>{c.accountManager.email}</a>
-          {c.accountManager.phone&&<span style={{fontSize:12,color:P.textMuted}}>{c.accountManager.phone}</span>}
-        </div>
+      {/* Pillar cards */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14,marginBottom:20}}>
+        {[
+          {id:"individual", label:"Colaboradores",          color:P.primary, border:"#1A5C4A"},
+          {id:"colectivo",  label:"Cultura de Bienestar",   color:P.purple,  border:"#5040A0"},
+          {id:"estrategico",label:"Estrategia de Bienestar",color:P.accent,  border:"#C47B2E"},
+          {id:"gestion",    label:"Gestión",                color:P.textMuted,border:P.border, restricted:true},
+        ].map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
+          background:P.white, border:`1px solid ${P.border}`,
+          borderTop:`3px solid ${p.border}`,
+          borderRadius:12, padding:"22px 20px",
+          textAlign:"left", cursor:"pointer",
+          transition:"box-shadow 0.15s",
+          position:"relative",
+        }}>
+          {p.restricted&&<span style={{position:"absolute",top:10,right:10,fontSize:9,fontWeight:700,background:P.accentBg,color:P.accent,padding:"2px 6px",borderRadius:4,letterSpacing:"0.04em",textTransform:"uppercase"}}>Restringido</span>}
+          <div style={{fontSize:14,fontWeight:700,color:p.color,letterSpacing:"-0.1px",marginBottom:8}}>{p.label}</div>
+          <div style={{fontSize:11,fontWeight:600,color:P.textMuted}}>Ver detalle →</div>
+        </button>)}
       </div>
 
       {/* Milestones */}
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"22px 28px"}}>
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"22px 28px",marginBottom:20}}>
         <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:16}}>Hitos de la alianza</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
           {c.milestones.map((m,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:m.reached?P.lighter:P.gray50,border:`1px solid ${m.reached?P.primary+"44":P.border}`,borderRadius:8,opacity:m.reached?1:0.5}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:m.reached?P.primary:P.border,flexShrink:0}}/>
+            <div style={{width:7,height:7,borderRadius:"50%",background:m.reached?P.primary:P.border,flexShrink:0}}/>
             <div>
               <div style={{fontSize:12,fontWeight:m.reached?600:400,color:m.reached?P.text:P.textMuted}}>{m.label}</div>
               {m.reached&&m.date&&<div style={{fontSize:10,color:P.textMuted}}>{m.date}</div>}
@@ -342,9 +347,44 @@ export default function Dashboard(){
           </div>)}
         </div>
       </div>
+
+      {/* Account manager */}
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"20px 24px",display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
+        <img src={FLOR_PHOTO} alt="Florencia Iroldi" style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:`2px solid ${P.lighter}`}}/>
+        <div style={{flex:1,minWidth:160}}>
+          <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Tu referente en Tu Terapia</div>
+          <div style={{fontSize:15,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{c.accountManager.name}</div>
+          <div style={{fontSize:12,color:P.textMuted,marginBottom:12}}>{c.accountManager.role}</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <a href={`mailto:${c.accountManager.email}`}
+              style={{display:"flex",alignItems:"center",gap:6,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:`1px solid ${P.border}`}}>
+              ✉ Mail
+            </a>
+            <a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%20Florencia%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`}
+              target="_blank" rel="noopener noreferrer"
+              style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #C8E6C9"}}>
+              💬 WhatsApp
+            </a>
+            <a href={c.accountManager.calendar}
+              target="_blank" rel="noopener noreferrer"
+              style={{display:"flex",alignItems:"center",gap:6,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #C5D5F5"}}>
+              📅 Agendar reunión
+            </a>
+          </div>
+        </div>
+      </div>
     </>}
 
     {/* ── INDIVIDUAL ── */}
+    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#1A5C4A,#267A62)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Colaboradores</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
+        {totNuev} personas eligieron cuidar su salud mental
+      </div>
+      <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
+        {fmt(totReal)} sesiones realizadas · {compRate}% de utilización del plan
+      </div>
+    </div>}
     {mod==="individual"&&sub==="Sesiones"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
         <KpiCard label="Canjeadas acumuladas" value={fmt(totCanj)} accent/>
@@ -438,6 +478,15 @@ export default function Dashboard(){
     })()}
 
     {/* ── COLECTIVO ── */}
+    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#5040A0,#7060C0)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
+        {c.workshops.length} talleres de bienestar realizados con TCS
+      </div>
+      <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
+        {c.content.filter(x=>x.downloaded).length} recursos descargados · {c.content.filter(x=>x.sent).length} enviados al equipo
+      </div>
+    </div>}
     {mod==="colectivo"&&sub==="Talleres"&&<>
       <Section title={`Talleres realizados (${c.workshops.length})`}>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -504,6 +553,16 @@ export default function Dashboard(){
     })()}
 
 
+    {/* ── ESTRATÉGICO ── */}
+    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#C47B2E,#D4873C)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
+        Tu inversión en bienestar está generando impacto
+      </div>
+      <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
+        {npsVal!=null?`NPS ${npsVal} · `:""}Bienestar Q2 pendiente · {c.recommendations.length} recomendaciones activas
+      </div>
+    </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
     {mod==="estrategico"&&sub==="Bienestar del equipo"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginBottom:18}}>
@@ -761,6 +820,15 @@ export default function Dashboard(){
       </Section>
     </>}
     {/* ── GESTIÓN ── */}
+    {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#607870,#8B9E98)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Gestión</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
+        Plan activo · renovación {c.plan.renewal}
+      </div>
+      <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
+        {c.billing.filter(b=>b.status==="pagado").length} períodos pagados · {c.billing.filter(b=>b.status==="pendiente").length} pendiente
+      </div>
+    </div>}
     {mod==="gestion"&&sub==="Facturación"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
         <KpiCard label="Total pagado" value={`$ ${fmt(billingPaid)}`} sub="UYU acumulado" accent/>
@@ -795,15 +863,16 @@ export default function Dashboard(){
       <div style={{fontSize:12,color:P.textMuted,marginBottom:16,lineHeight:1.6}}>Tu equipo de referencia en Tu Terapia para consultas administrativas, comerciales o de contenido.</div>
       <div style={{display:"flex",flexDirection:"column",gap:12}}>
         {TT_TEAM.map((p,i)=><div key={i} style={{background:P.white,borderRadius:12,border:`1px solid ${P.border}`,padding:"20px 24px",display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
-          <Avatar initials={p.initials} size={48}/>
+          {p.photo?<img src={FLOR_PHOTO} alt={p.name} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:`2px solid ${P.lighter}`}}/>:<Avatar initials={p.initials} size={48}/>}
           <div style={{flex:1,minWidth:150}}>
             <div style={{fontSize:14,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{p.name}</div>
             <div style={{fontSize:12,color:P.textMuted,marginBottom:4}}>{p.role}</div>
             <Label text={p.area} bg={P.lighter} tx={P.primary}/>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:6,minWidth:200}}>
-            <a href={`mailto:${p.email}`} style={{fontSize:12,color:P.primary,textDecoration:"none",fontWeight:500}}>{p.email}</a>
-            {p.phone&&<span style={{fontSize:12,color:P.textMuted}}>{p.phone}</span>}
+          <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+            <a href={`mailto:${p.email}`} style={{display:"flex",alignItems:"center",gap:5,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:7,border:`1px solid ${P.border}`}}>✉ Mail</a>
+            {p.whatsapp&&<a href={`https://wa.me/${p.whatsapp}?text=Hola%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:5,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:7,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>}
+            {p.calendar&&<a href={p.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:5,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:7,border:"1px solid #C5D5F5"}}>📅 Reunión</a>}
           </div>
         </div>)}
       </div>
