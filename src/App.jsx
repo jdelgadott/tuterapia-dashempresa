@@ -1,6 +1,8 @@
+App.jsx — pegar en VS Code desde la línea 1
 
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine } from "recharts";
+
 const P = {
   primary:"#1A5C4A", light:"#267A62", lighter:"#EAF4F0", bg:"#F5F7F6",
   accent:"#C47B2E", accentBg:"#FBF3E8",
@@ -42,6 +44,12 @@ const COMPANIES = {
     wellbeingByQ:[
       {q:"Q3 2025",score:null},{q:"Q4 2025",score:null},{q:"Q1 2026",score:null},{q:"Q2 2026",score:null},
     ],
+    roiByQ:[
+      {q:"Q3 2025",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
+      {q:"Q4 2025",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
+      {q:"Q1 2026",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
+      {q:"Q2 2026",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
+    ],
     nps:null, npsDate:null, consultationReasons:[],
     workshops:[
       {title:"Activación del beneficio",date:"Ago 2025",speaker:"Juan I. Delgado",initials:"JD",type:"Activación",lang:"Español",rating:4.8},
@@ -64,9 +72,8 @@ const COMPANIES = {
       {event:"Liderazgo para equipos",date:"Feb 2026",type:"Taller",newPatients:11,note:"Repunte de nuevos pacientes tras el taller de liderazgo, el mayor desde Oct 2025."},
     ],
     surveys:[
-      {title:"Encuesta de bienestar general",desc:"Para aplicar al equipo completo · 10 preguntas · 5 min",downloadable:true},
-      {title:"Pulso de clima organizacional",desc:"Medición rápida del ambiente laboral · 7 preguntas · 3 min",downloadable:true},
-      {title:"Evaluación de liderazgo y bienestar",desc:"Para mandos medios y líderes · 15 preguntas · 8 min",downloadable:true},
+      {title:"Encuesta trimestral de impacto Tu Terapia",desc:"22 preguntas · 6 dimensiones · ~10 min · para todos los colaboradores",downloadable:true,isMain:true},
+      {title:"Pulso rápido de bienestar",desc:"5 preguntas clave · ~3 min · para seguimiento mensual",downloadable:true,isMain:false},
     ],
     content:[
       {title:"Kit de activación del beneficio Tu Terapia",type:"Campaña",date:"Ago 2025",downloadable:true,isNew:false},
@@ -503,13 +510,27 @@ export default function Dashboard(){
       </Section>
 
       <Section title="Encuestas para tu equipo" note={`Descargá la encuesta, aplicala a tu equipo y envianos los resultados a ${c.accountManager.email} para que los procesemos y mostremos en este panel.`}>
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {c.surveys.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:3}}>{s.title}</div>
-              <div style={{fontSize:11,color:P.textMuted}}>{s.desc}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {c.surveys.map((s,i)=><div key={i} style={{background:s.isMain?P.lighter:P.white,border:`1px solid ${s.isMain?P.primary+"44":P.border}`,borderRadius:10,overflow:"hidden"}}>
+            <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px"}}>
+              {s.isMain&&<div style={{width:4,height:"100%",minHeight:40,borderRadius:2,background:P.primary,flexShrink:0}}/>}
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                  <div style={{fontSize:13,fontWeight:600,color:P.text}}>{s.title}</div>
+                  {s.isMain&&<span style={{background:P.primary,color:P.white,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:20,letterSpacing:"0.04em",textTransform:"uppercase"}}>Principal</span>}
+                </div>
+                <div style={{fontSize:11,color:P.textMuted}}>{s.desc}</div>
+              </div>
+              <button style={{background:s.isMain?P.primary:P.lighter,color:s.isMain?P.white:P.primary,border:`1px solid ${s.isMain?P.primary:P.border}`,borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0}}>Descargar</button>
             </div>
-            <button style={{background:P.lighter,color:P.primary,border:`1px solid ${P.border}`,borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0}}>Descargar</button>
+            {s.isMain&&<div style={{borderTop:`1px solid ${P.border}`,padding:"12px 16px",background:"rgba(255,255,255,0.6)"}}>
+              <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>6 dimensiones medidas</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                {["Bienestar y salud mental","Clima y comunicación","Liderazgo efectivo","Engagement y compromiso","Ausentismo percibido","Productividad sostenible"].map(d=>
+                  <span key={d} style={{fontSize:10,background:P.white,border:`1px solid ${P.border}`,borderRadius:20,padding:"3px 10px",color:P.textMuted}}>{d}</span>
+                )}
+              </div>
+            </div>}
           </div>)}
         </div>
       </Section>
@@ -567,31 +588,172 @@ export default function Dashboard(){
     </>}
 
     {/* ── ESTRATÉGICO - Inversión ── */}
-    {mod==="estrategico"&&sub==="Inversión e impacto"&&<>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
-        <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal)}`} sub="UYU · precio de referencia" accent/>
-        <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat)}`} sub={`${totNuev} pacientes únicos`}/>
-        <KpiCard label="Utilización del plan" value={`${compRate}%`} sub="Realizadas / contratadas"/>
-        <KpiCard label="Último mes completo" value={`$ ${fmt(invLastFull)}`} sub={lastFull?.month}/>
-      </div>
-      <Section title="Inversión mensual (UYU)" warnNote="Cálculo de referencia a UY$ 1.600 por sesión. El valor real depende del precio contratado.">
-        <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={invTrend} barSize={13}>
-            <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-            <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
-            <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
-          </BarChart>
-        </ResponsiveContainer></div>
-      </Section>
-      <Section title="Benchmark vs. red Tu Terapia" note="Disponible en la próxima fase — comparación con ~40 empresas aliadas.">
-        <div style={{padding:"24px",textAlign:"center",color:P.textMuted}}>
-          <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Próximamente</div>
-          <div style={{fontSize:12}}>Compará la utilización y adopción de TCS con el promedio de la red.</div>
+    {mod==="estrategico"&&sub==="Inversión e impacto"&&(()=>{
+      const ROI_DIMS=[
+        {key:"saludMental",  label:"Bienestar y salud mental",   desc:"Bienestar emocional, estrés y equilibrio vida-trabajo",       color:"#1A5C4A"},
+        {key:"clima",        label:"Clima y comunicación",        desc:"Ambiente de equipo, comunicación y resolución de conflictos", color:"#267A62"},
+        {key:"liderazgo",    label:"Liderazgo efectivo",          desc:"Liderazgo empático, apoyo y promoción del bienestar",         color:"#5040A0"},
+        {key:"engagement",   label:"Engagement y compromiso",     desc:"Motivación, propósito e intención de permanencia",            color:"#C47B2E"},
+        {key:"asistencia",   label:"Ausentismo percibido",        desc:"Energía, presencia real y afectación a la asistencia",       color:"#8B4A8B"},
+        {key:"productividad",label:"Productividad sostenible",    desc:"Concentración, carga manejable y desconexión efectiva",       color:"#B03030"},
+      ];
+      const hasROIData=c.roiByQ.some(q=>q.clima!==null);
+      const roiScore=(q)=>{
+        const dims=[q.clima,q.saludMental,q.retencion,q.asistencia,q.productividad].filter(v=>v!==null);
+        return dims.length>0?Math.round(dims.reduce((a,b)=>a+b,0)/dims.length*10)/10:null;
+      };
+      return <>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
+          <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal)}`} sub="UYU · precio de referencia" accent/>
+          <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat)}`} sub={`${totNuev} pacientes únicos`}/>
+          <KpiCard label="Utilización del plan" value={`${compRate}%`} sub="Realizadas / contratadas"/>
+          <KpiCard label="Último mes completo" value={`$ ${fmt(invLastFull)}`} sub={lastFull?.month}/>
         </div>
-      </Section>
-    </>}
+
+        <Section title="Inversión mensual (UYU)" warnNote="Cálculo de referencia a UY$ 1.600 por sesión. El valor real depende del precio contratado.">
+          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={invTrend} barSize={13}>
+              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
+              <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
+              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
+              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
+            </BarChart>
+          </ResponsiveContainer></div>
+        </Section>
+
+        <Section title="Índice de impacto por trimestre">
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>
+            Calculado a partir de las encuestas trimestrales en 5 dimensiones clave. Escala 1–10.
+            El índice permite correlacionar la inversión con mejoras concretas en el equipo.
+          </div>
+          {!hasROIData?<div style={{padding:"20px",background:P.gray50,borderRadius:10,textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Disponible al completar la primera encuesta trimestral</div>
+            <div style={{fontSize:12,color:P.textMuted}}>Los resultados aparecerán automáticamente al procesar los datos del Q.</div>
+          </div>:
+          <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+            {c.roiByQ.map((q,i)=>{
+              const score=roiScore(q);
+              return <div key={i} style={{flex:1,minWidth:130,padding:"16px",background:score!=null?P.lighter:P.gray50,border:`1px solid ${score!=null?P.primary+"44":P.border}`,borderRadius:10,textAlign:"center"}}>
+                <div style={{fontSize:10,fontWeight:600,color:P.textMuted,marginBottom:8,letterSpacing:"0.04em",textTransform:"uppercase"}}>{q.q}</div>
+                {score!=null?<><div style={{fontSize:26,fontWeight:700,color:P.primary,letterSpacing:"-1px"}}>{score}</div><div style={{fontSize:10,color:P.textMuted}}>/10</div></>
+                :<div style={{fontSize:12,color:P.textMuted,padding:"6px 0"}}>Pendiente</div>}
+              </div>;
+            })}
+          </div>}
+        </Section>
+
+        <Section title="Dimensiones del impacto">
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>
+            Cada dimensión se mide trimestralmente mediante encuesta. La inversión en salud mental impacta directamente en estas áreas.
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {ROI_DIMS.map((dim,i)=>{
+              const scores=c.roiByQ.map(q=>q[dim.key]).filter(v=>v!==null);
+              const latest=scores.length>0?scores[scores.length-1]:null;
+              const first=scores.length>0?scores[0]:null;
+              const trend=scores.length>1?latest-first:null;
+              return <div key={i} style={{padding:"14px 16px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+                <div style={{width:4,height:40,borderRadius:2,background:dim.color,flexShrink:0}}/>
+                <div style={{flex:1,minWidth:160}}>
+                  <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:2}}>{dim.label}</div>
+                  <div style={{fontSize:11,color:P.textMuted}}>{dim.desc}</div>
+                </div>
+                <div style={{display:"flex",gap:16,alignItems:"center",flexShrink:0}}>
+                  {latest!=null?<>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:20,fontWeight:700,color:dim.color,letterSpacing:"-0.5px"}}>{latest}</div>
+                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>último Q</div>
+                    </div>
+                    {trend!=null&&<div style={{textAlign:"center"}}>
+                      <div style={{fontSize:14,fontWeight:700,color:trend>0?"#22C55E":trend<0?P.red:P.textMuted}}>{trend>0?"+":""}{trend}</div>
+                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>evolución</div>
+                    </div>}
+                  </>:<div style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente Q1</div>}
+                </div>
+              </div>;
+            })}
+          </div>
+          <div style={{marginTop:12,padding:"10px 14px",background:P.lighter,borderRadius:8,fontSize:11,color:P.primary,lineHeight:1.6}}>
+            Los datos se completan al procesar las encuestas trimestrales. Una vez disponibles, el índice de ROI mostrará la correlación entre inversión y mejora en cada dimensión.
+          </div>
+        </Section>
+
+        <Section title="Índice de Impacto de Inversión (III)">
+          {(()=>{
+            const firstQ=c.roiByQ.find(q=>Object.values(q).filter(v=>v!==null&&typeof v==="number").length>0);
+            const lastQ=[...c.roiByQ].reverse().find(q=>Object.values(q).filter(v=>v!==null&&typeof v==="number").length>0);
+            const hasData=firstQ&&lastQ&&firstQ!==lastQ;
+            const dimKeys=["saludMental","clima","liderazgo","engagement","asistencia","productividad"];
+            const avgImprovement=hasData?
+              dimKeys.map(k=>lastQ[k]!=null&&firstQ[k]!=null?lastQ[k]-firstQ[k]:null).filter(v=>v!==null).reduce((a,b,_,arr)=>a+b/arr.length,0):null;
+            const normalizedImprovement=avgImprovement!=null?Math.max(0,Math.min(100,Math.round((avgImprovement/9)*100))):null;
+            const utilizationScore=Math.round(compRate*0.4);
+            const impactScore=normalizedImprovement!=null?Math.round(normalizedImprovement*0.6+utilizationScore):null;
+            const [showTip,setShowTip]=useState(false);
+            return <div style={{position:"relative"}}>
+              <div
+                onMouseEnter={()=>setShowTip(true)}
+                onMouseLeave={()=>setShowTip(false)}
+                style={{display:"flex",alignItems:"center",gap:24,padding:"24px",background:impactScore!=null?P.lighter:P.gray50,borderRadius:12,border:`1px solid ${impactScore!=null?P.primary+"44":P.border}`,cursor:"default",flexWrap:"wrap"}}
+              >
+                <div style={{textAlign:"center",minWidth:100}}>
+                  <div style={{fontSize:52,fontWeight:700,color:impactScore!=null?P.primary:P.textMuted,lineHeight:1,letterSpacing:"-2px"}}>
+                    {impactScore!=null?impactScore:"—"}
+                  </div>
+                  <div style={{fontSize:11,color:P.textMuted,marginTop:4}}>de 100</div>
+                </div>
+                <div style={{flex:1,minWidth:200}}>
+                  {impactScore!=null?<>
+                    <div style={{fontSize:14,fontWeight:700,color:P.text,marginBottom:6}}>
+                      {impactScore>=70?"Impacto alto":impactScore>=50?"Impacto medio":"Impacto en desarrollo"}
+                    </div>
+                    <div style={{fontSize:12,color:P.textMuted,lineHeight:1.6}}>
+                      La inversión de TCS está generando mejoras medibles en el bienestar y funcionamiento del equipo.
+                    </div>
+                  </>:<>
+                    <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Disponible al completar Q1</div>
+                    <div style={{fontSize:12,color:P.textMuted,lineHeight:1.6}}>
+                      El índice se calcula al tener resultados de al menos dos trimestres de encuesta.
+                    </div>
+                  </>}
+                  <div style={{marginTop:10,fontSize:11,color:P.primary,fontWeight:500}}>Pasá el cursor para ver cómo se compone →</div>
+                </div>
+              </div>
+              {showTip&&<div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"16px 20px",boxShadow:"0 4px 20px rgba(0,0,0,0.10)",zIndex:10}}>
+                <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:12}}>Composición del índice</div>
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16,paddingBottom:10,borderBottom:`1px solid ${P.border}`}}>
+                    <div>
+                      <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:2}}>60% — Mejora en dimensiones de bienestar</div>
+                      <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>Promedio de mejora (Q inicial → Q actual) en las 6 dimensiones medidas por encuesta: bienestar, clima, liderazgo, engagement, ausentismo y productividad.</div>
+                    </div>
+                    <div style={{fontSize:18,fontWeight:700,color:P.primary,flexShrink:0}}>{normalizedImprovement!=null?`${Math.round(normalizedImprovement*0.6)}pts`:"—"}</div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16}}>
+                    <div>
+                      <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:2}}>40% — Utilización del plan</div>
+                      <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>Porcentaje de sesiones realizadas sobre el total contratado. Refleja qué tan bien se aprovecha la inversión mensual ({compRate}% de utilización actual).</div>
+                    </div>
+                    <div style={{fontSize:18,fontWeight:700,color:P.primary,flexShrink:0}}>{utilizationScore}pts</div>
+                  </div>
+                </div>
+                <div style={{marginTop:12,padding:"8px 12px",background:P.gray50,borderRadius:8,fontSize:10,color:P.textMuted}}>
+                  Fórmula: III = (mejora promedio dimensiones × 0.6) + (tasa utilización × 0.4)
+                </div>
+              </div>}
+            </div>;
+          })()}
+        </Section>
+
+        <Section title="Benchmark vs. red Tu Terapia" note="Disponible en la próxima fase — comparación con ~40 empresas aliadas.">
+          <div style={{padding:"20px",textAlign:"center",color:P.textMuted}}>
+            <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Próximamente</div>
+            <div style={{fontSize:12}}>Compará el índice de impacto de TCS con el promedio de la red.</div>
+          </div>
+        </Section>
+      </>;
+    })()}
 
     {/* ── GESTIÓN ── */}
     {mod==="gestion"&&sub==="Facturación"&&<>
