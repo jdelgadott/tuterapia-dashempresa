@@ -418,21 +418,20 @@ export default function Dashboard(){
         </button>)}
       </div>
 
-      {/* Hitos — timeline */}
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"24px 28px",marginBottom:20}}>
-        <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:20}}>Hitos de la alianza</div>
-        <div style={{position:"relative",paddingLeft:24}}>
-          {/* Vertical line */}
-          <div style={{position:"absolute",left:7,top:8,bottom:8,width:1.5,background:`linear-gradient(to bottom, ${P.primary}, ${P.border})`}}/>
-          <div style={{display:"flex",flexDirection:"column",gap:0}}>
-            {c.milestones.map((m,i)=><div key={i} style={{display:"flex",alignItems:"flex-start",gap:14,paddingBottom:16,opacity:m.reached?1:0.4}}>
-              {/* Star or dot */}
-              <div style={{position:"absolute",left:0,width:16,height:16,borderRadius:"50%",background:m.reached?P.primary:P.white,border:`2px solid ${m.reached?P.primary:P.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>
-                {m.reached&&<span style={{fontSize:8,color:P.white,lineHeight:1}}>★</span>}
+      {/* Hitos — timeline horizontal scrollable */}
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"20px 28px",marginBottom:20}}>
+        <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:16}}>Hitos de la alianza</div>
+        <div style={{overflowX:"auto",paddingBottom:4}} ref={el=>{if(el){const reached=c.milestones.filter(m=>m.reached);el.scrollLeft=el.scrollWidth;}}}>
+          <div style={{display:"flex",alignItems:"flex-start",gap:0,minWidth:"max-content",position:"relative",paddingTop:8,paddingBottom:4}}>
+            {/* Horizontal line */}
+            <div style={{position:"absolute",top:15,left:16,right:16,height:1.5,background:`linear-gradient(to right, ${P.primary}, ${P.border})`}}/>
+            {c.milestones.filter(m=>m.reached).map((m,i)=><div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,width:120,flexShrink:0,paddingTop:0}}>
+              <div style={{width:18,height:18,borderRadius:"50%",background:m.reached?P.primary:P.white,border:`2px solid ${m.reached?P.primary:P.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,zIndex:1,position:"relative"}}>
+                {m.reached&&<span style={{fontSize:9,color:P.white,lineHeight:1}}>★</span>}
               </div>
-              <div style={{marginLeft:4}}>
-                <div style={{fontSize:12,fontWeight:m.reached?600:400,color:m.reached?P.text:P.textMuted,lineHeight:1.3}}>{m.label}</div>
-                {m.date&&<div style={{fontSize:10,color:m.reached?P.textMuted:"#bbb",marginTop:2}}>{m.date}</div>}
+              <div style={{textAlign:"center",paddingLeft:4,paddingRight:4}}>
+                <div style={{fontSize:11,fontWeight:m.reached?600:400,color:m.reached?P.text:P.textMuted,lineHeight:1.3}}>{m.label}</div>
+                {m.date&&<div style={{fontSize:9,color:m.reached?P.textMuted:"#ccc",marginTop:2}}>{m.date}</div>}
               </div>
             </div>)}
           </div>
