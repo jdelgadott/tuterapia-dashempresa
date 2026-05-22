@@ -283,73 +283,78 @@ export default function Dashboard(){
 
     {/* ── HOME ── */}
     {mod==="home"&&<>
-      {/* Hero */}
-      <div style={{
-        background:"linear-gradient(135deg, #1A5C4A 0%, #267A62 60%, #2D9977 100%)",
-        borderRadius:20, padding:"48px 40px", marginBottom:20, position:"relative", overflow:"hidden"
-      }}>
-        <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:"rgba(255,255,255,0.05)"}}/>
-        <div style={{position:"absolute",bottom:-60,right:80,width:140,height:140,borderRadius:"50%",background:"rgba(255,255,255,0.04)"}}/>
-        <div style={{position:"relative",zIndex:1}}>
-          <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:12}}>TCS · {months} meses de alianza</div>
-          <div style={{fontSize:32,fontWeight:800,color:"#FFFFFF",lineHeight:1.2,letterSpacing:"-1px",marginBottom:8,maxWidth:500}}>
-            Tu equipo se está sintiendo mejor
-          </div>
-          <div style={{fontSize:15,color:"rgba(255,255,255,0.75)",marginBottom:32,maxWidth:440,lineHeight:1.6}}>
-            Juntos estamos construyendo una cultura de bienestar en TCS.
-          </div>
-          <div style={{display:"flex",gap:32,flexWrap:"wrap"}}>
-            {[
-              {n:fmt(totReal), label:"sesiones de terapia realizadas"},
-              {n:totNuev, label:"personas acompañadas"},
-              {n:c.workshops.length, label:"talleres de bienestar"},
-              {n:`${compRate}%`, label:"de utilización del plan"},
-            ].map((stat,i)=><div key={i}>
-              <div style={{fontSize:28,fontWeight:700,color:"#FFFFFF",letterSpacing:"-1px",lineHeight:1}}>{stat.n}</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,0.65)",marginTop:3,maxWidth:120,lineHeight:1.4}}>{stat.label}</div>
-            </div>)}
-          </div>
+      {/* Saludo + frase central */}
+      <div style={{textAlign:"center",padding:"48px 24px 36px",maxWidth:640,margin:"0 auto"}}>
+        <div style={{fontSize:11,fontWeight:700,color:P.textMuted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:16}}>
+          TCS · {months} meses juntos
+        </div>
+        <div style={{fontSize:36,fontWeight:800,color:P.text,lineHeight:1.15,letterSpacing:"-1.5px",marginBottom:16}}>
+          Tu equipo se está<br/>sintiendo mejor
+        </div>
+        <div style={{fontSize:15,color:P.textMuted,lineHeight:1.7,maxWidth:480,margin:"0 auto"}}>
+          {fmt(totReal)} sesiones de terapia completadas. {totNuev} personas eligieron cuidar su salud mental a través del beneficio.
         </div>
       </div>
 
-      {/* Pillar cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14,marginBottom:20}}>
+      {/* KPIs protagonistas */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:1,background:P.border,borderRadius:16,overflow:"hidden",marginBottom:20,border:`1px solid ${P.border}`}}>
         {[
-          {id:"individual", label:"Colaboradores",          color:P.primary, border:"#1A5C4A"},
-          {id:"colectivo",  label:"Cultura de Bienestar",   color:P.purple,  border:"#5040A0"},
-          {id:"estrategico",label:"Estrategia de Bienestar",color:P.accent,  border:"#C47B2E"},
-          {id:"gestion",    label:"Gestión",                color:P.textMuted,border:P.border, restricted:true},
+          {n:fmt(totReal),  label:"sesiones realizadas",    sub:"desde el inicio"},
+          {n:totNuev,       label:"personas acompañadas",   sub:"pacientes únicos"},
+          {n:`${compRate}%`,label:"de utilización",         sub:"del plan mensual"},
+          {n:c.workshops.length, label:"talleres realizados", sub:"con el equipo"},
+        ].map((s,i)=><div key={i} style={{background:P.white,padding:"28px 20px",textAlign:"center"}}>
+          <div style={{fontSize:38,fontWeight:800,color:P.primary,letterSpacing:"-2px",lineHeight:1}}>{s.n}</div>
+          <div style={{fontSize:13,fontWeight:600,color:P.text,marginTop:6}}>{s.label}</div>
+          <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>{s.sub}</div>
+        </div>)}
+      </div>
+
+      {/* Pillar cards */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,marginBottom:20}}>
+        {[
+          {id:"individual", label:"Colaboradores",           color:P.primary, accent:P.lighter},
+          {id:"colectivo",  label:"Cultura de Bienestar",    color:P.purple,  accent:"#F0EBFF"},
+          {id:"estrategico",label:"Estrategia de Bienestar", color:P.accent,  accent:P.accentBg},
+          {id:"gestion",    label:"Gestión",                 color:P.textMuted, accent:P.gray50, restricted:true},
         ].map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
-          background:P.white, border:`1px solid ${P.border}`,
-          borderTop:`3px solid ${p.border}`,
-          borderRadius:12, padding:"22px 20px",
+          background:P.white,
+          border:`1px solid ${P.border}`,
+          borderTop:`3px solid ${p.color}`,
+          borderRadius:12, padding:"20px",
           textAlign:"left", cursor:"pointer",
-          transition:"box-shadow 0.15s",
           position:"relative",
         }}>
           {p.restricted&&<span style={{position:"absolute",top:10,right:10,fontSize:9,fontWeight:700,background:P.accentBg,color:P.accent,padding:"2px 6px",borderRadius:4,letterSpacing:"0.04em",textTransform:"uppercase"}}>Restringido</span>}
-          <div style={{fontSize:14,fontWeight:700,color:p.color,letterSpacing:"-0.1px",marginBottom:8}}>{p.label}</div>
-          <div style={{fontSize:11,fontWeight:600,color:P.textMuted}}>Ver detalle →</div>
+          <div style={{fontSize:14,fontWeight:700,color:p.color,letterSpacing:"-0.1px",marginBottom:6}}>{p.label}</div>
+          <div style={{fontSize:11,color:P.textMuted}}>Ver detalle →</div>
         </button>)}
       </div>
 
-      {/* Milestones */}
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"22px 28px",marginBottom:20}}>
+      {/* Hitos */}
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"24px 28px",marginBottom:20}}>
         <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:16}}>Hitos de la alianza</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
-          {c.milestones.map((m,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:m.reached?P.lighter:P.gray50,border:`1px solid ${m.reached?P.primary+"44":P.border}`,borderRadius:8,opacity:m.reached?1:0.5}}>
-            <div style={{width:7,height:7,borderRadius:"50%",background:m.reached?P.primary:P.border,flexShrink:0}}/>
+          {c.milestones.map((m,i)=><div key={i} style={{
+            display:"flex",alignItems:"center",gap:8,
+            padding:"8px 14px",
+            background:m.reached?P.lighter:P.gray50,
+            border:`1px solid ${m.reached?P.primary+"44":P.border}`,
+            borderRadius:20,
+            opacity:m.reached?1:0.5,
+          }}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:m.reached?P.primary:P.border,flexShrink:0}}/>
             <div>
               <div style={{fontSize:12,fontWeight:m.reached?600:400,color:m.reached?P.text:P.textMuted}}>{m.label}</div>
               {m.reached&&m.date&&<div style={{fontSize:10,color:P.textMuted}}>{m.date}</div>}
-              {!m.reached&&m.date&&<div style={{fontSize:10,color:P.textMuted}}>Próximamente · {m.date}</div>}
+              {!m.reached&&m.date&&<div style={{fontSize:10,color:P.textMuted}}>{m.date}</div>}
             </div>
           </div>)}
         </div>
       </div>
 
-      {/* Account manager */}
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"20px 24px",display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
+      {/* Referente */}
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"22px 28px",display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
         <img src={FLOR_PHOTO} alt="Florencia Iroldi" style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:`2px solid ${P.lighter}`}}/>
         <div style={{flex:1,minWidth:160}}>
           <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Tu referente en Tu Terapia</div>
