@@ -450,12 +450,12 @@ export default function Dashboard(){
     </>}
 
     {/* ── INDIVIDUAL ── */}
-    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#4a9356,#76b782)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.75)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Colaboradores</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
+    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#e8f5ea,#f2faf3)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+      <div style={{fontSize:10,fontWeight:700,color:"#4a9356",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,opacity:0.7}}>Colaboradores</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#1e4d28",letterSpacing:"-0.5px",marginBottom:4}}>
         {sub==="Adherencia"?"Más personas eligieron cuidar su salud este mes":`${totNuev} personas eligieron cuidar su salud mental`}
       </div>
-      <div style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>
+      <div style={{fontSize:13,color:"#4a7a52",opacity:0.85}}>
         {sub==="Sesiones"?`${fmt(totReal)} sesiones realizadas · ${compRate}% de utilización del plan`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:""}
       </div>
     </div>}
@@ -552,9 +552,9 @@ export default function Dashboard(){
     })()}
 
     {/* ── COLECTIVO ── */}
-    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#a990c8,#c6b2da)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#f0eaf8,#f8f3fc)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(74,48,112,0.5)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#4a3070",letterSpacing:"-0.5px",marginBottom:4}}>
+      <div style={{fontSize:22,fontWeight:800,color:"#3d2060",letterSpacing:"-0.5px",marginBottom:4}}>
         {sub==="Contenido"?"Recursos para llevar el bienestar a cada rincón del equipo":`${c.workshops.length} talleres de bienestar realizados con tu equipo`}
       </div>
       <div style={{fontSize:13,color:"rgba(74,48,112,0.7)"}}>
@@ -628,12 +628,12 @@ export default function Dashboard(){
 
 
     {/* ── ESTRATÉGICO ── */}
-    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e8b84e,#fbd07f)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(120,90,10,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
+    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#fef6e0,#fffbf0)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+      <div style={{fontSize:10,fontWeight:700,color:"#c49820",opacity:0.7,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
       <div style={{fontSize:22,fontWeight:800,color:"#7a5a0a",letterSpacing:"-0.5px",marginBottom:4}}>
         {sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Inversión e impacto"?"Una inversión que se traduce en personas más sanas":"Herramientas para tomar mejores decisiones"}
       </div>
-      <div style={{fontSize:13,color:"rgba(120,90,10,0.7)"}}>
+      <div style={{fontSize:13,color:"#a07820"}}>
         {sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · encuestas Q pendientes`:sub==="Inversión e impacto"?`$ ${fmt(c.monthlyData.reduce((s,m)=>s+m.realizadas,0)*c.sessionPriceRef)} invertidos · ${c.monthlyData.filter(m=>!m.partial).reduce((s,m)=>s+(m.canjeadas>0?Math.round(m.realizadas/m.canjeadas*100):0),0)/Math.max(c.monthlyData.filter(m=>!m.partial).length,1)|0}% utilización`:`${c.reports.length} informes disponibles · ${c.recommendations.length} recomendaciones activas`}
       </div>
     </div>}
