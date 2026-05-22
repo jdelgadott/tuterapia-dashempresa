@@ -198,6 +198,9 @@ export default function Dashboard(){
   const [sub,setSub]=useState(null);
   const [npsVal,setNpsVal]=useState(null);
   const [showIII,setShowIII]=useState(false);
+  const [contentRatings,setContentRatings]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.rating])));
+  const [contentSent,setContentSent]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.sent])));
+  const [contentDownloaded,setContentDownloaded]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.downloaded])));
   const [editNps,setEditNps]=useState(false);
   const [npsInput,setNpsInput]=useState("");
   const [npsDate,setNpsDate]=useState(null);
@@ -475,9 +478,9 @@ export default function Dashboard(){
     </>}
 
     {mod==="colectivo"&&sub==="Contenido"&&(()=>{
-      const [ratings,setRatings]=useState(()=>Object.fromEntries(c.content.map((item,i)=>[i,item.rating])));
-      const [sent,setSent]=useState(()=>Object.fromEntries(c.content.map((item,i)=>[i,item.sent])));
-      const [downloaded,setDownloaded]=useState(()=>Object.fromEntries(c.content.map((item,i)=>[i,item.downloaded])));
+      const ratings=contentRatings; const setRatings=setContentRatings;
+      const sent=contentSent; const setSent=setContentSent;
+      const downloaded=contentDownloaded; const setDownloaded=setContentDownloaded;
       const ratingLabel={5:"Muy adecuado",4:"Adecuado",3:"Neutral",2:"Poco adecuado",1:"No adecuado"};
       return <>
         <Section title="Recursos y material">
