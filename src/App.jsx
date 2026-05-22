@@ -1,5 +1,3 @@
-App.jsx — pegar en VS Code desde la línea 1
-
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine } from "recharts";
 
@@ -198,6 +196,7 @@ export default function Dashboard(){
   const [mod,setMod]=useState("home");
   const [sub,setSub]=useState(null);
   const [npsVal,setNpsVal]=useState(null);
+  const [showIII,setShowIII]=useState(false);
   const [editNps,setEditNps]=useState(false);
   const [npsInput,setNpsInput]=useState("");
   const [npsDate,setNpsDate]=useState(null);
@@ -690,7 +689,7 @@ export default function Dashboard(){
             const normalizedImprovement=avgImprovement!=null?Math.max(0,Math.min(100,Math.round((avgImprovement/9)*100))):null;
             const utilizationScore=Math.round(compRate*0.4);
             const impactScore=normalizedImprovement!=null?Math.round(normalizedImprovement*0.6+utilizationScore):null;
-            const [showTip,setShowTip]=useState(false);
+            const showTip=showIII; const setShowTip=setShowIII;
             return <div style={{position:"relative"}}>
               <div
                 onMouseEnter={()=>setShowTip(true)}
