@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 const P = {
   primary:"#1A5C4A", light:"#267A62", lighter:"#EAF4F0", bg:"#EDF5F1",
-  accent:"#C47B2E", accentBg:"#FBF3E8",
+  accent:"#2a6aaa", accentBg:"#e8f2fc",
   border:"#DDE8E4", text:"#18211E", textMuted:"#607870", white:"#FFFFFF",
   green:"#267A62", greenLight:"#A8D4C6", gray50:"#F0F4F2",
   red:"#B03030", redBg:"#FAEAEA",
@@ -142,7 +142,7 @@ const MODULES=[
 const WSHOP_COLORS={Activación:P.primary,"Concientización":"#1A3A8B",Mindfulness:"#5040A0",Liderazgo:P.accent,"8M":"#8B1A3A"};
 const TYPE_COLORS={Campaña:{bg:"#FFF0E6",tx:"#7A3800"},Guía:{bg:P.lighter,tx:P.primary},Protocolo:{bg:"#EEF4FF",tx:"#1A3A8B"},Reporte:{bg:P.gray50,tx:P.textMuted}};
 const URGENCY={alta:{bg:P.redBg,tx:P.red,label:"Urgente"},media:{bg:P.accentBg,tx:P.accent,label:"Media prioridad"},baja:{bg:P.lighter,tx:P.primary,label:"A considerar"}};
-const COUPON_COLORS=["#1A5C4A","#267A62","#4AA888","#C47B2E","#D9A060"];
+const COUPON_COLORS=["#1A5C4A","#267A62","#4AA888","#2a6aaa","#D9A060"];
 
 function Avatar({initials,size=36,bg=P.primary}){
   return <div style={{width:size,height:size,borderRadius:"50%",background:bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -171,7 +171,7 @@ function Section({title,children,note,warnNote,action}){
     </div>}
     {children}
     {note&&<div style={{marginTop:12,padding:"10px 13px",background:P.lighter,borderRadius:8,fontSize:11,color:P.primary,lineHeight:1.6}}>{note}</div>}
-    {warnNote&&<div style={{marginTop:12,padding:"10px 13px",background:P.accentBg,borderRadius:8,fontSize:11,color:"#7A4A10",lineHeight:1.6}}>{warnNote}</div>}
+    {warnNote&&<div style={{marginTop:12,padding:"10px 13px",background:P.accentBg,borderRadius:8,fontSize:11,color:"#1a4a7a",lineHeight:1.6}}>{warnNote}</div>}
   </div>;
 }
 const Tip=({active,payload,label})=>{
@@ -771,7 +771,7 @@ export default function Dashboard(){
               {key:"saludMental",label:"Bienestar y salud mental",desc:"Bienestar emocional, estrés y equilibrio vida-trabajo",color:"#1A5C4A"},
               {key:"clima",label:"Clima y comunicación",desc:"Ambiente de equipo y resolución de conflictos",color:"#267A62"},
               {key:"liderazgo",label:"Liderazgo efectivo",desc:"Liderazgo empático y promoción del bienestar",color:"#5040A0"},
-              {key:"engagement",label:"Engagement y compromiso",desc:"Motivación, propósito e intención de permanencia",color:"#C47B2E"},
+              {key:"engagement",label:"Engagement y compromiso",desc:"Motivación, propósito e intención de permanencia",color:"#2a6aaa"},
               {key:"asistencia",label:"Ausentismo percibido",desc:"Energía, presencia real y afectación a la asistencia",color:"#8B4A8B"},
               {key:"productividad",label:"Productividad sostenible",desc:"Concentración, carga manejable y desconexión efectiva",color:"#B03030"},
             ].map((dim,i)=>{
@@ -908,7 +908,7 @@ export default function Dashboard(){
         {sub==="Facturación"?"Tu plan activo, todo en orden":sub==="Plan activo"?"El acuerdo que hace posible el bienestar de tu equipo":"Las personas detrás del beneficio, siempre disponibles"}
       </div>
       <div style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>
-        {sub==="Facturación"?`Renovación ${c.plan.renewal} · ${c.billing.filter(b=>b.status==="pagado").length} períodos pagados`:sub==="Plan activo"?`${c.plan.type} · ${c.plan.sessionsMonth} sesiones por mes`:`Nacho · Flor · Isma`}
+        {sub==="Facturación"?`Renovación ${c.plan.renewal} · ${c.billing.filter(b=>b.status==="pagado").length} períodos pagados`:sub==="Plan activo"?`${c.plan.type} · ${c.plan.sessionsMonth} sesiones por mes`:"Nuestro equipo está disponible para vos"}
       </div>
     </div>}
     {mod==="gestion"&&sub==="Facturación"&&<>
@@ -960,7 +960,7 @@ export default function Dashboard(){
           <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
             <a href={`mailto:${p.email}`} style={{display:"flex",alignItems:"center",gap:5,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:7,border:`1px solid ${P.border}`}}>✉ Mail</a>
             {p.whatsapp&&<a href={`https://wa.me/${p.whatsapp}?text=Hola%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:5,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:7,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>}
-            {p.calendar&&<a href={p.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:5,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:7,border:"1px solid #C5D5F5"}}>📅 Reunión</a>}
+
           </div>
         </div>)}
       </div>
