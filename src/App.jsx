@@ -70,13 +70,14 @@ const COMPANIES = {
       {event:"Liderazgo para equipos",date:"Feb 2026",type:"Taller",newPatients:11,note:"Repunte de nuevos pacientes tras el taller de liderazgo, el mayor desde Oct 2025."},
     ],
     surveys:[
-      {title:"Encuesta trimestral de impacto Tu Terapia",desc:"22 preguntas · 6 dimensiones · ~10 min · para todos los colaboradores",downloadable:true,isMain:true},
-      {title:"Pulso rápido de bienestar",desc:"5 preguntas clave · ~3 min · para seguimiento mensual",downloadable:true,isMain:false},
+      {title:"Encuesta de bienestar general",desc:"Para aplicar al equipo completo · 10 preguntas · 5 min",downloadable:true},
+      {title:"Pulso de clima organizacional",desc:"Medición rápida del ambiente laboral · 7 preguntas · 3 min",downloadable:true},
+      {title:"Evaluación de liderazgo y bienestar",desc:"Para mandos medios y líderes · 15 preguntas · 8 min",downloadable:true},
     ],
     content:[
-      {title:"Kit de activación del beneficio Tu Terapia",type:"Campaña",date:"Ago 2025",downloaded:true, rating:5,sent:true},
-      {title:"Material 8M — Salud mental y perspectiva de género",type:"Campaña",date:"Mar 2026",downloaded:true, rating:4,sent:true},
-      {title:"Guía para líderes: cómo hablar de salud mental",type:"Guía",date:"Sep 2025",downloaded:true, rating:4,sent:false},
+      {title:"Kit de activación del beneficio Tu Terapia",type:"Campaña",date:"Ago 2025",downloaded:true,rating:5,sent:true},
+      {title:"Material 8M — Salud mental y perspectiva de género",type:"Campaña",date:"Mar 2026",downloaded:true,rating:4,sent:true},
+      {title:"Guía para líderes: cómo hablar de salud mental",type:"Guía",date:"Sep 2025",downloaded:true,rating:4,sent:false},
       {title:"Protocolo de acompañamiento en crisis",type:"Protocolo",date:"Nov 2025",downloaded:false,rating:null,sent:false},
       {title:"Protocolo de derivación a psicología",type:"Protocolo",date:"Ene 2026",downloaded:false,rating:null,sent:false},
     ],
@@ -130,7 +131,7 @@ const TT_TEAM=[
 const MODULES=[
   {id:"individual", label:"Pilar Individual",  subs:["Sesiones","Adherencia"]},
   {id:"colectivo",  label:"Pilar Colectivo",   subs:["Talleres","Contenido"]},
-  {id:"estrategico",label:"Pilar Estratégico", subs:["Bienestar","Inversión e impacto"]},
+  {id:"estrategico",label:"Pilar Estratégico", subs:["Bienestar del equipo","Inversión e impacto","Recursos y reportes"]},
   {id:"gestion",    label:"Gestión",            subs:["Facturación","Plan activo","Equipo TT"],restricted:true},
 ];
 
@@ -376,62 +377,52 @@ export default function Dashboard(){
           </BarChart>
         </ResponsiveContainer></div>
       </Section>
+
     </>}
 
     {mod==="individual"&&sub==="Adherencia"&&(()=>{
       const fullSessions=fullM.reduce((s,m)=>s+m.realizadas,0);
       const avgPerUser=totNuev>0?Math.round((fullSessions/totNuev)*10)/10:0;
       const avgPerMonth=fullM.length>0?Math.round((fullSessions/fullM.length)*10)/10:0;
-      const firstTimePct=c.firstTimePct||null;
-      const firstTimeCount=firstTimePct&&totNuev?Math.round(totNuev*firstTimePct/100):c.firstTimeCount||null;
       return <>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
           <KpiCard label="Pacientes únicos" value={totNuev} accent/>
           <KpiCard label="Promedio de sesiones por usuario" value={avgPerUser} sub="Histórico acumulado"/>
           <KpiCard label="Promedio sesiones por mes" value={avgPerMonth} sub="Meses completos"/>
-          <KpiCard label="Primera vez en terapia" value={firstTimeCount!=null?firstTimeCount:"—"} sub={firstTimePct!=null?`${firstTimePct}% del total`:"Pendiente"}/>
+          <KpiCard label="Primera vez en terapia" value={c.firstTimeCount!=null?c.firstTimeCount:"—"} sub={c.firstTimePct!=null?`${c.firstTimePct}% del total`:"Pendiente"}/>
         </div>
-
         <Section title="Primera vez en terapia">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>
-            Colaboradores que accedieron a terapia psicológica por primera vez a través del beneficio de TCS.
-          </div>
-          {firstTimeCount!=null?<>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Colaboradores que accedieron a terapia psicológica por primera vez a través del beneficio de TCS.</div>
+          {c.firstTimeCount!=null?
             <div style={{display:"flex",gap:20,alignItems:"center",flexWrap:"wrap"}}>
               <div style={{textAlign:"center",padding:"20px 28px",background:P.lighter,borderRadius:14,border:`1px solid ${P.primary+"44"}`}}>
-                <div style={{fontSize:42,fontWeight:700,color:P.primary,lineHeight:1,letterSpacing:"-2px"}}>{firstTimeCount}</div>
+                <div style={{fontSize:42,fontWeight:700,color:P.primary,lineHeight:1,letterSpacing:"-2px"}}>{c.firstTimeCount}</div>
                 <div style={{fontSize:12,color:P.primary,marginTop:4,fontWeight:500}}>personas</div>
               </div>
               <div style={{flex:1,minWidth:180}}>
-                <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:6}}>{firstTimePct}% del total de pacientes activos</div>
-                <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>
-                  Estos colaboradores nunca habían accedido a psicología antes de este beneficio. Es uno de los indicadores de mayor impacto social del programa.
-                </div>
+                <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:6}}>{c.firstTimePct}% del total de pacientes activos</div>
+                <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>Estos colaboradores nunca habían accedido a psicología antes de este beneficio.</div>
               </div>
             </div>
-          </>:<div style={{padding:"20px",background:P.gray50,borderRadius:10,textAlign:"center"}}>
+          :<div style={{padding:"20px",background:P.gray50,borderRadius:10,textAlign:"center"}}>
             <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Dato pendiente</div>
-            <div style={{fontSize:12,color:P.textMuted}}>Se cargará desde el panel admin al tener el relevamiento de TCS.</div>
+            <div style={{fontSize:12,color:P.textMuted}}>Se cargará desde el panel admin.</div>
           </div>}
         </Section>
-
         <Section title="Promedio de sesiones por usuario">
-          <div style={{display:"flex",flexDirection:"column",gap:14}}>
-            <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
-              <div style={{flex:1,padding:"18px",background:P.lighter,borderRadius:12,border:`1px solid ${P.primary+"44"}`,textAlign:"center"}}>
-                <div style={{fontSize:32,fontWeight:700,color:P.primary,letterSpacing:"-1px"}}>{avgPerUser}</div>
-                <div style={{fontSize:12,color:P.primary,fontWeight:500,marginTop:4}}>sesiones por usuario</div>
-                <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>promedio histórico acumulado</div>
-              </div>
-              <div style={{flex:1,padding:"18px",background:P.white,borderRadius:12,border:`1px solid ${P.border}`,textAlign:"center"}}>
-                <div style={{fontSize:32,fontWeight:700,color:P.text,letterSpacing:"-1px"}}>{avgPerMonth}</div>
-                <div style={{fontSize:12,color:P.textMuted,fontWeight:500,marginTop:4}}>sesiones realizadas por mes</div>
-                <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>promedio en meses completos</div>
-              </div>
+          <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
+            <div style={{flex:1,padding:"18px",background:P.lighter,borderRadius:12,border:`1px solid ${P.primary+"44"}`,textAlign:"center"}}>
+              <div style={{fontSize:32,fontWeight:700,color:P.primary,letterSpacing:"-1px"}}>{avgPerUser}</div>
+              <div style={{fontSize:12,color:P.primary,fontWeight:500,marginTop:4}}>sesiones por usuario</div>
+              <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>promedio histórico acumulado</div>
+            </div>
+            <div style={{flex:1,padding:"18px",background:P.white,borderRadius:12,border:`1px solid ${P.border}`,textAlign:"center"}}>
+              <div style={{fontSize:32,fontWeight:700,color:P.text,letterSpacing:"-1px"}}>{avgPerMonth}</div>
+              <div style={{fontSize:12,color:P.textMuted,fontWeight:500,marginTop:4}}>sesiones realizadas por mes</div>
+              <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>promedio en meses completos</div>
             </div>
           </div>
         </Section>
-
         <Section title="Nuevos pacientes por mes">
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={c.monthlyData} barSize={13}>
@@ -484,39 +475,26 @@ export default function Dashboard(){
       const ratingLabel={5:"Muy adecuado",4:"Adecuado",3:"Neutral",2:"Poco adecuado",1:"No adecuado"};
       return <>
         <Section title="Recursos y material">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>
-            Descargá el material, evalualo con una puntuación y marcalo como enviado cuando lo compartas con tu equipo.
-          </div>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Descargá el material, evalualo y marcalo como enviado cuando lo compartas con tu equipo.</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             {c.content.map((item,i)=>{
               const col=TYPE_COLORS[item.type]||{bg:P.lighter,tx:P.primary};
               return <div key={i} style={{padding:"14px 16px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:12,flexWrap:"wrap"}}>
-                  <div style={{background:col.bg,color:col.tx,fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,flexShrink:0,whiteSpace:"nowrap"}}>{item.type}</div>
+                  <div style={{background:col.bg,color:col.tx,fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,flexShrink:0}}>{item.type}</div>
                   <div style={{flex:1,minWidth:160}}>
                     <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:2}}>{item.title}</div>
                     <div style={{fontSize:11,color:P.textMuted}}>{item.date}</div>
                   </div>
                   <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0,flexWrap:"wrap"}}>
-                    <button onClick={()=>setDownloaded(d=>({...d,[i]:true}))}
-                      style={{background:downloaded[i]?P.lighter:P.white,color:downloaded[i]?P.primary:P.textMuted,border:`1px solid ${downloaded[i]?P.primary+"44":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>
-                      {downloaded[i]?"✓ Descargado":"Descargar"}
-                    </button>
-                    <button onClick={()=>setSent(s=>({...s,[i]:!s[i]}))}
-                      style={{background:sent[i]?"#E8F5E9":P.white,color:sent[i]?"#2E7D32":P.textMuted,border:`1px solid ${sent[i]?"#2E7D3244":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>
-                      {sent[i]?"✓ Enviado":"Marcar enviado"}
-                    </button>
+                    <button onClick={()=>setDownloaded(d=>({...d,[i]:true}))} style={{background:downloaded[i]?P.lighter:P.white,color:downloaded[i]?P.primary:P.textMuted,border:`1px solid ${downloaded[i]?P.primary+"44":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>{downloaded[i]?"✓ Descargado":"Descargar"}</button>
+                    <button onClick={()=>setSent(s=>({...s,[i]:!s[i]}))} style={{background:sent[i]?"#E8F5E9":P.white,color:sent[i]?"#2E7D32":P.textMuted,border:`1px solid ${sent[i]?"#2E7D3244":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>{sent[i]?"✓ Enviado":"Marcar enviado"}</button>
                   </div>
                 </div>
                 <div style={{marginTop:12,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                   <span style={{fontSize:11,color:P.textMuted}}>Tu evaluación:</span>
-                  <div style={{display:"flex",gap:3}}>
-                    {[1,2,3,4,5].map(star=><button key={star} onClick={()=>setRatings(r=>({...r,[i]:star}))}
-                      style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:ratings[i]>=star?P.accent:"#DDE8E4",padding:"0 1px",lineHeight:1}}>★</button>)}
-                  </div>
-                  <span style={{fontSize:11,color:ratings[i]?P.textMuted:"#C0C8C4",fontStyle:ratings[i]?"normal":"italic"}}>
-                    {ratings[i]?ratingLabel[ratings[i]]:"Sin evaluar aún"}
-                  </span>
+                  <div style={{display:"flex",gap:3}}>{[1,2,3,4,5].map(star=><button key={star} onClick={()=>setRatings(r=>({...r,[i]:star}))} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:ratings[i]>=star?P.accent:"#DDE8E4",padding:"0 1px",lineHeight:1}}>★</button>)}</div>
+                  <span style={{fontSize:11,color:ratings[i]?P.textMuted:"#C0C8C4",fontStyle:ratings[i]?"normal":"italic"}}>{ratings[i]?ratingLabel[ratings[i]]:"Sin evaluar aún"}</span>
                 </div>
               </div>;
             })}
@@ -525,8 +503,9 @@ export default function Dashboard(){
       </>;
     })()}
 
-    {/* ── ESTRATÉGICO - Bienestar ── */}
-    {mod==="estrategico"&&sub==="Bienestar"&&<>
+
+    {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
+    {mod==="estrategico"&&sub==="Bienestar del equipo"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginBottom:18}}>
         <div style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4}}>
           {editNps?<>
@@ -547,7 +526,7 @@ export default function Dashboard(){
       </div>
 
       <Section title="Evolución del bienestar por trimestre">
-        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Encuesta trimestral intraplataforma · escala 1–10. Los datos aparecerán al completarse cada período.</div>
+        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Encuesta trimestral intraplataforma · escala 1–10.</div>
         <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
           {c.wellbeingByQ.map((q,i)=><div key={i} style={{flex:1,minWidth:110,padding:"16px",background:q.score!=null?P.lighter:P.gray50,border:`1px solid ${q.score!=null?P.primary+"44":P.border}`,borderRadius:10,textAlign:"center"}}>
             <div style={{fontSize:10,fontWeight:600,color:P.textMuted,marginBottom:8,letterSpacing:"0.04em",textTransform:"uppercase"}}>{q.q}</div>
@@ -557,11 +536,159 @@ export default function Dashboard(){
         </div>
       </Section>
 
-      <Section title="Encuestas para tu equipo" note={`Descargá la encuesta, aplicala a tu equipo y envianos los resultados a ${c.accountManager.email} para que los procesemos y mostremos en este panel.`}>
+      {c.consultationReasons.length===0?
+        <Section title="Motivos de consulta">
+          <div style={{padding:"20px",textAlign:"center",color:P.textMuted,fontSize:12}}>Disponibles al integrar los datos del módulo de encuestas.</div>
+        </Section>
+      :<Section title="Motivos de consulta más frecuentes" note="Datos anonimizados y agrupados por categoría.">
+        <div style={{display:"flex",gap:20,flexWrap:"wrap",alignItems:"flex-start"}}>
+          <div style={{position:"relative",width:140,height:140,flexShrink:0}}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart><Pie data={c.consultationReasons} dataKey="pct" innerRadius={38} outerRadius={62} paddingAngle={2}>
+                {c.consultationReasons.map((_,i)=><Cell key={i} fill={REASON_COLORS[i]}/>)}
+              </Pie></PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}>
+            {c.consultationReasons.map((r,i)=><div key={r.reason} style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{width:8,height:8,borderRadius:2,background:REASON_COLORS[i],flexShrink:0}}/>
+              <div style={{flex:1,background:P.gray50,borderRadius:4,height:16,overflow:"hidden",position:"relative"}}>
+                <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${r.pct}%`,background:REASON_COLORS[i],borderRadius:4,opacity:0.85}}/>
+                <span style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",fontSize:9,color:P.white,fontWeight:600,zIndex:1}}>{r.reason}</span>
+              </div>
+              <span style={{fontSize:11,fontWeight:700,color:P.text,width:34,textAlign:"right"}}>{r.pct}%</span>
+            </div>)}
+          </div>
+        </div>
+      </Section>}
+    </>}
+
+    {/* ── ESTRATÉGICO - Inversión e impacto ── */}
+    {mod==="estrategico"&&sub==="Inversión e impacto"&&(()=>{
+      const dimKeys2=["saludMental","clima","liderazgo","engagement","asistencia","productividad"];
+      const firstQ2=c.roiByQ.find(q=>dimKeys2.some(k=>q[k]!==null));
+      const lastQ2=[...c.roiByQ].reverse().find(q=>dimKeys2.some(k=>q[k]!==null));
+      const hasData2=firstQ2&&lastQ2&&firstQ2!==lastQ2;
+      const avgImp2=hasData2?dimKeys2.map(k=>lastQ2[k]!=null&&firstQ2[k]!=null?lastQ2[k]-firstQ2[k]:null).filter(v=>v!==null).reduce((a,b,_,arr)=>a+b/arr.length,0):null;
+      const normImp2=avgImp2!=null?Math.max(0,Math.min(100,Math.round((avgImp2/9)*100))):null;
+      const utilScore2=Math.round(compRate*0.3);
+      const workshopTarget=c.workshopTarget||5;
+      const workshopScore=Math.min(100,Math.round((c.workshops.length/workshopTarget)*100));
+      const workshopPts=Math.round(workshopScore*0.15);
+      const contentEngagement=c.content.length>0?Math.round((c.content.filter(x=>x.downloaded&&x.rating).length/c.content.length)*100):0;
+      const contentPts=Math.round(contentEngagement*0.05);
+      const iii=normImp2!=null?Math.round(normImp2*0.5+utilScore2+workshopPts+contentPts):null;
+      const invTotal2=c.monthlyData.reduce((s,m)=>s+m.realizadas,0)*c.sessionPriceRef;
+      const invTrend2=c.monthlyData.map(m=>({month:m.month,investment:Math.round(m.realizadas*c.sessionPriceRef),partial:m.partial}));
+      const totNuev2=c.monthlyData.reduce((s,m)=>s+m.nuevos,0);
+      const fullM2=c.monthlyData.filter(m=>!m.partial);
+      const fullReal2=fullM2.reduce((s,m)=>s+m.realizadas,0);
+      const fullCanj2=fullM2.reduce((s,m)=>s+m.canjeadas,0);
+      const compRate2=fullCanj2>0?Math.round(fullReal2/fullCanj2*100):0;
+      const lastFull2=fullM2[fullM2.length-1];
+      const invPerPat2=totNuev2>0?invTotal2/totNuev2:0;
+      return <>
+        {/* III KPI card */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
+          <div onMouseEnter={()=>setShowIII(true)} onMouseLeave={()=>setShowIII(false)}
+            style={{position:"relative",background:iii!=null?P.lighter:P.gray50,border:`1px solid ${iii!=null?P.primary+"44":P.border}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,cursor:"default"}}>
+            <div style={{fontSize:21,fontWeight:700,color:iii!=null?P.primary:P.textMuted,lineHeight:1.1,letterSpacing:"-0.5px"}}>{iii!=null?iii:"—"}<span style={{fontSize:12,fontWeight:400,color:P.textMuted}}> /100</span></div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>Índice III</div>
+            <div style={{fontSize:11,color:P.textMuted}}>{iii!=null?(iii>=70?"Impacto alto":iii>=50?"Impacto medio":"En desarrollo"):"Pendiente Q1"}</div>
+            <div style={{fontSize:10,color:P.primary,marginTop:2}}>Hover para ver composición</div>
+            {showIII&&<div style={{position:"absolute",top:"calc(100% + 8px)",left:0,width:290,background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"14px 16px",boxShadow:"0 4px 20px rgba(0,0,0,0.10)",zIndex:20}}>
+              <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Composición del índice</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {[
+                  ["50%","Mejora en bienestar (encuestas)",normImp2!=null?`${Math.round(normImp2*0.5)}pts`:"—","Evolución Q inicial → Q actual en 6 dimensiones."],
+                  ["30%","Utilización del plan individual",`${utilScore2}pts`,`Sesiones realizadas sobre contratadas (${compRate2}% actual).`],
+                  ["15%","Actividad colectiva — talleres",`${workshopPts}pts`,`${c.workshops.length} de ${workshopTarget} talleres anuales realizados.`],
+                  ["5%","Engagement con contenido",`${contentPts}pts`,"Piezas descargadas y evaluadas por RRHH."],
+                ].map(([pct,label,pts,desc])=><div key={pct} style={{paddingBottom:8,borderBottom:`1px solid ${P.border}`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                    <span style={{fontSize:12,fontWeight:600,color:P.text}}><b>{pct}</b> {label}</span>
+                    <span style={{fontSize:12,fontWeight:700,color:P.primary,flexShrink:0,marginLeft:8}}>{pts}</span>
+                  </div>
+                  <div style={{fontSize:11,color:P.textMuted,lineHeight:1.5}}>{desc}</div>
+                </div>)}
+              </div>
+              <div style={{marginTop:8,fontSize:10,color:P.textMuted,background:P.gray50,borderRadius:6,padding:"6px 10px"}}>
+                III = (bienestar×50%) + (utilización×30%) + (talleres×15%) + (contenido×5%)
+              </div>
+            </div>}
+          </div>
+          <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal2)}`} sub="UYU · precio de referencia" accent/>
+          <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat2)}`} sub={`${totNuev2} pacientes únicos`}/>
+          <KpiCard label="Utilización del plan" value={`${compRate2}%`} sub="Realizadas / contratadas"/>
+          <KpiCard label="Último mes completo" value={`$ ${fmt(lastFull2?lastFull2.realizadas*c.sessionPriceRef:0)}`} sub={lastFull2?.month}/>
+        </div>
+
+        <Section title="6 dimensiones del impacto">
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Medidas trimestralmente por encuesta. Escala 1–10.</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {[
+              {key:"saludMental",label:"Bienestar y salud mental",desc:"Bienestar emocional, estrés y equilibrio vida-trabajo",color:"#1A5C4A"},
+              {key:"clima",label:"Clima y comunicación",desc:"Ambiente de equipo y resolución de conflictos",color:"#267A62"},
+              {key:"liderazgo",label:"Liderazgo efectivo",desc:"Liderazgo empático y promoción del bienestar",color:"#5040A0"},
+              {key:"engagement",label:"Engagement y compromiso",desc:"Motivación, propósito e intención de permanencia",color:"#C47B2E"},
+              {key:"asistencia",label:"Ausentismo percibido",desc:"Energía, presencia real y afectación a la asistencia",color:"#8B4A8B"},
+              {key:"productividad",label:"Productividad sostenible",desc:"Concentración, carga manejable y desconexión efectiva",color:"#B03030"},
+            ].map((dim,i)=>{
+              const scores=c.roiByQ.map(q=>q[dim.key]).filter(v=>v!==null);
+              const latest=scores.length>0?scores[scores.length-1]:null;
+              const first=scores.length>0?scores[0]:null;
+              const trend=scores.length>1?latest-first:null;
+              return <div key={i} style={{padding:"12px 14px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                <div style={{width:4,height:36,borderRadius:2,background:dim.color,flexShrink:0}}/>
+                <div style={{flex:1,minWidth:140}}>
+                  <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:1}}>{dim.label}</div>
+                  <div style={{fontSize:11,color:P.textMuted}}>{dim.desc}</div>
+                </div>
+                <div style={{display:"flex",gap:14,alignItems:"center",flexShrink:0}}>
+                  {latest!=null?<>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:18,fontWeight:700,color:dim.color}}>{latest}</div>
+                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>último Q</div>
+                    </div>
+                    {trend!=null&&<div style={{textAlign:"center"}}>
+                      <div style={{fontSize:14,fontWeight:700,color:trend>0?"#22C55E":trend<0?P.red:P.textMuted}}>{trend>0?"+":""}{trend}</div>
+                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>evolución</div>
+                    </div>}
+                  </>:<span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente Q1</span>}
+                </div>
+              </div>;
+            })}
+          </div>
+        </Section>
+
+        <Section title="Inversión mensual (UYU)" warnNote="Cálculo de referencia a UY$ 1.600 por sesión.">
+          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={invTrend2} barSize={13}>
+              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
+              <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
+              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
+              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend2.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
+            </BarChart>
+          </ResponsiveContainer></div>
+        </Section>
+
+        <Section title="Benchmark vs. red Tu Terapia" note="Disponible en la próxima fase — comparación con ~40 empresas aliadas.">
+          <div style={{padding:"20px",textAlign:"center",color:P.textMuted}}>
+            <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Próximamente</div>
+            <div style={{fontSize:12}}>Compará el índice de impacto de TCS con el promedio de la red.</div>
+          </div>
+        </Section>
+      </>;
+    })()}
+
+    {/* ── ESTRATÉGICO - Recursos y reportes ── */}
+    {mod==="estrategico"&&sub==="Recursos y reportes"&&<>
+      <Section title="Encuestas para tu equipo" note={`Descargá la encuesta, aplicala a tu equipo y envianos los resultados a ${COMPANIES.tcs.accountManager.email} para que los procesemos y mostremos en este panel.`}>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {c.surveys.map((s,i)=><div key={i} style={{background:s.isMain?P.lighter:P.white,border:`1px solid ${s.isMain?P.primary+"44":P.border}`,borderRadius:10,overflow:"hidden"}}>
+          {COMPANIES.tcs.surveys.map((s,i)=><div key={i} style={{background:s.isMain?P.lighter:P.white,border:`1px solid ${s.isMain?P.primary+"44":P.border}`,borderRadius:10,overflow:"hidden"}}>
             <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px"}}>
-              {s.isMain&&<div style={{width:4,height:"100%",minHeight:40,borderRadius:2,background:P.primary,flexShrink:0}}/>}
+              {s.isMain&&<div style={{width:4,minHeight:40,borderRadius:2,background:P.primary,flexShrink:0}}/>}
               <div style={{flex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
                   <div style={{fontSize:13,fontWeight:600,color:P.text}}>{s.title}</div>
@@ -571,8 +698,7 @@ export default function Dashboard(){
               </div>
               <button style={{background:s.isMain?P.primary:P.lighter,color:s.isMain?P.white:P.primary,border:`1px solid ${s.isMain?P.primary:P.border}`,borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0}}>Descargar</button>
             </div>
-            {s.isMain&&<div style={{borderTop:`1px solid ${P.border}`,padding:"12px 16px",background:"rgba(255,255,255,0.6)"}}>
-              <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>6 dimensiones medidas</div>
+            {s.isMain&&<div style={{borderTop:`1px solid ${P.border}`,padding:"10px 16px",background:"rgba(255,255,255,0.6)"}}>
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {["Bienestar y salud mental","Clima y comunicación","Liderazgo efectivo","Engagement y compromiso","Ausentismo percibido","Productividad sostenible"].map(d=>
                   <span key={d} style={{fontSize:10,background:P.white,border:`1px solid ${P.border}`,borderRadius:20,padding:"3px 10px",color:P.textMuted}}>{d}</span>
@@ -585,7 +711,7 @@ export default function Dashboard(){
 
       <Section title="Informes de uso">
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {c.reports.map((r,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
+          {COMPANIES.tcs.reports.map((r,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
             <div style={{flex:1}}>
               <div style={{fontSize:12,fontWeight:600,color:P.text}}>{r.title}</div>
               <div style={{fontSize:11,color:P.textMuted}}>{r.date}</div>
@@ -601,12 +727,12 @@ export default function Dashboard(){
       <Section title="Recomendaciones de Tu Terapia">
         <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Hallazgos sobre la salud mental y bienestar del equipo, elaborados por nuestros profesionales.</div>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          {c.recommendations.map((r,i)=>{
+          {COMPANIES.tcs.recommendations.map((r,i)=>{
             const u=URGENCY[r.urgency];
             return <div key={i} style={{padding:"16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,borderLeft:`3px solid ${u.tx}`}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
                 <Label text={u.label} bg={u.bg} tx={u.tx}/>
-                <span style={{fontSize:10,color:P.textMuted,letterSpacing:"0.02em"}}>{r.date}</span>
+                <span style={{fontSize:10,color:P.textMuted}}>{r.date}</span>
               </div>
               <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:5,letterSpacing:"-0.1px"}}>{r.action}</div>
               <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>{r.reason}</div>
@@ -615,9 +741,9 @@ export default function Dashboard(){
         </div>
       </Section>
 
-      <Section title="Impacto de acciones colectivas en el uso individual" note="Correlación entre talleres y activaciones realizadas y la incorporación de nuevos pacientes al plan individual.">
+      <Section title="Impacto de acciones colectivas en el uso individual" note="Correlación entre talleres/activaciones y la incorporación de nuevos pacientes.">
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {c.collectiveImpact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
+          {COMPANIES.tcs.collectiveImpact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
             <div style={{flexShrink:0,textAlign:"center",minWidth:44}}>
               <div style={{fontSize:18,fontWeight:700,color:P.primary,letterSpacing:"-0.5px"}}>+{item.newPatients}</div>
               <div style={{fontSize:9,color:P.textMuted,letterSpacing:"0.02em",textTransform:"uppercase"}}>nuevos</div>
@@ -634,215 +760,6 @@ export default function Dashboard(){
         </div>
       </Section>
     </>}
-
-    {/* ── ESTRATÉGICO - Inversión ── */}
-    {mod==="estrategico"&&sub==="Inversión e impacto"&&(()=>{
-      const ROI_DIMS=[
-        {key:"saludMental",  label:"Bienestar y salud mental",   desc:"Bienestar emocional, estrés y equilibrio vida-trabajo",       color:"#1A5C4A"},
-        {key:"clima",        label:"Clima y comunicación",        desc:"Ambiente de equipo, comunicación y resolución de conflictos", color:"#267A62"},
-        {key:"liderazgo",    label:"Liderazgo efectivo",          desc:"Liderazgo empático, apoyo y promoción del bienestar",         color:"#5040A0"},
-        {key:"engagement",   label:"Engagement y compromiso",     desc:"Motivación, propósito e intención de permanencia",            color:"#C47B2E"},
-        {key:"asistencia",   label:"Ausentismo percibido",        desc:"Energía, presencia real y afectación a la asistencia",       color:"#8B4A8B"},
-        {key:"productividad",label:"Productividad sostenible",    desc:"Concentración, carga manejable y desconexión efectiva",       color:"#B03030"},
-      ];
-      const hasROIData=c.roiByQ.some(q=>q.clima!==null);
-      const roiScore=(q)=>{
-        const dims=[q.clima,q.saludMental,q.retencion,q.asistencia,q.productividad].filter(v=>v!==null);
-        return dims.length>0?Math.round(dims.reduce((a,b)=>a+b,0)/dims.length*10)/10:null;
-      };
-      return <>
-        {(()=>{
-          const dimKeys2=["saludMental","clima","liderazgo","engagement","asistencia","productividad"];
-          const firstQ2=c.roiByQ.find(q=>dimKeys2.some(k=>q[k]!==null));
-          const lastQ2=[...c.roiByQ].reverse().find(q=>dimKeys2.some(k=>q[k]!==null));
-          const hasData2=firstQ2&&lastQ2&&firstQ2!==lastQ2;
-          const avgImp2=hasData2?dimKeys2.map(k=>lastQ2[k]!=null&&firstQ2[k]!=null?lastQ2[k]-firstQ2[k]:null).filter(v=>v!==null).reduce((a,b,_,arr)=>a+b/arr.length,0):null;
-          const normImp2=avgImp2!=null?Math.max(0,Math.min(100,Math.round((avgImp2/9)*100))):null;
-          // Component 2: utilization 30%
-          const utilScore2=Math.round(compRate*0.3);
-          // Component 3: workshops 15% — talleres realizados vs target anual (5)
-          const workshopTarget=c.workshopTarget||5;
-          const workshopScore=Math.min(100,Math.round((c.workshops.length/workshopTarget)*100));
-          const workshopPts=Math.round(workshopScore*0.15);
-          // Component 4: content engagement 5% — avg of (downloaded + rated) / total
-          const contentEngagement=c.content.length>0?Math.round((c.content.filter(x=>x.downloaded&&x.rating).length/c.content.length)*100):0;
-          const contentPts=Math.round(contentEngagement*0.05);
-          const iii=normImp2!=null?Math.round(normImp2*0.5+utilScore2+workshopPts+contentPts):null;
-          return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
-            <div
-              onMouseEnter={()=>setShowIII(true)}
-              onMouseLeave={()=>setShowIII(false)}
-              style={{position:"relative",background:iii!=null?"#EAF4F0":"#F0F4F2",border:`1px solid ${iii!=null?"#1A5C4A44":"#DDE8E4"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,cursor:"default"}}
-            >
-              <div style={{fontSize:21,fontWeight:700,color:iii!=null?"#1A5C4A":"#607870",lineHeight:1.1,letterSpacing:"-0.5px"}}>{iii!=null?iii:"—"}<span style={{fontSize:12,fontWeight:400,color:"#607870"}}> /100</span></div>
-              <div style={{fontSize:12,fontWeight:600,color:"#18211E"}}>Índice III</div>
-              <div style={{fontSize:11,color:"#607870"}}>{iii!=null?(iii>=70?"Impacto alto":iii>=50?"Impacto medio":"En desarrollo"):"Pendiente Q1"}</div>
-              <div style={{fontSize:10,color:"#1A5C4A",marginTop:2}}>Hover para ver composición</div>
-              {showIII&&<div style={{position:"absolute",top:"calc(100% + 8px)",left:0,width:280,background:"#FFFFFF",border:"1px solid #DDE8E4",borderRadius:12,padding:"14px 16px",boxShadow:"0 4px 20px rgba(0,0,0,0.10)",zIndex:20}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#607870",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Composición del índice</div>
-                <div style={{fontSize:12,color:"#18211E",marginBottom:4}}><b>50%</b> Mejora en 6 dimensiones de bienestar <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{normImp2!=null?`${Math.round(normImp2*0.5)}pts`:"—"}</span></div>
-                <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>Promedio de evolución Q inicial → Q actual en bienestar, clima, liderazgo, engagement, ausentismo y productividad.</div>
-                <div style={{fontSize:12,color:"#18211E",marginBottom:4}}><b>30%</b> Utilización del plan individual <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{utilScore2}pts</span></div>
-                <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>Sesiones realizadas sobre total contratado ({compRate}% actual).</div>
-                <div style={{fontSize:12,color:"#18211E",marginBottom:4}}><b>15%</b> Actividad colectiva — talleres <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{workshopPts}pts</span></div>
-                <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>{c.workshops.length} de {workshopTarget} talleres anuales realizados.</div>
-                <div style={{fontSize:12,color:"#18211E",marginBottom:4}}><b>5%</b> Engagement con contenido <span style={{float:"right",fontWeight:700,color:"#1A5C4A"}}>{contentPts}pts</span></div>
-                <div style={{fontSize:11,color:"#607870",marginBottom:10,lineHeight:1.5}}>Piezas descargadas y evaluadas por RRHH sobre el total disponible.</div>
-                <div style={{fontSize:10,color:"#607870",background:"#F0F4F2",borderRadius:6,padding:"6px 10px"}}>III = (bienestar × 50%) + (utilización × 30%) + (talleres × 15%) + (contenido × 5%)</div>
-              </div>}
-            </div>
-            <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal)}`} sub="UYU · precio de referencia" accent/>
-            <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat)}`} sub={`${totNuev} pacientes únicos`}/>
-            <KpiCard label="Utilización del plan" value={`${compRate}%`} sub="Realizadas / contratadas"/>
-            <KpiCard label="Último mes completo" value={`$ ${fmt(invLastFull)}`} sub={lastFull?.month}/>
-          </div>;
-        })()}
-
-        <Section title="Inversión mensual (UYU)" warnNote="Cálculo de referencia a UY$ 1.600 por sesión. El valor real depende del precio contratado.">
-          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={invTrend} barSize={13}>
-              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-              <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
-              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
-            </BarChart>
-          </ResponsiveContainer></div>
-        </Section>
-
-        <Section title="Índice de impacto por trimestre">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>
-            Calculado a partir de las encuestas trimestrales en 5 dimensiones clave. Escala 1–10.
-            El índice permite correlacionar la inversión con mejoras concretas en el equipo.
-          </div>
-          {!hasROIData?<div style={{padding:"20px",background:P.gray50,borderRadius:10,textAlign:"center"}}>
-            <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Disponible al completar la primera encuesta trimestral</div>
-            <div style={{fontSize:12,color:P.textMuted}}>Los resultados aparecerán automáticamente al procesar los datos del Q.</div>
-          </div>:
-          <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            {c.roiByQ.map((q,i)=>{
-              const score=roiScore(q);
-              return <div key={i} style={{flex:1,minWidth:130,padding:"16px",background:score!=null?P.lighter:P.gray50,border:`1px solid ${score!=null?P.primary+"44":P.border}`,borderRadius:10,textAlign:"center"}}>
-                <div style={{fontSize:10,fontWeight:600,color:P.textMuted,marginBottom:8,letterSpacing:"0.04em",textTransform:"uppercase"}}>{q.q}</div>
-                {score!=null?<><div style={{fontSize:26,fontWeight:700,color:P.primary,letterSpacing:"-1px"}}>{score}</div><div style={{fontSize:10,color:P.textMuted}}>/10</div></>
-                :<div style={{fontSize:12,color:P.textMuted,padding:"6px 0"}}>Pendiente</div>}
-              </div>;
-            })}
-          </div>}
-        </Section>
-
-        <Section title="Dimensiones del impacto">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>
-            Cada dimensión se mide trimestralmente mediante encuesta. La inversión en salud mental impacta directamente en estas áreas.
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {ROI_DIMS.map((dim,i)=>{
-              const scores=c.roiByQ.map(q=>q[dim.key]).filter(v=>v!==null);
-              const latest=scores.length>0?scores[scores.length-1]:null;
-              const first=scores.length>0?scores[0]:null;
-              const trend=scores.length>1?latest-first:null;
-              return <div key={i} style={{padding:"14px 16px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
-                <div style={{width:4,height:40,borderRadius:2,background:dim.color,flexShrink:0}}/>
-                <div style={{flex:1,minWidth:160}}>
-                  <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:2}}>{dim.label}</div>
-                  <div style={{fontSize:11,color:P.textMuted}}>{dim.desc}</div>
-                </div>
-                <div style={{display:"flex",gap:16,alignItems:"center",flexShrink:0}}>
-                  {latest!=null?<>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontSize:20,fontWeight:700,color:dim.color,letterSpacing:"-0.5px"}}>{latest}</div>
-                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>último Q</div>
-                    </div>
-                    {trend!=null&&<div style={{textAlign:"center"}}>
-                      <div style={{fontSize:14,fontWeight:700,color:trend>0?"#22C55E":trend<0?P.red:P.textMuted}}>{trend>0?"+":""}{trend}</div>
-                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>evolución</div>
-                    </div>}
-                  </>:<div style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente Q1</div>}
-                </div>
-              </div>;
-            })}
-          </div>
-          <div style={{marginTop:12,padding:"10px 14px",background:P.lighter,borderRadius:8,fontSize:11,color:P.primary,lineHeight:1.6}}>
-            Los datos se completan al procesar las encuestas trimestrales. Una vez disponibles, el índice de ROI mostrará la correlación entre inversión y mejora en cada dimensión.
-          </div>
-        </Section>
-
-        <Section title="Índice de Impacto de Inversión (III)">
-          {(()=>{
-            const firstQ=c.roiByQ.find(q=>Object.values(q).filter(v=>v!==null&&typeof v==="number").length>0);
-            const lastQ=[...c.roiByQ].reverse().find(q=>Object.values(q).filter(v=>v!==null&&typeof v==="number").length>0);
-            const hasData=firstQ&&lastQ&&firstQ!==lastQ;
-            const dimKeys=["saludMental","clima","liderazgo","engagement","asistencia","productividad"];
-            const avgImprovement=hasData?
-              dimKeys.map(k=>lastQ[k]!=null&&firstQ[k]!=null?lastQ[k]-firstQ[k]:null).filter(v=>v!==null).reduce((a,b,_,arr)=>a+b/arr.length,0):null;
-            const normalizedImprovement=avgImprovement!=null?Math.max(0,Math.min(100,Math.round((avgImprovement/9)*100))):null;
-            const utilizationScore=Math.round(compRate*0.4);
-            const impactScore=normalizedImprovement!=null?Math.round(normalizedImprovement*0.6+utilizationScore):null;
-            const showTip=showIII; const setShowTip=setShowIII;
-            return <div style={{position:"relative"}}>
-              <div
-                onMouseEnter={()=>setShowTip(true)}
-                onMouseLeave={()=>setShowTip(false)}
-                style={{display:"flex",alignItems:"center",gap:24,padding:"24px",background:impactScore!=null?P.lighter:P.gray50,borderRadius:12,border:`1px solid ${impactScore!=null?P.primary+"44":P.border}`,cursor:"default",flexWrap:"wrap"}}
-              >
-                <div style={{textAlign:"center",minWidth:100}}>
-                  <div style={{fontSize:52,fontWeight:700,color:impactScore!=null?P.primary:P.textMuted,lineHeight:1,letterSpacing:"-2px"}}>
-                    {impactScore!=null?impactScore:"—"}
-                  </div>
-                  <div style={{fontSize:11,color:P.textMuted,marginTop:4}}>de 100</div>
-                </div>
-                <div style={{flex:1,minWidth:200}}>
-                  {impactScore!=null?<>
-                    <div style={{fontSize:14,fontWeight:700,color:P.text,marginBottom:6}}>
-                      {impactScore>=70?"Impacto alto":impactScore>=50?"Impacto medio":"Impacto en desarrollo"}
-                    </div>
-                    <div style={{fontSize:12,color:P.textMuted,lineHeight:1.6}}>
-                      La inversión de TCS está generando mejoras medibles en el bienestar y funcionamiento del equipo.
-                    </div>
-                  </>:<>
-                    <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Disponible al completar Q1</div>
-                    <div style={{fontSize:12,color:P.textMuted,lineHeight:1.6}}>
-                      El índice se calcula al tener resultados de al menos dos trimestres de encuesta.
-                    </div>
-                  </>}
-                  <div style={{marginTop:10,fontSize:11,color:P.primary,fontWeight:500}}>Pasá el cursor para ver cómo se compone →</div>
-                </div>
-              </div>
-              {showTip&&<div style={{position:"absolute",top:"calc(100% + 8px)",left:0,right:0,background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"16px 20px",boxShadow:"0 4px 20px rgba(0,0,0,0.10)",zIndex:10}}>
-                <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:12}}>Composición del índice</div>
-                <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16,paddingBottom:10,borderBottom:`1px solid ${P.border}`}}>
-                    <div>
-                      <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:2}}>60% — Mejora en dimensiones de bienestar</div>
-                      <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>Promedio de mejora (Q inicial → Q actual) en las 6 dimensiones medidas por encuesta: bienestar, clima, liderazgo, engagement, ausentismo y productividad.</div>
-                    </div>
-                    <div style={{fontSize:18,fontWeight:700,color:P.primary,flexShrink:0}}>{normalizedImprovement!=null?`${Math.round(normalizedImprovement*0.6)}pts`:"—"}</div>
-                  </div>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16}}>
-                    <div>
-                      <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:2}}>40% — Utilización del plan</div>
-                      <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>Porcentaje de sesiones realizadas sobre el total contratado. Refleja qué tan bien se aprovecha la inversión mensual ({compRate}% de utilización actual).</div>
-                    </div>
-                    <div style={{fontSize:18,fontWeight:700,color:P.primary,flexShrink:0}}>{utilizationScore}pts</div>
-                  </div>
-                </div>
-                <div style={{marginTop:12,padding:"8px 12px",background:P.gray50,borderRadius:8,fontSize:10,color:P.textMuted}}>
-                  Fórmula: III = (mejora promedio dimensiones × 0.6) + (tasa utilización × 0.4)
-                </div>
-              </div>}
-            </div>;
-          })()}
-        </Section>
-
-        <Section title="Benchmark vs. red Tu Terapia" note="Disponible en la próxima fase — comparación con ~40 empresas aliadas.">
-          <div style={{padding:"20px",textAlign:"center",color:P.textMuted}}>
-            <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Próximamente</div>
-            <div style={{fontSize:12}}>Compará el índice de impacto de TCS con el promedio de la red.</div>
-          </div>
-        </Section>
-      </>;
-    })()}
-
     {/* ── GESTIÓN ── */}
     {mod==="gestion"&&sub==="Facturación"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
