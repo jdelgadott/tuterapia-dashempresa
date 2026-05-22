@@ -7,7 +7,7 @@ const P = {
   border:"#DDE8E4", text:"#18211E", textMuted:"#607870", white:"#FFFFFF",
   green:"#267A62", greenLight:"#A8D4C6", gray50:"#F0F4F2",
   red:"#B03030", redBg:"#FAEAEA",
-  purple:"#5040A0", purpleBg:"#EEEAF8",
+  purple:"#c6b2da", purpleBg:"#F5F0FA",
 };
 const fmt = (n) => new Intl.NumberFormat("es-UY").format(Math.round(n));
 
@@ -391,9 +391,9 @@ export default function Dashboard(){
       {/* Pillar cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,marginBottom:20}}>
         {[
-          {id:"individual", label:"Colaboradores",           color:P.primary, accent:P.lighter},
-          {id:"colectivo",  label:"Cultura de Bienestar",    color:P.purple,  accent:"#F0EBFF"},
-          {id:"estrategico",label:"Estrategia de Bienestar", color:P.accent,  accent:P.accentBg},
+          {id:"individual", label:"Colaboradores",           color:"#4a9356", accent:"#f0f8f1"},
+          {id:"colectivo",  label:"Cultura de Bienestar",    color:"#9070b8", accent:"#F5F0FA"},
+          {id:"estrategico",label:"Estrategia de Bienestar", color:"#c49020", accent:"#fef8e8"},
           {id:"gestion",    label:"Gestión",                 color:P.textMuted, accent:P.gray50, restricted:true},
         ].map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
           background:P.white,
@@ -450,13 +450,13 @@ export default function Dashboard(){
     </>}
 
     {/* ── INDIVIDUAL ── */}
-    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#1A5C4A,#267A62)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Colaboradores</div>
+    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#4a9356,#76b782)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.75)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Colaboradores</div>
       <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
-        {totNuev} personas eligieron cuidar su salud mental
+        {sub==="Adherencia"?"Más personas eligieron cuidar su salud este mes":`${totNuev} personas eligieron cuidar su salud mental`}
       </div>
-      <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
-        {fmt(totReal)} sesiones realizadas · {compRate}% de utilización del plan
+      <div style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>
+        {sub==="Sesiones"?`${fmt(totReal)} sesiones realizadas · ${compRate}% de utilización del plan`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:""}
       </div>
     </div>}
     {mod==="individual"&&sub==="Sesiones"&&<>
@@ -552,13 +552,13 @@ export default function Dashboard(){
     })()}
 
     {/* ── COLECTIVO ── */}
-    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#5040A0,#7060C0)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
-        {c.workshops.length} talleres de bienestar realizados con TCS
+    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#a990c8,#c6b2da)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(74,48,112,0.5)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#4a3070",letterSpacing:"-0.5px",marginBottom:4}}>
+        {sub==="Contenido"?"Recursos para llevar el bienestar a cada rincón del equipo":`${c.workshops.length} talleres de bienestar realizados con tu equipo`}
       </div>
-      <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
-        {sub==="Talleres"?`${c.workshops.length} talleres de bienestar realizados con tu equipo`:"Recursos para llevar el bienestar a cada rincón del equipo"}
+      <div style={{fontSize:13,color:"rgba(74,48,112,0.7)"}}>
+        {sub==="Talleres"?`${c.workshops.filter(w=>w.rating>=4.5).length} de ${c.workshops.length} talleres con puntuación destacada`:`${c.content.filter(x=>x.downloaded).length} recursos descargados · ${c.content.filter(x=>x.sent).length} enviados al equipo`}
       </div>
     </div>}
     {mod==="colectivo"&&sub==="Talleres"&&<>
@@ -628,13 +628,13 @@ export default function Dashboard(){
 
 
     {/* ── ESTRATÉGICO ── */}
-    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#C47B2E,#D4873C)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
-        Tu inversión en bienestar está generando impacto
-      </div>
-      <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
+    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e8b84e,#fbd07f)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(120,90,10,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#7a5a0a",letterSpacing:"-0.5px",marginBottom:4}}>
         {sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Inversión e impacto"?"Una inversión que se traduce en personas más sanas":"Herramientas para tomar mejores decisiones"}
+      </div>
+      <div style={{fontSize:13,color:"rgba(120,90,10,0.7)"}}>
+        {sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · encuestas Q pendientes`:sub==="Inversión e impacto"?`$ ${fmt(c.monthlyData.reduce((s,m)=>s+m.realizadas,0)*c.sessionPriceRef)} invertidos · ${c.monthlyData.filter(m=>!m.partial).reduce((s,m)=>s+(m.canjeadas>0?Math.round(m.realizadas/m.canjeadas*100):0),0)/Math.max(c.monthlyData.filter(m=>!m.partial).length,1)|0}% utilización`:`${c.reports.length} informes disponibles · ${c.recommendations.length} recomendaciones activas`}
       </div>
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
@@ -897,10 +897,10 @@ export default function Dashboard(){
     {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#607870,#8B9E98)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Gestión</div>
       <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
-        Plan activo · renovación {c.plan.renewal}
-      </div>
-      <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
         {sub==="Facturación"?"Tu plan activo, todo en orden":sub==="Plan activo"?"El acuerdo que hace posible el bienestar de tu equipo":"Las personas detrás del beneficio, siempre disponibles"}
+      </div>
+      <div style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>
+        {sub==="Facturación"?`Renovación ${c.plan.renewal} · ${c.billing.filter(b=>b.status==="pagado").length} períodos pagados`:sub==="Plan activo"?`${c.plan.type} · ${c.plan.sessionsMonth} sesiones por mes`:`Nacho · Flor · Isma`}
       </div>
     </div>}
     {mod==="gestion"&&sub==="Facturación"&&<>
