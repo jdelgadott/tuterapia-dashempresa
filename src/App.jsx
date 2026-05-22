@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine } from "recharts";
 
 const P = {
-  primary:"#1A5C4A", light:"#267A62", lighter:"#EAF4F0", bg:"#F5F7F6",
+  primary:"#1A5C4A", light:"#267A62", lighter:"#EAF4F0", bg:"#EDF5F1",
   accent:"#C47B2E", accentBg:"#FBF3E8",
   border:"#DDE8E4", text:"#18211E", textMuted:"#607870", white:"#FFFFFF",
   green:"#267A62", greenLight:"#A8D4C6", gray50:"#F0F4F2",
@@ -289,26 +289,103 @@ export default function Dashboard(){
           TCS · {months} meses juntos
         </div>
         <div style={{fontSize:36,fontWeight:800,color:P.text,lineHeight:1.15,letterSpacing:"-1.5px",marginBottom:16}}>
-          Tu equipo se está<br/>sintiendo mejor
+          Tu equipo se está sintiendo mejor
         </div>
-        <div style={{fontSize:15,color:P.textMuted,lineHeight:1.7,maxWidth:480,margin:"0 auto"}}>
-          {fmt(totReal)} sesiones de terapia completadas. {totNuev} personas eligieron cuidar su salud mental a través del beneficio.
+        <div style={{fontSize:15,color:P.primary+"CC",lineHeight:1.7,maxWidth:480,margin:"0 auto"}}>
+          {sub==="Sesiones"?"Cada sesión es un paso hacia el bienestar de tu equipo.":"Más personas eligieron cuidar su salud este mes."}
         </div>
       </div>
 
       {/* KPIs protagonistas */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:1,background:P.border,borderRadius:16,overflow:"hidden",marginBottom:20,border:`1px solid ${P.border}`}}>
-        {[
-          {n:fmt(totReal),  label:"sesiones realizadas",    sub:"desde el inicio"},
-          {n:totNuev,       label:"personas acompañadas",   sub:"pacientes únicos"},
-          {n:`${compRate}%`,label:"de utilización",         sub:"del plan mensual"},
-          {n:c.workshops.length, label:"talleres realizados", sub:"con el equipo"},
-        ].map((s,i)=><div key={i} style={{background:P.white,padding:"28px 20px",textAlign:"center"}}>
-          <div style={{fontSize:38,fontWeight:800,color:P.primary,letterSpacing:"-2px",lineHeight:1}}>{s.n}</div>
-          <div style={{fontSize:13,fontWeight:600,color:P.text,marginTop:6}}>{s.label}</div>
-          <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>{s.sub}</div>
-        </div>)}
-      </div>
+      {(()=>{
+        // Mini sparkline data — sessions trend last 6 months
+        const lastSix=c.monthlyData.slice(-6);
+        const maxSes=Math.max(...lastSix.map(m=>m.realizadas),1);
+        const sparkW=80, sparkH=32;
+        const pts=lastSix.map((m,i)=>{
+          const x=Math.round(i*(sparkW/(lastSix.length-1)));
+          const y=Math.round(sparkH-(m.realizadas/maxSes)*sparkH);
+          return `${x},${y}`;
+        }).join(' ');
+
+        const lastSixNew=c.monthlyData.slice(-6);
+        const maxNew=Math.max(...lastSixNew.map(m=>m.nuevos),1);
+        const ptsNew=lastSixNew.map((m,i)=>{
+          const x=Math.round(i*(sparkW/(lastSixNew.length-1)));
+          const y=Math.round(sparkH-(m.nuevos/maxNew)*sparkH);
+          return `${x},${y}`;
+        }).join(' ');
+
+        // Progress ring helper
+        const Ring=({pct,color,size=56,stroke=5})=>{
+          const r=((size-stroke*2)/2);
+          const circ=2*Math.PI*r;
+          const dash=circ*(pct/100);
+          return <svg width={size} height={size} style={{transform:"rotate(-90deg)"}}>
+            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#E8EEE8" strokeWidth={stroke}/>
+            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+              strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"/>
+          </svg>;
+        };
+
+        return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:1,background:P.border,borderRadius:16,overflow:"hidden",marginBottom:20,border:`1px solid ${P.border}`}}>
+          {/* Sesiones — sparkline */}
+          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+            <svg width={sparkW} height={sparkH+4} style={{overflow:"visible"}}>
+              <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.primary} stopOpacity="0.15"/><stop offset="100%" stopColor={P.primary} stopOpacity="0"/></linearGradient></defs>
+              <polygon points={`0,${sparkH} ${pts} ${sparkW},${sparkH}`} fill="url(#g1)"/>
+              <polyline points={pts} fill="none" stroke={P.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              {lastSix.map((m,i)=>{
+                const x=Math.round(i*(sparkW/(lastSix.length-1)));
+                const y=Math.round(sparkH-(m.realizadas/maxSes)*sparkH);
+                return i===lastSix.length-1?<circle key={i} cx={x} cy={y} r="3" fill={P.primary}/>:null;
+              })}
+            </svg>
+            <div style={{fontSize:32,fontWeight:800,color:P.primary,letterSpacing:"-1px",lineHeight:1}}>{fmt(totReal)}</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>sesiones realizadas</div>
+            <div style={{fontSize:10,color:P.textMuted}}>desde el inicio</div>
+          </div>
+
+          {/* Personas — sparkline */}
+          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+            <svg width={sparkW} height={sparkH+4} style={{overflow:"visible"}}>
+              <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.light} stopOpacity="0.15"/><stop offset="100%" stopColor={P.light} stopOpacity="0"/></linearGradient></defs>
+              <polygon points={`0,${sparkH} ${ptsNew} ${sparkW},${sparkH}`} fill="url(#g2)"/>
+              <polyline points={ptsNew} fill="none" stroke={P.light} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              {lastSixNew.map((m,i)=>{
+                const x=Math.round(i*(sparkW/(lastSixNew.length-1)));
+                const y=Math.round(sparkH-(m.nuevos/maxNew)*sparkH);
+                return i===lastSixNew.length-1?<circle key={i} cx={x} cy={y} r="3" fill={P.light}/>:null;
+              })}
+            </svg>
+            <div style={{fontSize:32,fontWeight:800,color:P.light,letterSpacing:"-1px",lineHeight:1}}>{totNuev}</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>personas acompañadas</div>
+            <div style={{fontSize:10,color:P.textMuted}}>pacientes únicos</div>
+          </div>
+
+          {/* Utilización — ring */}
+          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+            <div style={{position:"relative",width:60,height:60}}>
+              <Ring pct={compRate} color={P.accent} size={60} stroke={5}/>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:12,fontWeight:700,color:P.accent}}>{compRate}%</div>
+            </div>
+            <div style={{fontSize:32,fontWeight:800,color:P.accent,letterSpacing:"-1px",lineHeight:1}}>{compRate}%</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>de utilización</div>
+            <div style={{fontSize:10,color:P.textMuted}}>del plan mensual</div>
+          </div>
+
+          {/* Talleres — ring */}
+          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+            <div style={{position:"relative",width:60,height:60}}>
+              <Ring pct={Math.min(100,Math.round((c.workshops.length/(c.workshopTarget||5))*100))} color={P.purple} size={60} stroke={5}/>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:12,fontWeight:700,color:P.purple}}>{c.workshops.length}/{c.workshopTarget||5}</div>
+            </div>
+            <div style={{fontSize:32,fontWeight:800,color:P.purple,letterSpacing:"-1px",lineHeight:1}}>{c.workshops.length}</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>talleres realizados</div>
+            <div style={{fontSize:10,color:P.textMuted}}>de {c.workshopTarget||5} anuales</div>
+          </div>
+        </div>;
+      })()}
 
       {/* Pillar cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,marginBottom:20}}>
@@ -354,27 +431,20 @@ export default function Dashboard(){
       </div>
 
       {/* Referente */}
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"22px 28px",display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
-        <img src={FLOR_PHOTO} alt="Florencia Iroldi" style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:`2px solid ${P.lighter}`}}/>
-        <div style={{flex:1,minWidth:160}}>
-          <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Tu referente en Tu Terapia</div>
-          <div style={{fontSize:15,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{c.accountManager.name}</div>
-          <div style={{fontSize:12,color:P.textMuted,marginBottom:12}}>{c.accountManager.role}</div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            <a href={`mailto:${c.accountManager.email}`}
-              style={{display:"flex",alignItems:"center",gap:6,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:`1px solid ${P.border}`}}>
-              ✉ Mail
-            </a>
-            <a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%20Florencia%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`}
-              target="_blank" rel="noopener noreferrer"
-              style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #C8E6C9"}}>
-              💬 WhatsApp
-            </a>
-            <a href={c.accountManager.calendar}
-              target="_blank" rel="noopener noreferrer"
-              style={{display:"flex",alignItems:"center",gap:6,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #C5D5F5"}}>
-              📅 Agendar reunión
-            </a>
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"22px 28px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
+          <div style={{flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <img src={FLOR_PHOTO} alt="Florencia Iroldi" style={{width:60,height:60,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",border:`2px solid ${P.lighter}`,display:"block"}}/>
+          </div>
+          <div style={{flex:1,minWidth:160}}>
+            <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Tu referente en Tu Terapia</div>
+            <div style={{fontSize:15,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{c.accountManager.name}</div>
+            <div style={{fontSize:12,color:P.textMuted,marginBottom:14}}>{c.accountManager.role}</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              <a href={`mailto:${c.accountManager.email}`} style={{display:"flex",alignItems:"center",gap:6,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:`1px solid ${P.border}`}}>✉ Mail</a>
+              <a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%20Florencia%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>
+              <a href={c.accountManager.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #C5D5F5"}}>📅 Agendar reunión</a>
+            </div>
           </div>
         </div>
       </div>
@@ -489,7 +559,7 @@ export default function Dashboard(){
         {c.workshops.length} talleres de bienestar realizados con TCS
       </div>
       <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
-        {c.content.filter(x=>x.downloaded).length} recursos descargados · {c.content.filter(x=>x.sent).length} enviados al equipo
+        {sub==="Talleres"?`${c.workshops.length} talleres de bienestar realizados con tu equipo`:"Recursos para llevar el bienestar a cada rincón del equipo"}
       </div>
     </div>}
     {mod==="colectivo"&&sub==="Talleres"&&<>
@@ -565,7 +635,7 @@ export default function Dashboard(){
         Tu inversión en bienestar está generando impacto
       </div>
       <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
-        {npsVal!=null?`NPS ${npsVal} · `:""}Bienestar Q2 pendiente · {c.recommendations.length} recomendaciones activas
+        {sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Inversión e impacto"?"Una inversión que se traduce en personas más sanas":"Herramientas para tomar mejores decisiones"}
       </div>
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
@@ -831,7 +901,7 @@ export default function Dashboard(){
         Plan activo · renovación {c.plan.renewal}
       </div>
       <div style={{fontSize:13,color:"rgba(255,255,255,0.7)"}}>
-        {c.billing.filter(b=>b.status==="pagado").length} períodos pagados · {c.billing.filter(b=>b.status==="pendiente").length} pendiente
+        {sub==="Facturación"?"Tu plan activo, todo en orden":sub==="Plan activo"?"El acuerdo que hace posible el bienestar de tu equipo":"Las personas detrás del beneficio, siempre disponibles"}
       </div>
     </div>}
     {mod==="gestion"&&sub==="Facturación"&&<>
