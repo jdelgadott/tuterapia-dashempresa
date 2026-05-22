@@ -329,9 +329,9 @@ export default function Dashboard(){
           </svg>;
         };
 
-        return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:1,background:P.border,borderRadius:16,overflow:"hidden",marginBottom:20,border:`1px solid ${P.border}`}}>
+        return <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:P.border,borderRadius:16,overflow:"hidden",marginBottom:20,border:`1px solid ${P.border}`}}>
           {/* Sesiones — sparkline */}
-          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
             <svg width={sparkW} height={sparkH+4} style={{overflow:"visible"}}>
               <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.primary} stopOpacity="0.15"/><stop offset="100%" stopColor={P.primary} stopOpacity="0"/></linearGradient></defs>
               <polygon points={`0,${sparkH} ${pts} ${sparkW},${sparkH}`} fill="url(#g1)"/>
@@ -348,7 +348,7 @@ export default function Dashboard(){
           </div>
 
           {/* Personas — sparkline */}
-          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
             <svg width={sparkW} height={sparkH+4} style={{overflow:"visible"}}>
               <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.light} stopOpacity="0.15"/><stop offset="100%" stopColor={P.light} stopOpacity="0"/></linearGradient></defs>
               <polygon points={`0,${sparkH} ${ptsNew} ${sparkW},${sparkH}`} fill="url(#g2)"/>
@@ -364,19 +364,25 @@ export default function Dashboard(){
             <div style={{fontSize:10,color:P.textMuted}}>pacientes únicos</div>
           </div>
 
-          {/* Utilización — ring */}
-          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-            <div style={{position:"relative",width:60,height:60}}>
-              <Ring pct={compRate} color={P.accent} size={60} stroke={5}/>
-              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:12,fontWeight:700,color:P.accent}}>{compRate}%</div>
-            </div>
-            <div style={{fontSize:32,fontWeight:800,color:P.accent,letterSpacing:"-1px",lineHeight:1}}>{compRate}%</div>
-            <div style={{fontSize:12,fontWeight:600,color:P.text}}>de utilización</div>
-            <div style={{fontSize:10,color:P.textMuted}}>del plan mensual</div>
+          {/* Primera vez en terapia — ring */}
+          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
+            {(()=>{
+              const firstCount=c.firstTimeCount;
+              const firstPct=firstCount!=null&&totNuev>0?Math.round(firstCount/totNuev*100):null;
+              return <>
+                <div style={{position:"relative",width:60,height:60}}>
+                  <Ring pct={firstPct||0} color="#c6b2da" size={60} stroke={5}/>
+                  <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:11,fontWeight:700,color:"#9070b8"}}>{firstPct!=null?`${firstPct}%`:"—"}</div>
+                </div>
+                <div style={{fontSize:32,fontWeight:800,color:"#9070b8",letterSpacing:"-1px",lineHeight:1}}>{firstCount!=null?firstCount:"—"}</div>
+                <div style={{fontSize:12,fontWeight:600,color:P.text}}>primera vez en terapia</div>
+                <div style={{fontSize:10,color:P.textMuted}}>{firstPct!=null?`${firstPct}% del total`:"pendiente"}</div>
+              </>;
+            })()}
           </div>
 
           {/* Talleres — ring */}
-          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
             <div style={{position:"relative",width:60,height:60}}>
               <Ring pct={Math.min(100,Math.round((c.workshops.length/(c.workshopTarget||5))*100))} color={P.purple} size={60} stroke={5}/>
               <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:12,fontWeight:700,color:P.purple}}>{c.workshops.length}/{c.workshopTarget||5}</div>
