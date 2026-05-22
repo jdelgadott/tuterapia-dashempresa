@@ -20,6 +20,7 @@ function monthsDiff(startStr){
 }
 
 const FLOR_PHOTO = "data:image/png;base64,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";
+const NACHO_PHOTO = "data:image/jpeg;base64,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";
 
 const COMPANIES = {
   tcs:{
@@ -109,25 +110,25 @@ const COMPANIES = {
       {label:"Primer año de alianza",reached:false,date:"Jul 2026"},
     ],
     billing:[
-      {period:"Jul 2025",amount:1600,   status:"pagado",invoice:"TT-2025-071"},
-      {period:"Ago 2025",amount:371200, status:"pagado",invoice:"TT-2025-081"},
-      {period:"Sep 2025",amount:420800, status:"pagado",invoice:"TT-2025-091"},
-      {period:"Oct 2025",amount:481600, status:"pagado",invoice:"TT-2025-101"},
-      {period:"Nov 2025",amount:464000, status:"pagado",invoice:"TT-2025-111"},
-      {period:"Dic 2025",amount:438400, status:"pagado",invoice:"TT-2025-121"},
-      {period:"Ene 2026",amount:448000, status:"pagado",invoice:"TT-2026-011"},
-      {period:"Feb 2026",amount:491200, status:"pagado",invoice:"TT-2026-021"},
-      {period:"Mar 2026",amount:473600, status:"pagado",invoice:"TT-2026-031"},
-      {period:"Abr 2026",amount:416000, status:"pagado",invoice:"TT-2026-041"},
-      {period:"May 2026",amount:110400, status:"pendiente",invoice:"TT-2026-051"},
+      {period:"Jul 2025",amount:1600,   status:"pagado",  invoice:"TT-2025-071",fileUrl:null},
+      {period:"Ago 2025",amount:371200, status:"pagado",  invoice:"TT-2025-081",fileUrl:null},
+      {period:"Sep 2025",amount:420800, status:"pagado",  invoice:"TT-2025-091",fileUrl:null},
+      {period:"Oct 2025",amount:481600, status:"pagado",  invoice:"TT-2025-101",fileUrl:null},
+      {period:"Nov 2025",amount:464000, status:"pagado",  invoice:"TT-2025-111",fileUrl:null},
+      {period:"Dic 2025",amount:438400, status:"pagado",  invoice:"TT-2025-121",fileUrl:null},
+      {period:"Ene 2026",amount:448000, status:"pagado",  invoice:"TT-2026-011",fileUrl:null},
+      {period:"Feb 2026",amount:491200, status:"pagado",  invoice:"TT-2026-021",fileUrl:null},
+      {period:"Mar 2026",amount:473600, status:"pagado",  invoice:"TT-2026-031",fileUrl:null},
+      {period:"Abr 2026",amount:416000, status:"pagado",  invoice:"TT-2026-041",fileUrl:null},
+      {period:"May 2026",amount:110400, status:"pendiente",invoice:"TT-2026-051",fileUrl:null},
     ],
   },
 };
 
 const TT_TEAM=[
-  {name:"Juan Ignacio Delgado",role:"Desarrollo de Negocio",email:"jdelgado@tuterapia.com.uy",phone:"+598 99 123 456",whatsapp:null,calendar:null,initials:"JD",area:"Alianzas B2B"},
-  {name:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:"093399250",whatsapp:"59893399250",calendar:"https://calendar.google.com/calendar/r/eventnew?add=firoldi@tuterapia.com.uy&text=Reunión+con+Tu+Terapia&details=Reunión+de+seguimiento+del+beneficio+de+salud+mental",initials:"FI",area:"Gestión de cuentas",photo:true},
-  {name:"Ismael Rodríguez",role:"Prospección y Cuentas",email:"irodriguez@tuterapia.com.uy",phone:null,whatsapp:null,calendar:null,initials:"IR",area:"Gestión de cuentas"},
+  {name:"Nacho",role:"Desarrollo de Negocio",email:"jdelgado@tuterapia.com.uy",phone:"099495218",whatsapp:"598099495218",calendar:null,initials:"JD",area:"Alianzas B2B",photo:"nacho"},
+  {name:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:"093399250",whatsapp:"59893399250",calendar:"https://calendar.google.com/calendar/r/eventnew?add=firoldi@tuterapia.com.uy&text=Reunión+con+Tu+Terapia&details=Reunión+de+seguimiento+del+beneficio+de+salud+mental",initials:"FI",area:"Gestión de cuentas",photo:"flor"},
+  {name:"Isma",role:"Prospección y Cuentas",email:"imazilli@tuterapia.com.uy",phone:"091738836",whatsapp:"598091738836",calendar:null,initials:"IM",area:"Gestión de cuentas"},
 ];
 
 const MODULES=[
@@ -431,20 +432,18 @@ export default function Dashboard(){
       </div>
 
       {/* Referente */}
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"22px 28px"}}>
-        <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
-          <div style={{flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <img src={FLOR_PHOTO} alt="Florencia Iroldi" style={{width:60,height:60,borderRadius:"50%",objectFit:"cover",objectPosition:"center top",border:`2px solid ${P.lighter}`,display:"block"}}/>
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"24px 28px"}}>
+        <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:16,textAlign:"center"}}>Tu referente en Tu Terapia</div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
+          <img src={FLOR_PHOTO} alt="Flor" style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 10%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:16,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>Flor</div>
+            <div style={{fontSize:12,color:P.textMuted}}>{c.accountManager.role}</div>
           </div>
-          <div style={{flex:1,minWidth:160}}>
-            <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Tu referente en Tu Terapia</div>
-            <div style={{fontSize:15,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{c.accountManager.name}</div>
-            <div style={{fontSize:12,color:P.textMuted,marginBottom:14}}>{c.accountManager.role}</div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-              <a href={`mailto:${c.accountManager.email}`} style={{display:"flex",alignItems:"center",gap:6,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:`1px solid ${P.border}`}}>✉ Mail</a>
-              <a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%20Florencia%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>
-              <a href={c.accountManager.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 14px",borderRadius:8,border:"1px solid #C5D5F5"}}>📅 Agendar reunión</a>
-            </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center",marginTop:4}}>
+            <a href={`mailto:${c.accountManager.email}`} style={{display:"flex",alignItems:"center",gap:6,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:`1px solid ${P.border}`}}>✉ Mail</a>
+            <a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%20Flor%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>
+            <a href={c.accountManager.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C5D5F5"}}>📅 Agendar reunión</a>
           </div>
         </div>
       </div>
@@ -914,13 +913,19 @@ export default function Dashboard(){
         <div style={{overflowX:"auto"}}>
           <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
             <thead><tr style={{borderBottom:`1.5px solid ${P.border}`}}>
-              {["Período","Factura","Monto (UYU)","Estado"].map(h=><th key={h} style={{padding:"8px 12px",textAlign:"left",color:P.textMuted,fontWeight:600,fontSize:11,letterSpacing:"0.04em",textTransform:"uppercase"}}>{h}</th>)}
+              {["Período","Factura","Monto (UYU)","Estado",""].map(h=><th key={h} style={{padding:"8px 12px",textAlign:"left",color:P.textMuted,fontWeight:600,fontSize:11,letterSpacing:"0.04em",textTransform:"uppercase"}}>{h}</th>)}
             </tr></thead>
             <tbody>{[...c.billing].reverse().map((b,i)=><tr key={i} style={{borderBottom:`1px solid ${P.border}`,background:i%2===0?P.white:P.bg}}>
               <td style={{padding:"10px 12px",color:P.text,fontWeight:500}}>{b.period}</td>
               <td style={{padding:"10px 12px",color:P.textMuted,fontFamily:"monospace",fontSize:11}}>{b.invoice}</td>
               <td style={{padding:"10px 12px",color:P.text,fontWeight:600}}>$ {fmt(b.amount)}</td>
               <td style={{padding:"10px 12px"}}><Label text={b.status==="pagado"?"Pagado":"Pendiente"} bg={b.status==="pagado"?P.lighter:P.accentBg} tx={b.status==="pagado"?P.primary:P.accent}/></td>
+              <td style={{padding:"10px 12px"}}>
+                {b.fileUrl
+                  ?<a href={b.fileUrl} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:5,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"5px 12px",borderRadius:7,border:`1px solid ${P.border}`}}>⬇ Descargar</a>
+                  :<span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente</span>
+                }
+              </td>
             </tr>)}</tbody>
           </table>
         </div>
@@ -938,7 +943,7 @@ export default function Dashboard(){
       <div style={{fontSize:12,color:P.textMuted,marginBottom:16,lineHeight:1.6}}>Tu equipo de referencia en Tu Terapia para consultas administrativas, comerciales o de contenido.</div>
       <div style={{display:"flex",flexDirection:"column",gap:12}}>
         {TT_TEAM.map((p,i)=><div key={i} style={{background:P.white,borderRadius:12,border:`1px solid ${P.border}`,padding:"20px 24px",display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
-          {p.photo?<img src={FLOR_PHOTO} alt={p.name} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:`2px solid ${P.lighter}`}}/>:<Avatar initials={p.initials} size={48}/>}
+          {p.photo==="flor"?<img src={FLOR_PHOTO} alt={p.name} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",objectPosition:"center 10%",flexShrink:0,border:`2px solid ${P.lighter}`}}/>:p.photo==="nacho"?<img src={NACHO_PHOTO} alt={p.name} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",objectPosition:"center 20%",flexShrink:0,border:`2px solid ${P.lighter}`}}/>:<Avatar initials={p.initials} size={48}/>}
           <div style={{flex:1,minWidth:150}}>
             <div style={{fontSize:14,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{p.name}</div>
             <div style={{fontSize:12,color:P.textMuted,marginBottom:4}}>{p.role}</div>
