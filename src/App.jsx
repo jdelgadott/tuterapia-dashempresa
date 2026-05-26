@@ -261,6 +261,8 @@ export default function Dashboard(){
   const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
   const [expandedSurvey,setExpandedSurvey]=useState(null);
   const [expandedReport,setExpandedReport]=useState(null);
+  const [openSections,setOpenSections]=useState({encuestas:true,informes:false,recomendaciones:false,impacto:false});
+  const toggleSection=(key)=>setOpenSections(prev=>({...prev,[key]:!prev[key]}));
   const [solicitando,setSolicitando]=useState(false);
   const [contentRatings,setContentRatings]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.rating])));
   const [contentSent,setContentSent]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.sent])));
@@ -967,7 +969,13 @@ export default function Dashboard(){
 
     {/* ── ESTRATÉGICO - Recursos y reportes ── */}
     {mod==="estrategico"&&sub==="Recursos y reportes"&&<>
-      <Section title="Encuesta para tu equipo" note={`Descargá la encuesta, aplicala a tu equipo y envianos los resultados a ${COMPANIES.tcs.accountManager.email} para que los procesemos y mostremos en este panel.`}>
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:0,marginBottom:14,overflow:"hidden"}}>
+        <div onClick={()=>toggleSection("encuestas")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:"pointer",userSelect:"none"}}>
+          <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Encuesta para tu equipo</div>
+          <span style={{fontSize:14,color:P.textMuted,transform:openSections.encuestas?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+        </div>
+        {openSections.encuestas&&<div style={{padding:"0 20px 16px"}}>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>Descargá la encuesta, aplicala a tu equipo y envianos los resultados a {COMPANIES.tcs.accountManager.email} para que los procesemos y mostremos en este panel.</div>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {COMPANIES.tcs.surveys.map((s,i)=>{
             const isOpen = expandedSurvey===i;
@@ -995,9 +1003,15 @@ export default function Dashboard(){
             </div>;
           })}
         </div>
-      </Section>
+        </div>}
+      </div>
 
-      <Section title="Informes de uso">
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:0,marginBottom:14,overflow:"hidden"}}>
+        <div onClick={()=>toggleSection("informes")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:"pointer",userSelect:"none"}}>
+          <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Informes de uso</div>
+          <span style={{fontSize:14,color:P.textMuted,transform:openSections.informes?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+        </div>
+        {openSections.informes&&<div style={{padding:"0 20px 16px"}}>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {COMPANIES.tcs.reports.map((r,i)=>{
             const isOpen=expandedReport===i;
@@ -1019,9 +1033,15 @@ export default function Dashboard(){
             </div>;
           })}
         </div>
-      </Section>
+        </div>}
+      </div>
 
-      <Section title="Recomendaciones de Tu Terapia">
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:0,marginBottom:14,overflow:"hidden"}}>
+        <div onClick={()=>toggleSection("recomendaciones")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:"pointer",userSelect:"none"}}>
+          <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Recomendaciones de Tu Terapia</div>
+          <span style={{fontSize:14,color:P.textMuted,transform:openSections.recomendaciones?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+        </div>
+        {openSections.recomendaciones&&<div style={{padding:"0 20px 16px"}}>
         <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Hallazgos sobre la salud mental y bienestar del equipo, elaborados por nuestros profesionales.</div>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           {COMPANIES.tcs.recommendations.map((r,i)=>{
@@ -1036,9 +1056,16 @@ export default function Dashboard(){
             </div>;
           })}
         </div>
-      </Section>
+        </div>}
+      </div>
 
-      <Section title="Impacto de acciones colectivas en el uso individual" note="Correlación entre talleres/activaciones y la incorporación de nuevos pacientes.">
+      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:0,marginBottom:14,overflow:"hidden"}}>
+        <div onClick={()=>toggleSection("impacto")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:"pointer",userSelect:"none"}}>
+          <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Impacto de acciones colectivas en el uso individual</div>
+          <span style={{fontSize:14,color:P.textMuted,transform:openSections.impacto?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+        </div>
+        {openSections.impacto&&<div style={{padding:"0 20px 16px"}}>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>Correlación entre talleres/activaciones y la incorporación de nuevos pacientes.</div>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {COMPANIES.tcs.collectiveImpact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
             <div style={{flexShrink:0,textAlign:"center",minWidth:44}}>
@@ -1055,7 +1082,8 @@ export default function Dashboard(){
             </div>
           </div>)}
         </div>
-      </Section>
+        </div>}
+      </div>
     </>}
 
     {/* ── GESTIÓN ── */}
