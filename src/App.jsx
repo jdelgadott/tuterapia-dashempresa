@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "./supabase.js";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine } from "recharts";
 
 const P = {
@@ -197,7 +198,63 @@ function FunnelBar({label,value,pct,i}){
   </div>;
 }
 
+
+// ── LOGIN ──────────────────────────────────────────────────────────
+function LoginView({ onLogin }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleLogin() {
+    if(!email||!password){ setError("Completá email y contraseña."); return; }
+    setLoading(true); setError("");
+    const {data, error:authError} = await supabase.auth.signInWithPassword({ email, password });
+    if(authError){ setError("Email o contraseña incorrectos."); setLoading(false); return; }
+    const {data:userData} = await supabase.from("company_users").select("*, companies(*)").eq("email", email).eq("active", true).single();
+    if(!userData){ await supabase.auth.signOut(); setError("No tenés acceso al dashboard."); setLoading(false); return; }
+    const {data:permsData} = await supabase.from("user_permissions").select("*").eq("user_id", userData.id);
+    onLogin(userData, permsData||[]);
+    setLoading(false);
+  }
+
+  return (
+    <div style={{minHeight:"100vh",background:"#EDF5F1",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif"}}>
+      <div style={{background:"#FFFFFF",borderRadius:16,border:"1px solid #DDE8E4",padding:"40px",width:360,boxShadow:"0 4px 24px rgba(0,0,0,0.06)"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{width:48,height:48,borderRadius:12,background:"#1A5C4A",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
+            <span style={{color:"#fff",fontWeight:800,fontSize:16}}>TT</span>
+          </div>
+          <div style={{fontSize:20,fontWeight:700,color:"#18211E",marginBottom:4}}>Panel de bienestar</div>
+          <div style={{fontSize:13,color:"#607870"}}>Tu Terapia — acceso empresarial</div>
+        </div>
+        {error&&<div style={{padding:"10px 14px",background:"#FAEAEA",color:"#B03030",borderRadius:8,marginBottom:16,fontSize:12,fontWeight:500}}>{error}</div>}
+        <div style={{marginBottom:14}}>
+          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.06em"}}>Email</label>
+          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@empresa.com"
+            onKeyDown={e=>e.key==="Enter"&&handleLogin()}
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        <div style={{marginBottom:24}}>
+          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.06em"}}>Contraseña</label>
+          <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••"
+            onKeyDown={e=>e.key==="Enter"&&handleLogin()}
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        <button onClick={handleLogin} disabled={loading}
+          style={{width:"100%",padding:"11px",background:"#1A5C4A",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:600,cursor:loading?"not-allowed":"pointer",opacity:loading?0.7:1}}>
+          {loading?"Verificando...":"Ingresar"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard(){
+  // Auth states MUST be first — React rules of hooks
+  const [authUser, setAuthUser] = useState(null);
+  const [userPerms, setUserPerms] = useState([]);
+  const [authLoading, setAuthLoading] = useState(true);
   const [ck,setCk]=useState("tcs");
   const [mod,setMod]=useState("home");
   const [sub,setSub]=useState(null);
@@ -209,6 +266,28 @@ export default function Dashboard(){
   const [editNps,setEditNps]=useState(false);
   const [npsInput,setNpsInput]=useState("");
   const [npsDate,setNpsDate]=useState(null);
+
+  useEffect(()=>{
+    supabase.auth.getSession().then(async({data:{session}})=>{
+      if(session?.user){
+        const {data:ud} = await supabase.from("company_users").select("*, companies(*)").eq("email",session.user.email).eq("active",true).single();
+        if(ud){
+          const {data:pd} = await supabase.from("user_permissions").select("*").eq("user_id",ud.id);
+          setAuthUser(ud); setUserPerms(pd||[]);
+        } else { await supabase.auth.signOut(); }
+      }
+      setAuthLoading(false);
+    });
+  },[]);
+
+  const hasAccess = (moduleId) => {
+    if(userPerms.length===0) return false;
+    const perm = userPerms.find(p=>p.section===moduleId);
+    return perm ? perm.visible : false;
+  };
+
+  if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando...</div>;
+  if(!authUser) return <LoginView onLogin={(ud,pd)=>{ setAuthUser(ud); setUserPerms(pd); }}/>;
 
   const c=COMPANIES[ck];
   const months=monthsDiff(c.startDate);
@@ -270,9 +349,15 @@ export default function Dashboard(){
           {m.label}
         </button>)}
       </div>}
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E"}}/>
-        <span style={{fontSize:11,color:P.textMuted}}>{c.name} · {months} meses</span>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E"}}/>
+          <span style={{fontSize:11,color:P.textMuted}}>{c.name} · {months} meses</span>
+        </div>
+        <button onClick={async()=>{ await supabase.auth.signOut(); setAuthUser(null); setUserPerms([]); }}
+          style={{fontSize:11,color:P.textMuted,background:"none",border:`1px solid ${P.border}`,borderRadius:6,padding:"5px 10px",cursor:"pointer"}}>
+          Cerrar sesión
+        </button>
       </div>
     </div>
 
@@ -405,7 +490,7 @@ export default function Dashboard(){
           {id:"colectivo",  label:"Cultura de Bienestar",    color:"#9070b8", accent:"#F5F0FA"},
           {id:"estrategico",label:"Estrategia de Bienestar", color:"#2a6aaa", accent:"#e8f2fc"},
           {id:"gestion",    label:"Gestión",                 color:P.textMuted, accent:P.gray50, restricted:true},
-        ].map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
+        ].filter(p=>hasAccess(p.id)).map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
           background:P.white,
           border:`1px solid ${P.border}`,
           borderTop:`3px solid ${p.color}`,
