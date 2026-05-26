@@ -75,18 +75,16 @@ const COMPANIES = {
       {event:"Liderazgo para equipos",date:"Feb 2026",type:"Taller",newPatients:11,note:"Repunte de nuevos pacientes tras el taller de liderazgo, el mayor desde Oct 2025."},
     ],
     surveys:[
-      {title:"Encuesta de bienestar general",desc:"Para aplicar al equipo completo · 10 preguntas · 5 min",downloadable:true},
-      {title:"Pulso de clima organizacional",desc:"Medición rápida del ambiente laboral · 7 preguntas · 3 min",downloadable:true},
-      {title:"Evaluación de liderazgo y bienestar",desc:"Para mandos medios y líderes · 15 preguntas · 8 min",downloadable:true},
-    ],
-    content:[
-      {title:"Kit de activación del beneficio Tu Terapia",type:"Campaña",date:"Ago 2025",downloaded:true,rating:5,sent:true},
-      {title:"Material 8M — Salud mental y perspectiva de género",type:"Campaña",date:"Mar 2026",downloaded:true,rating:4,sent:true},
-      {title:"Guía para líderes: cómo hablar de salud mental",type:"Guía",date:"Sep 2025",downloaded:true,rating:4,sent:false},
-      {title:"Protocolo de acompañamiento en crisis",type:"Protocolo",date:"Nov 2025",downloaded:false,rating:null,sent:false},
-      {title:"Protocolo de derivación a psicología",type:"Protocolo",date:"Ene 2026",downloaded:false,rating:null,sent:false},
+      {title:"Encuesta de Indice Tu Terapia",desc:"22 preguntas - 6 dimensiones - ~10 min - aplicar a todo el equipo o por sector",isMain:true,dims:["Bienestar y salud mental","Clima y comunicación","Liderazgo efectivo","Engagement y compromiso","Ausentismo percibido","Productividad sostenible"]},
     ],
     workshopTarget:5,
+    content:[
+      {title:"Kit de activacion del beneficio Tu Terapia",type:"Campana",date:"Ago 2025",downloaded:true,rating:5,sent:true},
+      {title:"Material 8M - Salud mental y perspectiva de genero",type:"Campana",date:"Mar 2026",downloaded:true,rating:4,sent:true},
+      {title:"Guia para lideres: como hablar de salud mental",type:"Guia",date:"Sep 2025",downloaded:true,rating:4,sent:false},
+      {title:"Protocolo de acompanamiento en crisis",type:"Protocolo",date:"Nov 2025",downloaded:false,rating:null,sent:false},
+      {title:"Protocolo de derivacion a psicologia",type:"Protocolo",date:"Ene 2026",downloaded:false,rating:null,sent:false},
+    ],
     reports:[
       {title:"Informe de uso Q3 2025",date:"Oct 2025",downloadable:true},
       {title:"Informe de uso Q4 2025",date:"Ene 2026",downloadable:true},
@@ -261,6 +259,8 @@ export default function Dashboard(){
   const [npsVal,setNpsVal]=useState(null);
   const [showIII,setShowIII]=useState(false);
   const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
+  const [expandedSurvey,setExpandedSurvey]=useState(null);
+  const [expandedReport,setExpandedReport]=useState(null);
   const [solicitando,setSolicitando]=useState(false);
   const [contentRatings,setContentRatings]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.rating])));
   const [contentSent,setContentSent]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.sent])));
@@ -270,16 +270,24 @@ export default function Dashboard(){
   const [npsDate,setNpsDate]=useState(null);
 
   useEffect(()=>{
-    supabase.auth.getSession().then(async({data:{session}})=>{
-      if(session?.user){
-        const {data:ud} = await supabase.from("company_users").select("*, companies(*)").eq("email",session.user.email).eq("active",true).single();
-        if(ud){
+    supabase.auth.getSession().then(async({data:{session}, error:sessionError})=>{
+      if(sessionError||!session?.user){ setAuthLoading(false); return; }
+      try {
+        const {data:ud, error:udError} = await supabase.from("company_users").select("*, companies(*)").eq("email",session.user.email).eq("active",true).single();
+        if(ud&&!udError){
           const {data:pd} = await supabase.from("user_permissions").select("*").eq("user_id",ud.id);
           setAuthUser(ud); setUserPerms(pd||[]);
         } else { await supabase.auth.signOut(); }
-      }
+      } catch(e) { await supabase.auth.signOut(); }
       setAuthLoading(false);
     });
+    // Listen for auth changes (token refresh, logout)
+    const {data:{subscription}} = supabase.auth.onAuthStateChange(async(event, session)=>{
+      if(event==="SIGNED_OUT"||event==="TOKEN_REFRESHED"&&!session){
+        setAuthUser(null); setUserPerms([]);
+      }
+    });
+    return ()=>subscription.unsubscribe();
   },[]);
 
   const hasAccess = (moduleId) => {
@@ -749,11 +757,11 @@ export default function Dashboard(){
             <button onClick={()=>{setNpsInput(npsVal||"");setEditNps(true);}} style={{marginTop:4,background:"none",border:`1px solid ${P.border}`,borderRadius:6,padding:"4px 8px",fontSize:10,cursor:"pointer",color:P.textMuted,textAlign:"left"}}>Actualizar</button>
           </>}
         </div>
-        <KpiCard label="Encuestas completadas" value="0 / 4" sub="Trimestres del año" warn/>
+        
         <KpiCard label="Motivos de consulta" value={c.consultationReasons.length||"Pendiente"} sub="Categorías registradas"/>
       </div>
 
-      <Section title="Evolución del bienestar por trimestre">
+      <Section title="Seguimiento de personas que usan el beneficio">
         <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Encuesta trimestral intraplataforma · escala 1–10.</div>
         <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
           {c.wellbeingByQ.map((q,i)=><div key={i} style={{flex:1,minWidth:110,padding:"16px",background:q.score!=null?P.lighter:P.gray50,border:`1px solid ${q.score!=null?P.primary+"44":P.border}`,borderRadius:10,textAlign:"center"}}>
@@ -959,43 +967,57 @@ export default function Dashboard(){
 
     {/* ── ESTRATÉGICO - Recursos y reportes ── */}
     {mod==="estrategico"&&sub==="Recursos y reportes"&&<>
-      <Section title="Encuestas para tu equipo" note={`Descargá la encuesta, aplicala a tu equipo y envianos los resultados a ${COMPANIES.tcs.accountManager.email} para que los procesemos y mostremos en este panel.`}>
+      <Section title="Encuesta para tu equipo" note={`Descargá la encuesta, aplicala a tu equipo y envianos los resultados a ${COMPANIES.tcs.accountManager.email} para que los procesemos y mostremos en este panel.`}>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {COMPANIES.tcs.surveys.map((s,i)=><div key={i} style={{background:s.isMain?P.lighter:P.white,border:`1px solid ${s.isMain?P.primary+"44":P.border}`,borderRadius:10,overflow:"hidden"}}>
-            <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px"}}>
-              {s.isMain&&<div style={{width:4,minHeight:40,borderRadius:2,background:P.primary,flexShrink:0}}/>}
-              <div style={{flex:1}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                  <div style={{fontSize:13,fontWeight:600,color:P.text}}>{s.title}</div>
-                  {s.isMain&&<span style={{background:P.primary,color:P.white,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:20,letterSpacing:"0.04em",textTransform:"uppercase"}}>Principal</span>}
+          {COMPANIES.tcs.surveys.map((s,i)=>{
+            const isOpen = expandedSurvey===i;
+            return <div key={i} style={{background:P.lighter,border:`1px solid ${P.primary+"44"}`,borderRadius:10,overflow:"hidden"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedSurvey(isOpen?null:i)}>
+                <div style={{width:4,minHeight:40,borderRadius:2,background:P.primary,flexShrink:0}}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:3}}>{s.title}</div>
+                  <div style={{fontSize:11,color:P.textMuted}}>{s.desc}</div>
                 </div>
-                <div style={{fontSize:11,color:P.textMuted}}>{s.desc}</div>
+                <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
+                  <button onClick={e=>{e.stopPropagation();}} style={{background:P.primary,color:P.white,border:"none",borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Descargar</button>
+                  <span style={{fontSize:16,color:P.textMuted,transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+                </div>
               </div>
-              <button style={{background:s.isMain?P.primary:P.lighter,color:s.isMain?P.white:P.primary,border:`1px solid ${s.isMain?P.primary:P.border}`,borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0}}>Descargar</button>
-            </div>
-            {s.isMain&&<div style={{borderTop:`1px solid ${P.border}`,padding:"10px 16px",background:"rgba(255,255,255,0.6)"}}>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                {["Bienestar y salud mental","Clima y comunicación","Liderazgo efectivo","Engagement y compromiso","Ausentismo percibido","Productividad sostenible"].map(d=>
-                  <span key={d} style={{fontSize:10,background:P.white,border:`1px solid ${P.border}`,borderRadius:20,padding:"3px 10px",color:P.textMuted}}>{d}</span>
-                )}
-              </div>
-            </div>}
-          </div>)}
+              {isOpen&&<div style={{borderTop:`1px solid ${P.border}`,padding:"14px 16px",background:"rgba(255,255,255,0.7)"}}>
+                <div style={{fontSize:11,fontWeight:600,color:P.textMuted,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.06em"}}>6 dimensiones que mide</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+                  {(s.dims||[]).map(d=><span key={d} style={{fontSize:11,background:P.white,border:`1px solid ${P.border}`,borderRadius:20,padding:"4px 12px",color:P.textMuted}}>{d}</span>)}
+                </div>
+                <div style={{fontSize:11,color:P.textMuted,lineHeight:1.7}}>
+                  Aplicá esta encuesta a todo tu equipo o por sector. Los resultados nos los enviás a <b>{COMPANIES.tcs.accountManager.email}</b> y los procesamos para mostrarte el análisis en el Índice Tu Terapia.
+                </div>
+              </div>}
+            </div>;
+          })}
         </div>
       </Section>
 
       <Section title="Informes de uso">
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {COMPANIES.tcs.reports.map((r,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:12,fontWeight:600,color:P.text}}>{r.title}</div>
-              <div style={{fontSize:11,color:P.textMuted}}>{r.date}</div>
-            </div>
-            <div style={{display:"flex",gap:8,alignItems:"center"}}>
-              {r.isNew&&<Label text="Nuevo" bg={P.primary} tx={P.white}/>}
-              <button style={{background:P.lighter,color:P.primary,border:`1px solid ${P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Descargar</button>
-            </div>
-          </div>)}
+          {COMPANIES.tcs.reports.map((r,i)=>{
+            const isOpen=expandedReport===i;
+            return <div key={i} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:10,overflow:"hidden"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer"}} onClick={()=>setExpandedReport(isOpen?null:i)}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:600,color:P.text}}>{r.title}</div>
+                  <div style={{fontSize:11,color:P.textMuted}}>{r.date}</div>
+                </div>
+                <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                  {r.isNew&&<Label text="Nuevo" bg={P.primary} tx={P.white}/>}
+                  <button onClick={e=>{e.stopPropagation();}} style={{background:P.lighter,color:P.primary,border:`1px solid ${P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Descargar</button>
+                  <span style={{fontSize:16,color:P.textMuted,transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+                </div>
+              </div>
+              {isOpen&&<div style={{borderTop:`1px solid ${P.border}`,padding:"12px 14px",background:P.gray50,fontSize:11,color:P.textMuted,lineHeight:1.7}}>
+                Informe de uso del plan Tu Terapia. Incluye sesiones realizadas, nuevos pacientes, talleres y métricas de adherencia del período.
+              </div>}
+            </div>;
+          })}
         </div>
       </Section>
 
@@ -1035,6 +1057,7 @@ export default function Dashboard(){
         </div>
       </Section>
     </>}
+
     {/* ── GESTIÓN ── */}
     {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#607870,#8B9E98)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Gestión</div>
