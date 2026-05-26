@@ -260,6 +260,8 @@ export default function Dashboard(){
   const [sub,setSub]=useState(null);
   const [npsVal,setNpsVal]=useState(null);
   const [showIII,setShowIII]=useState(false);
+  const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
+  const [solicitando,setSolicitando]=useState(false);
   const [contentRatings,setContentRatings]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.rating])));
   const [contentSent,setContentSent]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.sent])));
   const [contentDownloaded,setContentDownloaded]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.downloaded])));
@@ -724,10 +726,10 @@ export default function Dashboard(){
     {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e8f2fc,#f0f7ff)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"#2a6aaa",opacity:0.6,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
       <div style={{fontSize:22,fontWeight:800,color:"#1a4a7a",letterSpacing:"-0.5px",marginBottom:4}}>
-        {sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Inversión e impacto"?"Una inversión que se traduce en personas más sanas":"Herramientas para tomar mejores decisiones"}
+        {sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Inversión e impacto"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones"}
       </div>
       <div style={{fontSize:13,color:"#2a6aaa"}}>
-        {sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · encuestas Q pendientes`:sub==="Inversión e impacto"?`$ ${fmt(c.monthlyData.reduce((s,m)=>s+m.realizadas,0)*c.sessionPriceRef)} invertidos · ${c.monthlyData.filter(m=>!m.partial).reduce((s,m)=>s+(m.canjeadas>0?Math.round(m.realizadas/m.canjeadas*100):0),0)/Math.max(c.monthlyData.filter(m=>!m.partial).length,1)|0}% utilización`:`${c.reports.length} informes disponibles · ${c.recommendations.length} recomendaciones activas`}
+        {sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · encuestas Q pendientes`:sub==="Inversión e impacto"?(c.consultoriaActiva?"Una inversión que se traduce en personas más sanas":"Activá la consultoría para ver el análisis de impacto"):`${c.reports.length} informes disponibles · ${c.recommendations.length} recomendaciones activas`}
       </div>
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
@@ -791,6 +793,53 @@ export default function Dashboard(){
 
     {/* ── ESTRATÉGICO - Inversión e impacto ── */}
     {mod==="estrategico"&&sub==="Inversión e impacto"&&(()=>{
+      const consultoriaActiva = c.consultoriaActiva||false;
+      const solicitado = consultoriaSolicitado || c.consultoriaSolicitada||false;
+
+      async function solicitarConsultoria() {
+        setSolicitando(true);
+        try {
+          await supabase.from("companies").update({ consultoria_solicitada: true }).eq("name", "TCS");
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer re_9rj91mUx_K7pxQ8tKqs6SFoZmZskNTi2n" },
+            body: JSON.stringify({ from: "onboarding@resend.dev", to: c.accountManager.email, subject: "Solicitud de activación — Consultoría Estratégica Tu Terapia", html: `<p><b>${c.name}</b> solicitó activar la Consultoría Estratégica Tu Terapia desde su dashboard.</p><p>Contactarse a la brevedad para iniciar el proceso.</p>` })
+          });
+        } catch(e) { console.log("mail error", e); }
+        setConsultoriaSolicitado(true);
+        setSolicitando(false);
+      }
+
+      if(!consultoriaActiva) return <>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 20px",textAlign:"center",minHeight:400}}>
+          {/* Pulsing circle animation */}
+          <div style={{position:"relative",width:120,height:120,marginBottom:32}}>
+            <div style={{position:"absolute",inset:0,borderRadius:"50%",background:"rgba(26,92,74,0.08)",animation:"pulse 2s ease-in-out infinite"}}/>
+            <div style={{position:"absolute",inset:12,borderRadius:"50%",background:"rgba(26,92,74,0.12)",animation:"pulse 2s ease-in-out infinite",animationDelay:"0.3s"}}/>
+            <div style={{position:"absolute",inset:24,borderRadius:"50%",background:"rgba(26,92,74,0.18)",animation:"pulse 2s ease-in-out infinite",animationDelay:"0.6s"}}/>
+            <div style={{position:"absolute",inset:36,borderRadius:"50%",background:"rgba(26,92,74,0.25)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <div style={{width:14,height:14,borderRadius:"50%",background:"#1A5C4A"}}/>
+            </div>
+          </div>
+          <style>{`@keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.08);opacity:0.7} }`}</style>
+          {!solicitado ? <>
+            <div style={{fontSize:22,fontWeight:700,color:"#18211E",marginBottom:8,letterSpacing:"-0.5px"}}>Consultoría Estratégica Tu Terapia</div>
+            <div style={{fontSize:14,color:"#607870",maxWidth:440,lineHeight:1.7,marginBottom:32}}>
+              Accedé al Índice Tu Terapia, métricas de impacto, análisis de inversión y seguimiento del bienestar organizacional de tu equipo.
+            </div>
+            <button onClick={solicitarConsultoria} disabled={solicitando}
+              style={{background:"#1A5C4A",color:"#fff",border:"none",borderRadius:10,padding:"13px 28px",fontSize:14,fontWeight:600,cursor:solicitando?"not-allowed":"pointer",opacity:solicitando?0.7:1,letterSpacing:"-0.1px"}}>
+              {solicitando?"Enviando solicitud...":"Activar Consultoría Tu Terapia"}
+            </button>
+          </> : <>
+            <div style={{fontSize:18,fontWeight:700,color:"#1A5C4A",marginBottom:8}}>Solicitud enviada</div>
+            <div style={{fontSize:13,color:"#607870",maxWidth:380,lineHeight:1.7}}>
+              Tu referente de Tu Terapia se pondrá en contacto pronto para activar esta sección y comenzar a trabajar juntos.
+            </div>
+          </>}
+        </div>
+      </>;
+
       const dimKeys2=["saludMental","clima","liderazgo","engagement","asistencia","productividad"];
       const firstQ2=c.roiByQ.find(q=>dimKeys2.some(k=>q[k]!==null));
       const lastQ2=[...c.roiByQ].reverse().find(q=>dimKeys2.some(k=>q[k]!==null));
@@ -819,14 +868,14 @@ export default function Dashboard(){
           <div onMouseEnter={()=>setShowIII(true)} onMouseLeave={()=>setShowIII(false)}
             style={{position:"relative",background:iii!=null?P.lighter:P.gray50,border:`1px solid ${iii!=null?P.primary+"44":P.border}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,cursor:"default"}}>
             <div style={{fontSize:21,fontWeight:700,color:iii!=null?P.primary:P.textMuted,lineHeight:1.1,letterSpacing:"-0.5px"}}>{iii!=null?iii:"—"}<span style={{fontSize:12,fontWeight:400,color:P.textMuted}}> /100</span></div>
-            <div style={{fontSize:12,fontWeight:600,color:P.text}}>Índice III</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>Índice Tu Terapia</div>
             <div style={{fontSize:11,color:P.textMuted}}>{iii!=null?(iii>=70?"Impacto alto":iii>=50?"Impacto medio":"En desarrollo"):"Pendiente Q1"}</div>
             <div style={{fontSize:10,color:P.primary,marginTop:2}}>Hover para ver composición</div>
             {showIII&&<div style={{position:"absolute",top:"calc(100% + 8px)",left:0,width:290,background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"14px 16px",boxShadow:"0 4px 20px rgba(0,0,0,0.10)",zIndex:20}}>
-              <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Composición del índice</div>
+              <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Composición del Índice Tu Terapia</div>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {[
-                  ["50%","Mejora en bienestar (encuestas)",normImp2!=null?`${Math.round(normImp2*0.5)}pts`:"—","Evolución Q inicial → Q actual en 6 dimensiones."],
+                  ["50%","Mejora en dimensiones de bienestar",normImp2!=null?`${Math.round(normImp2*0.5)}pts`:"—","Evolución Q inicial → Q actual en 6 dimensiones."],
                   ["30%","Utilización del plan individual",`${utilScore2}pts`,`Sesiones realizadas sobre contratadas (${compRate2}% actual).`],
                   ["15%","Actividad colectiva — talleres",`${workshopPts}pts`,`${c.workshops.length} de ${workshopTarget} talleres anuales realizados.`],
                   ["5%","Engagement con contenido",`${contentPts}pts`,"Piezas descargadas y evaluadas por RRHH."],
@@ -839,7 +888,7 @@ export default function Dashboard(){
                 </div>)}
               </div>
               <div style={{marginTop:8,fontSize:10,color:P.textMuted,background:P.gray50,borderRadius:6,padding:"6px 10px"}}>
-                III = (bienestar×50%) + (utilización×30%) + (talleres×15%) + (contenido×5%)
+                Índice Tu Terapia = (bienestar×50%) + (utilización×30%) + (talleres×15%) + (contenido×5%)
               </div>
             </div>}
           </div>
@@ -850,7 +899,7 @@ export default function Dashboard(){
         </div>
 
         <Section title="6 dimensiones del impacto">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Medidas trimestralmente por encuesta. Escala 1–10.</div>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Medidas por encuesta. Escala 1–10.</div>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             {[
               {key:"saludMental",label:"Bienestar y salud mental",desc:"Bienestar emocional, estrés y equilibrio vida-trabajo",color:"#1A5C4A"},
@@ -880,7 +929,7 @@ export default function Dashboard(){
                       <div style={{fontSize:14,fontWeight:700,color:trend>0?"#22C55E":trend<0?P.red:P.textMuted}}>{trend>0?"+":""}{trend}</div>
                       <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>evolución</div>
                     </div>}
-                  </>:<span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente Q1</span>}
+                  </>:<span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente</span>}
                 </div>
               </div>;
             })}
@@ -899,10 +948,10 @@ export default function Dashboard(){
           </ResponsiveContainer></div>
         </Section>
 
-        <Section title="Benchmark vs. red Tu Terapia" note="Disponible en la próxima fase — comparación con ~40 empresas aliadas.">
+        <Section title="Benchmark vs. red Tu Terapia" note="Disponible en la próxima fase.">
           <div style={{padding:"20px",textAlign:"center",color:P.textMuted}}>
             <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Próximamente</div>
-            <div style={{fontSize:12}}>Compará el índice de impacto de TCS con el promedio de la red.</div>
+            <div style={{fontSize:12}}>Compará el Índice Tu Terapia con el promedio de la red.</div>
           </div>
         </Section>
       </>;
