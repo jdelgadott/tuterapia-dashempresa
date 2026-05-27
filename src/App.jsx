@@ -261,6 +261,7 @@ export default function Dashboard(){
   const [npsVal,setNpsVal]=useState(null);
   const [showIII,setShowIII]=useState(false);
   const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
+  const [localConsultoriaActiva,setConsultoriaActiva]=useState(false);
   const [expandedSurvey,setExpandedSurvey]=useState(null);
   const [expandedReport,setExpandedReport]=useState(null);
   const [openSections,setOpenSections]=useState({encuestas:true,informes:false,recomendaciones:false,impacto:false});
@@ -604,9 +605,9 @@ export default function Dashboard(){
       return <>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
           <KpiCard label="Total de pacientes" value={totHistorico} sub="Pacientes únicos históricos"/>
-          <KpiCard label="Promedio de sesiones por persona" value={avgPerUser!=null?avgPerUser.toFixed(1):"—"} sub="Histórico acumulado"/>
-          <KpiCard label="Promedio sesiones / persona / mes" value={(totHistorico>0&&fullM.length>0)?(fullSessions/totHistorico/fullM.length).toFixed(2):"—"} sub="por persona por mes"/>
-          <KpiCard label="Promedio sesiones por mes (empresa)" value={avgPerMonth!=null?avgPerMonth.toFixed(1):"—"} sub="Meses completos"/>
+          <KpiCard label="Promedio de sesiones por persona" value={avgPerUser!=null?Math.ceil(avgPerUser):"—"} sub="Histórico acumulado"/>
+          <KpiCard label="Promedio sesiones / persona / mes" value={(totHistorico>0&&fullM.length>0)?Math.ceil(fullSessions/totHistorico/fullM.length):"—"} sub="por persona por mes"/>
+          <KpiCard label="Promedio sesiones por mes (empresa)" value={avgPerMonth!=null?Math.ceil(avgPerMonth):"—"} sub="Meses completos"/>
         </div>
         <Section title="Primera vez en terapia">
           <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Colaboradores que accedieron a terapia psicológica por primera vez a través del beneficio de TCS.</div>
@@ -759,8 +760,7 @@ export default function Dashboard(){
         </div>
       </Section>
 
-      {c.consultationReasons.length===0?
-        <Section title="Motivos de consulta" note="Fuente: reporte de plataforma Tu Terapia.">
+      <Section title="Motivos de consulta" note="Fuente: reporte de plataforma Tu Terapia.">
         {c.consultationReasons.length===0
           ? <div style={{fontSize:12,color:P.textMuted,padding:"20px 0",textAlign:"center"}}>Sin datos cargados aún. Tu referente los actualizará periódicamente.</div>
           : <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -780,39 +780,40 @@ export default function Dashboard(){
                     <div style={{height:6,background:P.gray50,borderRadius:3,overflow:"hidden"}}>
                       <div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:3,transition:"width 0.4s ease"}}/>
                     </div>
-                    {r.count&&<div style={{fontSize:10,color:P.textMuted,marginTop:3}}>{r.count} casos · {r.period||"—"}</div>}
+                    {r.count&&<div style={{fontSize:10,color:P.textMuted,marginTop:3}}>{r.count} casos — {r.period||"—"}</div>}
                   </div>
                 </div>;
               })}
             </div>
         }
       </Section>
-      :<Section title="Motivos de consulta más frecuentes" note="Datos anonimizados y agrupados por categoría.">
-        <div style={{display:"flex",gap:20,flexWrap:"wrap",alignItems:"flex-start"}}>
-          <div style={{position:"relative",width:140,height:140,flexShrink:0}}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart><Pie data={c.consultationReasons} dataKey="percentage" innerRadius={38} outerRadius={62} paddingAngle={2}>
-                {c.consultationReasons.map((_,i)=><Cell key={i} fill={REASON_COLORS[i]}/>)}
-              </Pie></PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{flex:1,display:"flex",flexDirection:"column",gap:8}}>
-            {c.consultationReasons.map((r,i)=><div key={r.reason} style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{width:8,height:8,borderRadius:2,background:REASON_COLORS[i],flexShrink:0}}/>
-              <div style={{flex:1,background:P.gray50,borderRadius:4,height:16,overflow:"hidden",position:"relative"}}>
-                <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${r.pct}%`,background:REASON_COLORS[i],borderRadius:4,opacity:0.85}}/>
-                <span style={{position:"absolute",left:8,top:"50%",transform:"translateY(-50%)",fontSize:9,color:P.white,fontWeight:600,zIndex:1}}>{r.reason}</span>
-              </div>
-              <span style={{fontSize:11,fontWeight:700,color:P.text,width:34,textAlign:"right"}}>{r.pct}%</span>
-            </div>)}
-          </div>
+
+      <Section title="Impacto de acciones colectivas" note="Correlación entre talleres/activaciones y nuevos pacientes.">
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {COMPANIES.tcs.collectiveImpact.length===0
+            ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px 0"}}>Sin datos cargados aún.</div>
+            : COMPANIES.tcs.collectiveImpact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
+                <div style={{flexShrink:0,textAlign:"center",minWidth:44}}>
+                  <div style={{fontSize:18,fontWeight:700,color:P.primary,lineHeight:1}}>+{item.newPatients}</div>
+                  <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>nuevos</div>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",gap:6,marginBottom:5,flexWrap:"wrap",alignItems:"center"}}>
+                    <Label text={item.type} bg={P.lighter} tx={P.primary}/>
+                    <span style={{fontSize:11,color:P.textMuted}}>{item.date}</span>
+                  </div>
+                  <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:3}}>{item.event}</div>
+                  <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>{item.note}</div>
+                </div>
+              </div>)
+          }
         </div>
-      </Section>}
+      </Section>
     </>}
 
     {/* ── ESTRATÉGICO - Inversión e impacto ── */}
     {mod==="estrategico"&&sub==="Consultoría Tu Terapia"&&(()=>{
-      const consultoriaActiva = c.consultoriaActiva||false;
+      const consultoriaActiva = c.consultoriaActiva||localConsultoriaActiva||false;
       const solicitado = consultoriaSolicitado || c.consultoriaSolicitada||false;
 
       async function solicitarConsultoria() {
@@ -852,9 +853,13 @@ export default function Dashboard(){
             </button>
           </> : <>
             <div style={{fontSize:18,fontWeight:700,color:"#1A5C4A",marginBottom:8}}>Solicitud enviada</div>
-            <div style={{fontSize:13,color:"#607870",maxWidth:380,lineHeight:1.7}}>
+            <div style={{fontSize:13,color:"#607870",maxWidth:380,lineHeight:1.7,marginBottom:20}}>
               Tu referente de Tu Terapia se pondrá en contacto pronto para activar esta sección y comenzar a trabajar juntos.
             </div>
+            <button onClick={()=>setConsultoriaActiva(true)}
+              style={{background:"none",border:`1px solid #1A5C4A`,borderRadius:8,padding:"9px 20px",fontSize:13,fontWeight:600,color:"#1A5C4A",cursor:"pointer"}}>
+              Ver panel →
+            </button>
           </>}
         </div>
       </>;
@@ -980,39 +985,45 @@ export default function Dashboard(){
     {/* ── ESTRATÉGICO - Recursos y reportes ── */}
     {mod==="estrategico"&&sub==="Recursos y reportes"&&<>
       <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:0,marginBottom:14,overflow:"hidden"}}>
-        <div onClick={()=>toggleSection("encuestas")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:"pointer",userSelect:"none"}}>
-          <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Encuesta para tu equipo</div>
-          <span style={{fontSize:14,color:P.textMuted,transform:openSections.encuestas?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+        <div onClick={()=>c.consultoriaActiva&&toggleSection("encuestas")}
+          style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:c.consultoriaActiva?"pointer":"default",userSelect:"none",opacity:c.consultoriaActiva?1:0.6}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Encuesta para tu equipo</div>
+            {!c.consultoriaActiva&&<span style={{fontSize:10,background:P.accentBg,color:P.accent,padding:"2px 8px",borderRadius:20,fontWeight:600}}>Requiere Consultoría Tu Terapia</span>}
+          </div>
+          {c.consultoriaActiva&&<span style={{fontSize:14,color:P.textMuted,transform:openSections.encuestas?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>}
         </div>
-        {openSections.encuestas&&<div style={{padding:"0 20px 16px"}}>
+        {!c.consultoriaActiva&&<div style={{padding:"12px 20px 16px",borderTop:`1px solid ${P.border}`}}>
+          <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>
+            Esta sección se activa junto con la <b>Consultoría Estratégica Tu Terapia</b>. Al activarla, podrás descargar la encuesta de Índice Tu Terapia para aplicar a tu equipo.
+          </div>
+        </div>}
+        {c.consultoriaActiva&&openSections.encuestas&&<div style={{padding:"0 20px 16px"}}>
           <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>Descargá la encuesta, aplicala a tu equipo y envianos los resultados a {COMPANIES.tcs.accountManager.email} para que los procesemos y mostremos en este panel.</div>
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {COMPANIES.tcs.surveys.map((s,i)=>{
-            const isOpen = expandedSurvey===i;
-            return <div key={i} style={{background:P.lighter,border:`1px solid ${P.primary+"44"}`,borderRadius:10,overflow:"hidden"}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedSurvey(isOpen?null:i)}>
-                <div style={{width:4,minHeight:40,borderRadius:2,background:P.primary,flexShrink:0}}/>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:3}}>{s.title}</div>
-                  <div style={{fontSize:11,color:P.textMuted}}>{s.desc}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {COMPANIES.tcs.surveys.map((s,i)=>{
+              const isOpen = expandedSurvey===i;
+              return <div key={i} style={{background:P.lighter,border:`1px solid ${P.primary+"44"}`,borderRadius:10,overflow:"hidden"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedSurvey(isOpen?null:i)}>
+                  <div style={{width:4,minHeight:40,borderRadius:2,background:P.primary,flexShrink:0}}/>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:3}}>{s.title}</div>
+                    <div style={{fontSize:11,color:P.textMuted}}>{s.desc}</div>
+                  </div>
+                  <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
+                    <button onClick={e=>{e.stopPropagation();}} style={{background:P.primary,color:P.white,border:"none",borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Descargar</button>
+                    <span style={{fontSize:16,color:P.textMuted,transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+                  </div>
                 </div>
-                <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
-                  <button onClick={e=>{e.stopPropagation();}} style={{background:P.primary,color:P.white,border:"none",borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Descargar</button>
-                  <span style={{fontSize:16,color:P.textMuted,transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
-                </div>
-              </div>
-              {isOpen&&<div style={{borderTop:`1px solid ${P.border}`,padding:"14px 16px",background:"rgba(255,255,255,0.7)"}}>
-                <div style={{fontSize:11,fontWeight:600,color:P.textMuted,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.06em"}}>6 dimensiones que mide</div>
-                <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
-                  {(s.dims||[]).map(d=><span key={d} style={{fontSize:11,background:P.white,border:`1px solid ${P.border}`,borderRadius:20,padding:"4px 12px",color:P.textMuted}}>{d}</span>)}
-                </div>
-                <div style={{fontSize:11,color:P.textMuted,lineHeight:1.7}}>
-                  Aplicá esta encuesta a todo tu equipo o por sector. Los resultados nos los enviás a <b>{COMPANIES.tcs.accountManager.email}</b> y los procesamos para mostrarte el análisis en el Índice Tu Terapia.
-                </div>
-              </div>}
-            </div>;
-          })}
-        </div>
+                {isOpen&&<div style={{borderTop:`1px solid ${P.border}`,padding:"14px 16px",background:"rgba(255,255,255,0.7)"}}>
+                  <div style={{fontSize:11,fontWeight:600,color:P.textMuted,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.06em"}}>6 dimensiones que mide</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+                    {(s.dims||[]).map(d=><span key={d} style={{fontSize:11,background:P.white,border:`1px solid ${P.border}`,borderRadius:20,padding:"4px 12px",color:P.textMuted}}>{d}</span>)}
+                  </div>
+                </div>}
+              </div>;
+            })}
+          </div>
         </div>}
       </div>
 
@@ -1068,33 +1079,8 @@ export default function Dashboard(){
         </div>
         </div>}
       </div>
-
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:0,marginBottom:14,overflow:"hidden"}}>
-        <div onClick={()=>toggleSection("impacto")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:"pointer",userSelect:"none"}}>
-          <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Impacto de acciones colectivas en el uso individual</div>
-          <span style={{fontSize:14,color:P.textMuted,transform:openSections.impacto?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
-        </div>
-        {openSections.impacto&&<div style={{padding:"0 20px 16px"}}>
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>Correlación entre talleres/activaciones y la incorporación de nuevos pacientes.</div>
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {COMPANIES.tcs.collectiveImpact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
-            <div style={{flexShrink:0,textAlign:"center",minWidth:44}}>
-              <div style={{fontSize:18,fontWeight:700,color:P.primary,letterSpacing:"-0.5px"}}>+{item.newPatients}</div>
-              <div style={{fontSize:9,color:P.textMuted,letterSpacing:"0.02em",textTransform:"uppercase"}}>nuevos</div>
-            </div>
-            <div style={{flex:1}}>
-              <div style={{display:"flex",gap:6,marginBottom:5,flexWrap:"wrap",alignItems:"center"}}>
-                <Label text={item.type} bg={P.lighter} tx={P.primary}/>
-                <span style={{fontSize:11,color:P.textMuted}}>{item.date}</span>
-              </div>
-              <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:3}}>{item.event}</div>
-              <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>{item.note}</div>
-            </div>
-          </div>)}
-        </div>
-        </div>}
-      </div>
-    </>}
+    </>
+    }
 
     {/* ── GESTIÓN ── */}
     {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#607870,#8B9E98)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
