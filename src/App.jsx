@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "./supabase.js";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine } from "recharts";
 
+const LOGO_TT = "data:image/jpeg;base64,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";
+
 const P = {
   primary:"#1A5C4A", light:"#267A62", lighter:"#EAF4F0", bg:"#EDF5F1",
   accent:"#2a6aaa", accentBg:"#e8f2fc",
@@ -134,7 +136,7 @@ const TT_TEAM=[
 const MODULES=[
   {id:"individual", label:"Colaboradores",  subs:["Sesiones","Adherencia"]},
   {id:"colectivo",  label:"Cultura de Bienestar",   subs:["Talleres","Contenido"]},
-  {id:"estrategico",label:"Estrategia de Bienestar", subs:["Bienestar del equipo","Inversión e impacto","Recursos y reportes"]},
+  {id:"estrategico",label:"Estrategia de Bienestar", subs:["Bienestar del equipo","Consultoría Tu Terapia","Recursos y reportes"]},
   {id:"gestion",    label:"Gestión",            subs:["Facturación","Plan activo","Equipo TT"],restricted:true},
 ];
 
@@ -221,7 +223,7 @@ function LoginView({ onLogin }) {
       <div style={{background:"#FFFFFF",borderRadius:16,border:"1px solid #DDE8E4",padding:"40px",width:360,boxShadow:"0 4px 24px rgba(0,0,0,0.06)"}}>
         <div style={{textAlign:"center",marginBottom:32}}>
           <div style={{width:48,height:48,borderRadius:12,background:"#1A5C4A",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
-            <span style={{color:"#fff",fontWeight:800,fontSize:16}}>TT</span>
+            <img src={LOGO_TT} alt="Tu Terapia" style={{width:34,height:34,objectFit:"contain",borderRadius:6}}/>
           </div>
           <div style={{fontSize:20,fontWeight:700,color:"#18211E",marginBottom:4}}>Panel de bienestar</div>
           <div style={{fontSize:13,color:"#607870"}}>Tu Terapia — acceso empresarial</div>
@@ -312,6 +314,11 @@ export default function Dashboard(){
   const totCanj=c.monthlyData.reduce((s,m)=>s+m.canjeadas,0);
   const totReal=c.monthlyData.reduce((s,m)=>s+m.realizadas,0);
   const totNuev=c.monthlyData.reduce((s,m)=>s+m.nuevos,0);
+  // Total histórico = last month's total_historico, or sum of nuevos as fallback
+  const totHistorico=(()=>{
+    const lastWithHist=[...c.monthlyData].reverse().find(m=>m.total_historico>0);
+    return lastWithHist?lastWithHist.total_historico:totNuev;
+  })();
   const fullCanj=fullM.reduce((s,m)=>s+m.canjeadas,0);
   const fullReal=fullM.reduce((s,m)=>s+m.realizadas,0);
   const compRate=fullCanj>0?Math.round(fullReal/fullCanj*100):0;
@@ -348,9 +355,7 @@ export default function Dashboard(){
     {/* Header */}
     <div style={{background:P.white,borderBottom:`1px solid ${P.border}`,padding:"14px 28px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
       <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:14,background:"none",border:"none",cursor:"pointer",padding:0}}>
-        <div style={{background:P.primary,borderRadius:8,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          <span style={{color:P.white,fontWeight:800,fontSize:11,letterSpacing:"-0.3px"}}>TT</span>
-        </div>
+        <img src={LOGO_TT} alt="Tu Terapia" style={{height:32,objectFit:"contain",flexShrink:0}}/>
         <div style={{textAlign:"left"}}>
           <div style={{fontSize:13,fontWeight:700,color:P.text,letterSpacing:"-0.2px"}}>Tu Terapia</div>
           <div style={{fontSize:10,color:P.textMuted,letterSpacing:"0.02em"}}>Panel empresarial</div>
@@ -467,19 +472,12 @@ export default function Dashboard(){
 
           {/* Primera vez en terapia — ring */}
           <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
-            {(()=>{
-              const firstCount=c.firstTimeCount;
-              const firstPct=firstCount!=null&&totNuev>0?Math.round(firstCount/totNuev*100):null;
-              return <>
-                <div style={{position:"relative",width:60,height:60}}>
-                  <Ring pct={firstPct||0} color="#c6b2da" size={60} stroke={5}/>
-                  <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:11,fontWeight:700,color:"#9070b8"}}>{firstPct!=null?`${firstPct}%`:"—"}</div>
-                </div>
-                <div style={{fontSize:32,fontWeight:800,color:"#9070b8",letterSpacing:"-1px",lineHeight:1}}>{firstCount!=null?firstCount:"—"}</div>
-                <div style={{fontSize:12,fontWeight:600,color:P.text}}>primera vez en terapia</div>
-                <div style={{fontSize:10,color:P.textMuted}}>{firstPct!=null?`${firstPct}% del total`:"pendiente"}</div>
-              </>;
-            })()}
+            <div style={{position:"relative",width:60,height:60}}>
+              <Ring pct={c.firstTimePct!=null?c.firstTimePct:0} color={P.primary} size={60} stroke={5}/>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:12,fontWeight:700,color:P.primary}}>{c.firstTimePct!=null?`${c.firstTimePct}%`:"—"}</div>
+            </div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text,textAlign:"center",lineHeight:1.4}}>Primera vez en terapia</div>
+            <div style={{fontSize:11,color:P.textMuted}}>{c.firstTimeCount!=null?`${c.firstTimeCount} personas`:"pendiente"}</div>
           </div>
 
           {/* Talleres — ring */}
@@ -566,10 +564,10 @@ export default function Dashboard(){
     </div>}
     {mod==="individual"&&sub==="Sesiones"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-        <KpiCard label="Canjeadas acumuladas" value={fmt(totCanj)} accent/>
-        <KpiCard label="Realizadas acumuladas" value={fmt(totReal)} sub="Desde inicio"/>
-        <KpiCard label="Tasa de realización" value={`${compRate}%`} sub="Meses completos"/>
-        <KpiCard label="Último mes completo" value={lastFull?fmt(lastFull.realizadas):"—"} sub={lastFull?.month}/>
+        <KpiCard label="Sesiones Canjeadas" value={fmt(totCanj)}/>
+        <KpiCard label="Sesiones Realizadas" value={fmt(totReal)} sub="Desde inicio"/>
+        <KpiCard label="Tasa de realización" value={`${compRate}%`} sub="Sesiones realizadas / canjeadas"/>
+        <KpiCard label="Sesiones realizadas en el último mes" value={lastFull?fmt(lastFull.realizadas):"—"} sub={lastFull?.month}/>
       </div>
       <Section title={`Sesiones canjeadas por mes — plan ${c.monthlyPlan}/mes`}>
         {lastM.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
@@ -601,14 +599,14 @@ export default function Dashboard(){
 
     {mod==="individual"&&sub==="Adherencia"&&(()=>{
       const fullSessions=fullM.reduce((s,m)=>s+m.realizadas,0);
-      const avgPerUser=totNuev>0?Math.round((fullSessions/totNuev)*10)/10:0;
+      const avgPerUser=totHistorico>0?Math.round((fullSessions/totHistorico)*10)/10:0;
       const avgPerMonth=fullM.length>0?Math.round((fullSessions/fullM.length)*10)/10:0;
       return <>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-          <KpiCard label="Pacientes únicos" value={totNuev} accent/>
-          <KpiCard label="Promedio de sesiones por usuario" value={avgPerUser} sub="Histórico acumulado"/>
-          <KpiCard label="Promedio sesiones por mes" value={avgPerMonth} sub="Meses completos"/>
-          <KpiCard label="Primera vez en terapia" value={c.firstTimeCount!=null?c.firstTimeCount:"—"} sub={c.firstTimePct!=null?`${c.firstTimePct}% del total`:"Pendiente"}/>
+          <KpiCard label="Total de pacientes" value={totHistorico} sub="Pacientes únicos históricos"/>
+          <KpiCard label="Promedio de sesiones por persona" value={avgPerUser!=null?avgPerUser.toFixed(1):"—"} sub="Histórico acumulado"/>
+          <KpiCard label="Promedio sesiones / persona / mes" value={(totHistorico>0&&fullM.length>0)?(fullSessions/totHistorico/fullM.length).toFixed(2):"—"} sub="por persona por mes"/>
+          <KpiCard label="Promedio sesiones por mes (empresa)" value={avgPerMonth!=null?avgPerMonth.toFixed(1):"—"} sub="Meses completos"/>
         </div>
         <Section title="Primera vez en terapia">
           <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Colaboradores que accedieron a terapia psicológica por primera vez a través del beneficio de TCS.</div>
@@ -628,20 +626,7 @@ export default function Dashboard(){
             <div style={{fontSize:12,color:P.textMuted}}>Se cargará desde el panel admin.</div>
           </div>}
         </Section>
-        <Section title="Promedio de sesiones por usuario">
-          <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
-            <div style={{flex:1,padding:"18px",background:P.lighter,borderRadius:12,border:`1px solid ${P.primary+"44"}`,textAlign:"center"}}>
-              <div style={{fontSize:32,fontWeight:700,color:P.primary,letterSpacing:"-1px"}}>{avgPerUser}</div>
-              <div style={{fontSize:12,color:P.primary,fontWeight:500,marginTop:4}}>sesiones por usuario</div>
-              <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>promedio histórico acumulado</div>
-            </div>
-            <div style={{flex:1,padding:"18px",background:P.white,borderRadius:12,border:`1px solid ${P.border}`,textAlign:"center"}}>
-              <div style={{fontSize:32,fontWeight:700,color:P.text,letterSpacing:"-1px"}}>{avgPerMonth}</div>
-              <div style={{fontSize:12,color:P.textMuted,fontWeight:500,marginTop:4}}>sesiones realizadas por mes</div>
-              <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>promedio en meses completos</div>
-            </div>
-          </div>
-        </Section>
+        
         <Section title="Nuevos pacientes por mes">
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={c.monthlyData} barSize={13}>
@@ -736,10 +721,10 @@ export default function Dashboard(){
     {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e8f2fc,#f0f7ff)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"#2a6aaa",opacity:0.6,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
       <div style={{fontSize:22,fontWeight:800,color:"#1a4a7a",letterSpacing:"-0.5px",marginBottom:4}}>
-        {sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Inversión e impacto"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones"}
+        {sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones"}
       </div>
       <div style={{fontSize:13,color:"#2a6aaa"}}>
-        {sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · encuestas Q pendientes`:sub==="Inversión e impacto"?(c.consultoriaActiva?"Una inversión que se traduce en personas más sanas":"Activá la consultoría para ver el análisis de impacto"):`${c.reports.length} informes disponibles · ${c.recommendations.length} recomendaciones activas`}
+        {sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · encuestas Q pendientes`:sub==="Consultoría Tu Terapia"?(c.consultoriaActiva?"Una inversión que se traduce en personas más sanas":"Activá la consultoría para ver el análisis de impacto"):`${c.reports.length} informes disponibles · ${c.recommendations.length} recomendaciones activas`}
       </div>
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
@@ -802,7 +787,7 @@ export default function Dashboard(){
     </>}
 
     {/* ── ESTRATÉGICO - Inversión e impacto ── */}
-    {mod==="estrategico"&&sub==="Inversión e impacto"&&(()=>{
+    {mod==="estrategico"&&sub==="Consultoría Tu Terapia"&&(()=>{
       const consultoriaActiva = c.consultoriaActiva||false;
       const solicitado = consultoriaSolicitado || c.consultoriaSolicitada||false;
 
@@ -871,7 +856,8 @@ export default function Dashboard(){
       const fullCanj2=fullM2.reduce((s,m)=>s+m.canjeadas,0);
       const compRate2=fullCanj2>0?Math.round(fullReal2/fullCanj2*100):0;
       const lastFull2=fullM2[fullM2.length-1];
-      const invPerPat2=totNuev2>0?invTotal2/totNuev2:0;
+      const totHistorico2=(()=>{const lh=[...c.monthlyData].reverse().find(m=>m.total_historico>0);return lh?lh.total_historico:totNuev2;})();
+  const invPerPat2=totHistorico2>0?invTotal2/totHistorico2:0;
       return <>
         {/* III KPI card */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
@@ -905,7 +891,7 @@ export default function Dashboard(){
           <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal2)}`} sub="UYU · precio de referencia" accent/>
           <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat2)}`} sub={`${totNuev2} pacientes únicos`}/>
           <KpiCard label="Utilización del plan" value={`${compRate2}%`} sub="Realizadas / contratadas"/>
-          <KpiCard label="Último mes completo" value={`$ ${fmt(lastFull2?lastFull2.realizadas*c.sessionPriceRef:0)}`} sub={lastFull2?.month}/>
+          <KpiCard label="Sesiones realizadas en el último mes" value={`$ ${fmt(lastFull2?lastFull2.realizadas*c.sessionPriceRef:0)}`} sub={lastFull2?.month}/>
         </div>
 
         <Section title="6 dimensiones del impacto">
@@ -1098,7 +1084,7 @@ export default function Dashboard(){
     </div>}
     {mod==="gestion"&&sub==="Facturación"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
-        <KpiCard label="Total pagado" value={`$ ${fmt(billingPaid)}`} sub="UYU acumulado" accent/>
+        <KpiCard label="Total pagado" value={`$ ${fmt(billingPaid)}`} sub="UYU acumulado"/>
         <KpiCard label="Pendiente de pago" value={`$ ${fmt(billingPending)}`} sub="Período actual" warn={billingPending>0}/>
         <KpiCard label="Períodos facturados" value={c.billing.length} sub="Desde inicio"/>
       </div>
