@@ -301,16 +301,18 @@ export default function Dashboard(){
   const [sub,setSub]=useState(null);
   const [npsVal,setNpsVal]=useState(null);
   const [showIII,setShowIII]=useState(false);
+
   const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
   const [localConsultoriaActiva,setConsultoriaActiva]=useState(false);
   const [expandedSurvey,setExpandedSurvey]=useState(null);
   const [expandedReport,setExpandedReport]=useState(null);
   const [openSections,setOpenSections]=useState({encuestas:true,informes:false,recomendaciones:false,impacto:false});
   const toggleSection=(key)=>setOpenSections(prev=>({...prev,[key]:!prev[key]}));
+
   const [solicitando,setSolicitando]=useState(false);
-  const [contentRatings,setContentRatings]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.rating])));
-  const [contentSent,setContentSent]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.sent])));
-  const [contentDownloaded,setContentDownloaded]=useState(()=>Object.fromEntries((COMPANIES.tcs.content||[]).map((item,i)=>[i,item.downloaded])));
+  const [contentRatings,setContentRatings]=useState({});
+  const [contentSent,setContentSent]=useState({});
+  const [contentDownloaded,setContentDownloaded]=useState({});
   const [editNps,setEditNps]=useState(false);
   const [npsInput,setNpsInput]=useState("");
   const [npsDate,setNpsDate]=useState(null);
@@ -345,27 +347,56 @@ export default function Dashboard(){
   const [dbHeaderTexts, setDbHeaderTexts] = useState([]);
   const [dbCompany, setDbCompany] = useState(null);
 
+  const [dbSessions, setDbSessions] = useState([]);
+  const [dbBilling, setDbBilling] = useState([]);
+  const [dbRecommendations, setDbRecommendations] = useState([]);
+  const [dbMilestones, setDbMilestones] = useState([]);
+  const [dbNps, setDbNps] = useState([]);
+  const [dbConsultationReasons, setDbConsultationReasons] = useState([]);
+  const [dbWorkshopsRec, setDbWorkshopsRec] = useState([]);
+  const [dataLoading, setDataLoading] = useState(false);
+
   useEffect(()=>{
     if(!authUser) return;
     const companyId = authUser.company_id;
     if(!companyId) return;
+    setDataLoading(true);
     async function loadData() {
-      const [reports, surveys, content, workshops, talleristas, headerTexts, company] = await Promise.all([
+      const [
+        reports, surveys, content, workshops, workshopsRec, talleristas,
+        headerTexts, company, sessions, billing, recommendations,
+        milestones, nps, reasons
+      ] = await Promise.all([
         supabase.from("informes").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("content").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
-        supabase.from("workshops").select("*").eq("company_id",companyId).order("date",{ascending:false}),
+        supabase.from("workshops").select("*").eq("company_id",companyId).order("date",{ascending:true}),
+        supabase.from("workshops_recommended").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("talleristas").select("*").order("name"),
         supabase.from("header_texts").select("*").eq("company_id",companyId),
-        supabase.from("companies").select("*,consultation_reasons:consultation_reasons(*)").eq("id",companyId).single(),
+        supabase.from("companies").select("*").eq("id",companyId).single(),
+        supabase.from("sessions_data").select("*").eq("company_id",companyId).order("year").order("month"),
+        supabase.from("billing").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
+        supabase.from("recommendations").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
+        supabase.from("milestones").select("*").eq("company_id",companyId).order("created_at"),
+        supabase.from("nps_data").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
+        supabase.from("consultation_reasons").select("*").eq("company_id",companyId).order("percentage",{ascending:false}),
       ]);
       setDbReports(reports.data||[]);
       setDbSurveys(surveys.data||[]);
       setDbContent(content.data||[]);
       setDbWorkshops(workshops.data||[]);
+      setDbWorkshopsRec(workshopsRec.data||[]);
       setDbTalleristas(talleristas.data||[]);
       setDbHeaderTexts(headerTexts.data||[]);
-      if(company.data) setDbCompany(company.data);
+      setDbCompany(company.data||null);
+      setDbSessions(sessions.data||[]);
+      setDbBilling(billing.data||[]);
+      setDbRecommendations(recommendations.data||[]);
+      setDbMilestones(milestones.data||[]);
+      setDbNps(nps.data||[]);
+      setDbConsultationReasons(reasons.data||[]);
+      setDataLoading(false);
     }
     loadData();
   },[authUser]);
@@ -379,7 +410,60 @@ export default function Dashboard(){
   if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando...</div>;
   if(!authUser) return <LoginView onLogin={(ud,pd)=>{ setAuthUser(ud); setUserPerms(pd); }}/>;
 
-  const c=COMPANIES[ck];
+  // Merge hardcoded TCS data with Supabase data
+  const baseC = COMPANIES[ck];
+  
+  // Build monthlyData from Supabase sessions if available
+  const supabaseMonthlyData = dbSessions.length>0 ? dbSessions.map(s=>({
+    month: s.month,
+    year: s.year,
+    canjeadas: s.canjeadas||0,
+    realizadas: s.realizadas||0,
+    nuevos: s.nuevos||0,
+    total_historico: s.total_historico||0,
+    c1: s.c1||0, c2: s.c2||0, c3: s.c3||0, c4: s.c4||0, c5: s.c5||0,
+    partial: s.partial||false,
+  })) : null;
+
+  // Build billing from Supabase if available
+  const supabaseBilling = dbBilling.length>0 ? dbBilling.map(b=>({
+    period: b.period,
+    amount: b.amount||0,
+    status: b.status||"pendiente",
+    invoice: b.invoice||"",
+    fileUrl: b.file_url||null,
+  })) : null;
+
+  // Build company config from Supabase if available
+  const c = {
+    ...baseC,
+    // Override with Supabase data when available
+    name: dbCompany?.name || baseC.name,
+    monthlyData: supabaseMonthlyData || baseC.monthlyData,
+    billing: supabaseBilling || baseC.billing,
+    workshops: dbWorkshops.length>0 ? dbWorkshops : baseC.workshops,
+    workshopsRecommended: dbWorkshopsRec.length>0 ? dbWorkshopsRec : baseC.workshopsRecommended,
+    content: dbContent.length>0 ? dbContent : baseC.content,
+    recommendations: dbRecommendations.length>0 ? dbRecommendations : baseC.recommendations,
+    milestones: dbMilestones.length>0 ? dbMilestones : baseC.milestones,
+    consultationReasons: dbConsultationReasons.length>0 ? dbConsultationReasons : baseC.consultationReasons,
+    consultoriaActiva: dbCompany?.consultoria_activa || baseC.consultoriaActiva || false,
+    consultoriaSolicitada: dbCompany?.consultoria_solicitada || baseC.consultoriaSolicitada || false,
+    plan: dbCompany ? {
+      type: dbCompany.plan_type || baseC.plan.type,
+      coverage: dbCompany.plan_coverage || baseC.plan.coverage,
+      sessionsMonth: dbCompany.monthly_plan || baseC.plan.sessionsMonth,
+      priceRef: dbCompany.session_price_ref || baseC.plan.priceRef,
+      renewal: baseC.plan.renewal,
+    } : baseC.plan,
+    sessionPriceRef: dbCompany?.session_price_ref || baseC.sessionPriceRef,
+    workshopTarget: dbCompany?.workshop_target || baseC.workshopTarget,
+    startDate: dbCompany?.start_date || baseC.startDate,
+    // NPS from Supabase
+    nps: dbNps.length>0 ? dbNps[0].value : baseC.nps,
+    npsDate: dbNps.length>0 ? dbNps[0].date : baseC.npsDate,
+  };
+
   const getHeaderText = (module, sub, field) => {
     const found = dbHeaderTexts.find(h=>h.module===module&&(h.sub===sub||(!h.sub&&!sub)));
     return found?.[field]||null;
@@ -869,9 +953,9 @@ export default function Dashboard(){
 
       <Section title="Impacto de acciones colectivas" note="Correlación entre talleres/activaciones y nuevos pacientes.">
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {COMPANIES.tcs.collectiveImpact.length===0
+          {c.collectiveImpact.length===0
             ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px 0"}}>Sin datos cargados aún.</div>
-            : COMPANIES.tcs.collectiveImpact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
+            : c.collectiveImpact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
                 <div style={{flexShrink:0,textAlign:"center",minWidth:44}}>
                   <div style={{fontSize:18,fontWeight:700,color:P.primary,lineHeight:1}}>+{item.newPatients}</div>
                   <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>nuevos</div>
@@ -1078,9 +1162,9 @@ export default function Dashboard(){
           </div>
         </div>}
         {c.consultoriaActiva&&openSections.encuestas&&<div style={{padding:"0 20px 16px"}}>
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>Descargá la encuesta, aplicala a tu equipo y envianos los resultados a {COMPANIES.tcs.accountManager.email} para que los procesemos y mostremos en este panel.</div>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>Descargá la encuesta, aplicala a tu equipo y envianos los resultados a {c.accountManager.email} para que los procesemos y mostremos en este panel.</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {(dbSurveys.length>0?dbSurveys:COMPANIES.tcs.surveys).map((s,i)=>{
+            {(dbSurveys.length>0?dbSurveys:c.surveys).map((s,i)=>{
               const isOpen = expandedSurvey===i;
               return <div key={i} style={{background:P.lighter,border:`1px solid ${P.primary+"44"}`,borderRadius:10,overflow:"hidden"}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedSurvey(isOpen?null:i)}>
@@ -1116,9 +1200,9 @@ export default function Dashboard(){
         </div>
         {openSections.informes&&<div style={{padding:"0 20px 16px"}}>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {(dbReports.length>0?dbReports:COMPANIES.tcs.reports).length===0
+          {(dbReports.length>0?dbReports:c.reports).length===0
             ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px 0"}}>Sin informes disponibles aún.</div>
-            : (dbReports.length>0?dbReports:COMPANIES.tcs.reports).map((r,i)=>{
+            : (dbReports.length>0?dbReports:c.reports).map((r,i)=>{
               const isOpen=expandedReport===i;
               const fileUrl=r.file_url||null;
               return <div key={i} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:10,overflow:"hidden"}}>
@@ -1153,7 +1237,7 @@ export default function Dashboard(){
         {openSections.recomendaciones&&<div style={{padding:"0 20px 16px"}}>
         <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Hallazgos sobre la salud mental y bienestar del equipo, elaborados por nuestros profesionales.</div>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          {COMPANIES.tcs.recommendations.map((r,i)=>{
+          {c.recommendations.map((r,i)=>{
             const u=URGENCY[r.urgency];
             return <div key={i} style={{padding:"16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,borderLeft:`3px solid ${u.tx}`}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
