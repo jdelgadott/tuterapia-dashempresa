@@ -250,6 +250,47 @@ function LoginView({ onLogin }) {
   );
 }
 
+
+function TallerCard({ w, talleristas }) {
+  const [expanded, setExpanded] = useState(false);
+  const tallerista = talleristas.find(t=>t.name===w.speaker||t.initials===w.initials);
+  return (
+    <div style={{background:"#FFFFFF",borderRadius:12,border:"1px solid #DDE8E4",overflow:"hidden"}}>
+      <div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpanded(!expanded)}>
+        {tallerista?.photo_url
+          ? <img src={tallerista.photo_url} alt={w.speaker} style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
+          : <div style={{width:40,height:40,borderRadius:"50%",background:"#1A5C4A",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <span style={{color:"#fff",fontWeight:700,fontSize:12}}>{w.initials||"TT"}</span>
+            </div>
+        }
+        <div style={{flex:1}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#18211E",marginBottom:2}}>{w.title}</div>
+          <div style={{fontSize:11,color:"#607870"}}>{w.date} · {w.speaker}</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+          {w.rating&&<span style={{fontSize:13,fontWeight:700,color:"#2a6aaa"}}>★ {w.rating}</span>}
+          <span style={{fontSize:14,color:"#607870",transform:expanded?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+        </div>
+      </div>
+      {expanded&&<div style={{borderTop:"1px solid #DDE8E4",padding:"14px 16px",background:"#F0F4F2"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12}}>
+          {[
+            {label:"Satisfacción general",value:w.rating,color:"#1A5C4A"},
+            {label:"Calificación tallerista",value:w.rating_tallerista,color:"#2a6aaa"},
+            {label:"Relevancia del contenido",value:w.rating_relevancia,color:"#5040A0"},
+          ].map(({label,value,color})=>(
+            <div key={label} style={{background:"#FFFFFF",borderRadius:8,padding:"12px 14px",textAlign:"center"}}>
+              <div style={{fontSize:11,color:"#607870",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>{label}</div>
+              <div style={{fontSize:22,fontWeight:700,color}}>{value||"—"}</div>
+              <div style={{fontSize:10,color:"#607870"}}>sobre 5</div>
+            </div>
+          ))}
+        </div>
+      </div>}
+    </div>
+  );
+}
+
 export default function Dashboard(){
   // Auth states MUST be first — React rules of hooks
   const [authUser, setAuthUser] = useState(null);
@@ -295,6 +336,40 @@ export default function Dashboard(){
     return ()=>subscription.unsubscribe();
   },[]);
 
+  // Load dynamic data from Supabase
+  const [dbReports, setDbReports] = useState([]);
+  const [dbSurveys, setDbSurveys] = useState([]);
+  const [dbContent, setDbContent] = useState([]);
+  const [dbWorkshops, setDbWorkshops] = useState([]);
+  const [dbTalleristas, setDbTalleristas] = useState([]);
+  const [dbHeaderTexts, setDbHeaderTexts] = useState([]);
+  const [dbCompany, setDbCompany] = useState(null);
+
+  useEffect(()=>{
+    if(!authUser) return;
+    const companyId = authUser.company_id;
+    if(!companyId) return;
+    async function loadData() {
+      const [reports, surveys, content, workshops, talleristas, headerTexts, company] = await Promise.all([
+        supabase.from("informes").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
+        supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
+        supabase.from("content").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
+        supabase.from("workshops").select("*").eq("company_id",companyId).order("date",{ascending:false}),
+        supabase.from("talleristas").select("*").order("name"),
+        supabase.from("header_texts").select("*").eq("company_id",companyId),
+        supabase.from("companies").select("*,consultation_reasons:consultation_reasons(*)").eq("id",companyId).single(),
+      ]);
+      setDbReports(reports.data||[]);
+      setDbSurveys(surveys.data||[]);
+      setDbContent(content.data||[]);
+      setDbWorkshops(workshops.data||[]);
+      setDbTalleristas(talleristas.data||[]);
+      setDbHeaderTexts(headerTexts.data||[]);
+      if(company.data) setDbCompany(company.data);
+    }
+    loadData();
+  },[authUser]);
+
   const hasAccess = (moduleId) => {
     if(userPerms.length===0) return false;
     const perm = userPerms.find(p=>p.section===moduleId);
@@ -305,6 +380,10 @@ export default function Dashboard(){
   if(!authUser) return <LoginView onLogin={(ud,pd)=>{ setAuthUser(ud); setUserPerms(pd); }}/>;
 
   const c=COMPANIES[ck];
+  const getHeaderText = (module, sub, field) => {
+    const found = dbHeaderTexts.find(h=>h.module===module&&(h.sub===sub||(!h.sub&&!sub)));
+    return found?.[field]||null;
+  };
   const months=monthsDiff(c.startDate);
   const activeMod=MODULES.find(m=>m.id===mod);
 
@@ -557,10 +636,10 @@ export default function Dashboard(){
     {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#e8f5ea,#f2faf3)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"#4a9356",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,opacity:0.7}}>Colaboradores</div>
       <div style={{fontSize:22,fontWeight:800,color:"#1e4d28",letterSpacing:"-0.5px",marginBottom:4}}>
-        {sub==="Adherencia"?"Más personas eligieron cuidar su salud este mes":`${totNuev} personas eligieron cuidar su salud mental`}
+        {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud este mes":`${totNuev} personas eligieron cuidar su salud mental`)}
       </div>
       <div style={{fontSize:13,color:"#4a7a52",opacity:0.85}}>
-        {sub==="Sesiones"?`${fmt(totReal)} sesiones realizadas · ${compRate}% de utilización del plan`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:""}
+        {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totReal)} sesiones realizadas · ${compRate}% de utilización del plan`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:"")}
       </div>
     </div>}
     {mod==="individual"&&sub==="Sesiones"&&<>
@@ -646,41 +725,41 @@ export default function Dashboard(){
     {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#f0eaf8,#f8f3fc)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(74,48,112,0.5)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
       <div style={{fontSize:22,fontWeight:800,color:"#3d2060",letterSpacing:"-0.5px",marginBottom:4}}>
-        {sub==="Contenido"?"Recursos para llevar el bienestar a cada rincón del equipo":`${c.workshops.length} talleres de bienestar realizados con tu equipo`}
+        {getHeaderText("colectivo",sub,"title")||(sub==="Contenido"?"Recursos para llevar el bienestar a cada rincón del equipo":`${c.workshops.length} talleres de bienestar realizados con tu equipo`)}
       </div>
       <div style={{fontSize:13,color:"rgba(74,48,112,0.7)"}}>
-        {sub==="Talleres"?`${c.workshops.filter(w=>w.rating>=4.5).length} de ${c.workshops.length} talleres con puntuación destacada`:`${c.content.filter(x=>x.downloaded).length} recursos descargados · ${c.content.filter(x=>x.sent).length} enviados al equipo`}
+        {getHeaderText("colectivo",sub,"subtitle")||(sub==="Talleres"?`${c.workshops.filter(w=>w.rating>=4.5).length} de ${c.workshops.length} talleres con puntuación destacada`:`${c.content.filter(x=>x.downloaded).length} recursos descargados · ${c.content.filter(x=>x.sent).length} enviados al equipo`)}
       </div>
     </div>}
-    {mod==="colectivo"&&sub==="Talleres"&&<>
-      <Section title={`Talleres realizados (${c.workshops.length})`}>
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {c.workshops.map((w,i)=><div key={i} style={{display:"flex",alignItems:"flex-start",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`}}>
-            <Avatar initials={w.initials} size={38} bg={WSHOP_COLORS[w.type]||P.primary}/>
-            <div style={{flex:1}}>
-              <div style={{display:"flex",gap:6,marginBottom:6,flexWrap:"wrap",alignItems:"center"}}>
-                <Label text={w.type} bg={P.lighter} tx={WSHOP_COLORS[w.type]||P.primary}/>
-                {w.lang&&<Label text={w.lang} bg={P.gray50} tx={P.textMuted}/>}
-              </div>
-              <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:3,letterSpacing:"-0.1px"}}>{w.title}</div>
-              <div style={{fontSize:11,color:P.textMuted,marginBottom:7}}>{w.date} · {w.speaker}</div>
-              <Stars rating={w.rating}/>
-            </div>
-          </div>)}
+    {mod==="colectivo"&&sub==="Talleres"&&(()=>{
+      // Use Supabase workshops if available, fallback to hardcoded
+      const workshops = dbWorkshops.length>0 ? dbWorkshops : c.workshops;
+      return <>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
+          <KpiCard label="Talleres realizados" value={workshops.length} sub={`de ${c.workshopTarget||5} anuales`}/>
+          <KpiCard label="Próximo taller" value={c.workshopsRecommended.length>0?c.workshopsRecommended[0].title:"Por definir"} sub="Recomendado"/>
+          <KpiCard label="Rating promedio" value={workshops.filter(w=>w.rating).length>0?(workshops.filter(w=>w.rating).reduce((s,w)=>s+(w.rating||0),0)/workshops.filter(w=>w.rating).length).toFixed(1):"—"} sub="★ participantes"/>
         </div>
-      </Section>
-      <Section title="Talleres recomendados" note="Sugeridos en base al perfil y actividad del equipo de TCS.">
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {c.workshopsRecommended.map((w,i)=><div key={i} style={{padding:"14px 16px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:3,letterSpacing:"-0.1px"}}>{w.title}</div>
-              <div style={{fontSize:11,color:P.textMuted}}>{w.desc}</div>
-            </div>
-            <Label text={w.month} bg={P.lighter} tx={P.primary}/>
-          </div>)}
-        </div>
-      </Section>
-    </>}
+        <Section title="Talleres realizados">
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {workshops.length===0&&<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px"}}>Sin talleres realizados aún.</div>}
+            {workshops.map((w,i)=><TallerCard key={w.id||i} w={w} talleristas={dbTalleristas}/>)}
+          </div>
+        </Section>
+        <Section title="Próximos talleres recomendados">
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {c.workshopsRecommended.length===0
+              ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px"}}>Sin recomendaciones aún.</div>
+              : c.workshopsRecommended.map((w,i)=><div key={i} style={{padding:"12px 16px",background:P.lighter,borderRadius:10,border:`1px solid ${P.border}`}}>
+                  <div style={{fontSize:13,fontWeight:600,color:P.primary,marginBottom:3}}>{w.title}</div>
+                  {w.descripcion&&<div style={{fontSize:11,color:P.textMuted,marginBottom:4}}>{w.descripcion}</div>}
+                  {w.month&&<span style={{background:P.lighter,color:P.primary,fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20}}>{w.month}</span>}
+                </div>)
+            }
+          </div>
+        </Section>
+      </>;
+    })()}
 
     {mod==="colectivo"&&sub==="Contenido"&&(()=>{
       const ratings=contentRatings; const setRatings=setContentRatings;
@@ -691,7 +770,7 @@ export default function Dashboard(){
         <Section title="Recursos y material">
           <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Descargá el material, evalualo y marcalo como enviado cuando lo compartas con tu equipo.</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {c.content.map((item,i)=>{
+            {(dbContent.length>0?dbContent:c.content).map((item,i)=>{
               const col=TYPE_COLORS[item.type]||{bg:P.lighter,tx:P.primary};
               return <div key={i} style={{padding:"14px 16px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:12,flexWrap:"wrap"}}>
@@ -722,10 +801,10 @@ export default function Dashboard(){
     {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e8f2fc,#f0f7ff)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"#2a6aaa",opacity:0.6,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
       <div style={{fontSize:22,fontWeight:800,color:"#1a4a7a",letterSpacing:"-0.5px",marginBottom:4}}>
-        {sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones"}
+        {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
       </div>
       <div style={{fontSize:13,color:"#2a6aaa"}}>
-        {sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · encuestas Q pendientes`:sub==="Consultoría Tu Terapia"?(c.consultoriaActiva?"Una inversión que se traduce en personas más sanas":"Activá la consultoría para ver el análisis de impacto"):`${c.reports.length} informes disponibles · ${c.recommendations.length} recomendaciones activas`}
+        {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · encuestas Q pendientes`:sub==="Consultoría Tu Terapia"?(c.consultoriaActiva?"Una inversión que se traduce en personas más sanas":"Activá la consultoría para ver el análisis de impacto"):`${c.reports.length} informes disponibles · ${c.recommendations.length} recomendaciones activas`)}
       </div>
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
@@ -874,7 +953,7 @@ export default function Dashboard(){
       const workshopTarget=c.workshopTarget||5;
       const workshopScore=Math.min(100,Math.round((c.workshops.length/workshopTarget)*100));
       const workshopPts=Math.round(workshopScore*0.15);
-      const contentEngagement=c.content.length>0?Math.round((c.content.filter(x=>x.downloaded&&x.rating).length/c.content.length)*100):0;
+      const contentEngagement=c.content.length>0?Math.round(((dbContent.length>0?dbContent:c.content).filter(x=>x.downloaded&&x.rating).length/c.content.length)*100):0;
       const contentPts=Math.round(contentEngagement*0.05);
       const iii=normImp2!=null?Math.round(normImp2*0.5+utilScore2+workshopPts+contentPts):null;
       const invTotal2=c.monthlyData.reduce((s,m)=>s+m.realizadas,0)*c.sessionPriceRef;
@@ -1001,7 +1080,7 @@ export default function Dashboard(){
         {c.consultoriaActiva&&openSections.encuestas&&<div style={{padding:"0 20px 16px"}}>
           <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>Descargá la encuesta, aplicala a tu equipo y envianos los resultados a {COMPANIES.tcs.accountManager.email} para que los procesemos y mostremos en este panel.</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {COMPANIES.tcs.surveys.map((s,i)=>{
+            {(dbSurveys.length>0?dbSurveys:COMPANIES.tcs.surveys).map((s,i)=>{
               const isOpen = expandedSurvey===i;
               return <div key={i} style={{background:P.lighter,border:`1px solid ${P.primary+"44"}`,borderRadius:10,overflow:"hidden"}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedSurvey(isOpen?null:i)}>
@@ -1011,7 +1090,10 @@ export default function Dashboard(){
                     <div style={{fontSize:11,color:P.textMuted}}>{s.desc}</div>
                   </div>
                   <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
-                    <button onClick={e=>{e.stopPropagation();}} style={{background:P.primary,color:P.white,border:"none",borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Descargar</button>
+                    {s.file_url
+                      ? <a href={s.file_url} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{background:P.primary,color:P.white,borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,textDecoration:"none"}}>⬇ Descargar</a>
+                      : <span style={{fontSize:11,color:P.textMuted,fontStyle:"italic",padding:"6px 0"}}>Archivo próximamente</span>
+                    }
                     <span style={{fontSize:16,color:P.textMuted,transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
                   </div>
                 </div>
@@ -1034,25 +1116,31 @@ export default function Dashboard(){
         </div>
         {openSections.informes&&<div style={{padding:"0 20px 16px"}}>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {COMPANIES.tcs.reports.map((r,i)=>{
-            const isOpen=expandedReport===i;
-            return <div key={i} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:10,overflow:"hidden"}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer"}} onClick={()=>setExpandedReport(isOpen?null:i)}>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:12,fontWeight:600,color:P.text}}>{r.title}</div>
-                  <div style={{fontSize:11,color:P.textMuted}}>{r.date}</div>
+          {(dbReports.length>0?dbReports:COMPANIES.tcs.reports).length===0
+            ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px 0"}}>Sin informes disponibles aún.</div>
+            : (dbReports.length>0?dbReports:COMPANIES.tcs.reports).map((r,i)=>{
+              const isOpen=expandedReport===i;
+              const fileUrl=r.file_url||null;
+              return <div key={i} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:10,overflow:"hidden"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer"}} onClick={()=>setExpandedReport(isOpen?null:i)}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,fontWeight:600,color:P.text}}>{r.title}</div>
+                    <div style={{fontSize:11,color:P.textMuted}}>{r.period||r.date}</div>
+                  </div>
+                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                    {fileUrl
+                      ? <a href={fileUrl} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{background:P.primary,color:"#fff",borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,textDecoration:"none"}}>⬇ Descargar</a>
+                      : <span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Próximamente</span>
+                    }
+                    <span style={{fontSize:16,color:P.textMuted,transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+                  </div>
                 </div>
-                <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  {r.isNew&&<Label text="Nuevo" bg={P.primary} tx={P.white}/>}
-                  <button onClick={e=>{e.stopPropagation();}} style={{background:P.lighter,color:P.primary,border:`1px solid ${P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Descargar</button>
-                  <span style={{fontSize:16,color:P.textMuted,transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
-                </div>
-              </div>
-              {isOpen&&<div style={{borderTop:`1px solid ${P.border}`,padding:"12px 14px",background:P.gray50,fontSize:11,color:P.textMuted,lineHeight:1.7}}>
-                Informe de uso del plan Tu Terapia. Incluye sesiones realizadas, nuevos pacientes, talleres y métricas de adherencia del período.
-              </div>}
-            </div>;
-          })}
+                {isOpen&&<div style={{borderTop:`1px solid ${P.border}`,padding:"12px 14px",background:P.gray50,fontSize:11,color:P.textMuted,lineHeight:1.7}}>
+                  Informe de uso del plan Tu Terapia. Incluye sesiones realizadas, nuevos pacientes, talleres y métricas de adherencia del período.
+                </div>}
+              </div>;
+            })
+          }
         </div>
         </div>}
       </div>
