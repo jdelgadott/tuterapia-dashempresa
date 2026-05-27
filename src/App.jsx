@@ -745,7 +745,7 @@ export default function Dashboard(){
           </>}
         </div>
         
-        <KpiCard label="Motivos de consulta" value={c.consultationReasons.length||"Pendiente"} sub="Categorías registradas"/>
+        <KpiCard label="Motivo principal" value={c.consultationReasons.length>0?c.consultationReasons[0].reason:"Pendiente"} sub={c.consultationReasons.length>0?`${c.consultationReasons[0].percentage}% de los casos`:"Sin datos aún"}/>
       </div>
 
       <Section title="Seguimiento de personas que usan el beneficio">
@@ -760,14 +760,38 @@ export default function Dashboard(){
       </Section>
 
       {c.consultationReasons.length===0?
-        <Section title="Motivos de consulta">
-          <div style={{padding:"20px",textAlign:"center",color:P.textMuted,fontSize:12}}>Disponibles al integrar los datos del módulo de encuestas.</div>
-        </Section>
+        <Section title="Motivos de consulta" note="Fuente: reporte de plataforma Tu Terapia.">
+        {c.consultationReasons.length===0
+          ? <div style={{fontSize:12,color:P.textMuted,padding:"20px 0",textAlign:"center"}}>Sin datos cargados aún. Tu referente los actualizará periódicamente.</div>
+          : <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {c.consultationReasons.map((r,i)=>{
+                const colors=["#1A5C4A","#267A62","#5040A0","#2a6aaa","#8B4A8B","#B03030","#c49020","#607870"];
+                const color=colors[i%colors.length];
+                const pct=r.percentage||0;
+                return <div key={r.reason} style={{display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{width:20,height:20,borderRadius:"50%",background:color,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{color:"#fff",fontSize:9,fontWeight:700}}>#{i+1}</span>
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <span style={{fontSize:12,fontWeight:600,color:P.text}}>{r.reason}</span>
+                      <span style={{fontSize:12,fontWeight:700,color:color}}>{pct}%</span>
+                    </div>
+                    <div style={{height:6,background:P.gray50,borderRadius:3,overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:3,transition:"width 0.4s ease"}}/>
+                    </div>
+                    {r.count&&<div style={{fontSize:10,color:P.textMuted,marginTop:3}}>{r.count} casos · {r.period||"—"}</div>}
+                  </div>
+                </div>;
+              })}
+            </div>
+        }
+      </Section>
       :<Section title="Motivos de consulta más frecuentes" note="Datos anonimizados y agrupados por categoría.">
         <div style={{display:"flex",gap:20,flexWrap:"wrap",alignItems:"flex-start"}}>
           <div style={{position:"relative",width:140,height:140,flexShrink:0}}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart><Pie data={c.consultationReasons} dataKey="pct" innerRadius={38} outerRadius={62} paddingAngle={2}>
+              <PieChart><Pie data={c.consultationReasons} dataKey="percentage" innerRadius={38} outerRadius={62} paddingAngle={2}>
                 {c.consultationReasons.map((_,i)=><Cell key={i} fill={REASON_COLORS[i]}/>)}
               </Pie></PieChart>
             </ResponsiveContainer>
