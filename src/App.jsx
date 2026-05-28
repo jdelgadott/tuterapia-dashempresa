@@ -864,7 +864,7 @@ export default function Dashboard(){
                     <div style={{fontSize:11,color:P.textMuted}}>{item.date}</div>
                   </div>
                   <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0,flexWrap:"wrap"}}>
-                    <button onClick={()=>setDownloaded(d=>({...d,[i]:true}))} style={{background:downloaded[i]?P.lighter:P.white,color:downloaded[i]?P.primary:P.textMuted,border:`1px solid ${downloaded[i]?P.primary+"44":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>{downloaded[i]?"✓ Descargado":"Descargar"}</button>
+                    <button onClick={()=>{setDownloaded(d=>({...d,[i]:true}));if(item.file_url||item.fileUrl){window.open(item.file_url||item.fileUrl,"_blank");}}} style={{background:downloaded[i]?P.lighter:P.white,color:downloaded[i]?P.primary:P.textMuted,border:`1px solid ${downloaded[i]?P.primary+"44":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>{downloaded[i]?"✓ Descargado":"Descargar"}</button>
                     <button onClick={()=>setSent(s=>({...s,[i]:!s[i]}))} style={{background:sent[i]?"#E8F5E9":P.white,color:sent[i]?"#2E7D32":P.textMuted,border:`1px solid ${sent[i]?"#2E7D3244":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>{sent[i]?"✓ Enviado":"Marcar enviado"}</button>
                   </div>
                 </div>
