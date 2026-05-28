@@ -517,12 +517,12 @@ export default function Dashboard(){
   return <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif",background:P.bg,minHeight:"100vh",color:P.text}}>
 
     {/* Header */}
-    <div style={{background:P.white,borderBottom:`1px solid ${P.border}`,padding:"14px 28px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+    <div style={{background:P.white,borderBottom:`2px solid ${P.primary}`,padding:"0 28px",display:"flex",alignItems:"center",justifyContent:"space-between",height:68,flexWrap:"wrap",gap:12}}>
       <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:14,background:"none",border:"none",cursor:"pointer",padding:0}}>
-        <img src={LOGO_TT} alt="Tu Terapia" style={{height:32,objectFit:"contain",flexShrink:0}}/>
+        <img src={LOGO_TT} alt="Tu Terapia" style={{height:44,objectFit:"contain",flexShrink:0}}/>
         <div style={{textAlign:"left"}}>
-          <div style={{fontSize:13,fontWeight:700,color:P.text,letterSpacing:"-0.2px"}}>Tu Terapia</div>
-          <div style={{fontSize:10,color:P.textMuted,letterSpacing:"0.02em"}}>Panel empresarial</div>
+          <div style={{fontSize:16,fontWeight:600,color:P.primary,letterSpacing:"-0.4px"}}>Tu Terapia</div>
+          <div style={{fontSize:11,color:P.textMuted}}>Dashboard de bienestar</div>
         </div>
       </button>
       {mod!=="home"&&activeMod&&<div style={{display:"flex",gap:2,flexWrap:"wrap"}}>
@@ -531,12 +531,12 @@ export default function Dashboard(){
         </button>)}
       </div>}
       <div style={{display:"flex",alignItems:"center",gap:12}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E"}}/>
-          <span style={{fontSize:11,color:P.textMuted}}>{c.name} · {months} meses</span>
+        <div style={{background:P.lighter,borderRadius:20,padding:"5px 14px",border:`1px solid #C8E8DF`,display:"flex",alignItems:"center",gap:6}}>
+          <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
+          <span style={{fontSize:12,fontWeight:500,color:P.primary}}>{c.name}&nbsp;·&nbsp;Plan activo</span>
         </div>
         <button onClick={async()=>{ await supabase.auth.signOut(); setAuthUser(null); setUserPerms([]); }}
-          style={{fontSize:11,color:P.textMuted,background:"none",border:`1px solid ${P.border}`,borderRadius:6,padding:"5px 10px",cursor:"pointer"}}>
+          style={{fontSize:11,color:P.textMuted,background:"none",border:`1px solid ${P.border}`,borderRadius:6,padding:"5px 12px",cursor:"pointer",fontWeight:500}}>
           Cerrar sesión
         </button>
       </div>
