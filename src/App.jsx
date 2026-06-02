@@ -296,6 +296,12 @@ export default function Dashboard(){
   const [authUser, setAuthUser] = useState(null);
   const [userPerms, setUserPerms] = useState([]);
   const [authLoading, setAuthLoading] = useState(true);
+  const [showSetPassword, setShowSetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [newPassword2, setNewPassword2] = useState("");
+  const [passwordMsg, setPasswordMsg] = useState("");
+  const [settingPassword, setSettingPassword] = useState(false);
+
   const [ck,setCk]=useState("tcs");
   const [mod,setMod]=useState("home");
   const [sub,setSub]=useState(null);
@@ -318,6 +324,14 @@ export default function Dashboard(){
   const [npsDate,setNpsDate]=useState(null);
 
   useEffect(()=>{
+    // Check if coming from password recovery link
+    const hash = window.location.hash;
+    if(hash.includes('type=recovery') || hash.includes('type=invite')) {
+      setShowSetPassword(true);
+      setAuthLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(async({data:{session}, error:sessionError})=>{
       if(sessionError||!session?.user){ setAuthLoading(false); return; }
       try {
@@ -407,6 +421,76 @@ export default function Dashboard(){
     return perm ? perm.visible : false;
   };
 
+  // Password set screen (from invite or recovery link)
+  if(showSetPassword) return (
+    <div style={{minHeight:"100vh",background:"#EDF5F1",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif"}}>
+      <div style={{background:"#FFFFFF",borderRadius:16,border:"1px solid #DDE8E4",padding:"40px",width:380,boxShadow:"0 4px 24px rgba(0,0,0,0.06)"}}>
+        <div style={{textAlign:"center",marginBottom:28}}>
+          <img src={LOGO_TT} alt="Tu Terapia" style={{height:40,marginBottom:14}}/>
+          <div style={{fontSize:20,fontWeight:700,color:"#18211E"}}>Creá tu contraseña</div>
+          <div style={{fontSize:13,color:"#607870",marginTop:6}}>Elegí una contraseña para acceder al dashboard</div>
+        </div>
+        {passwordMsg&&<div style={{padding:"10px 14px",background:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#FAEAEA":"#E6F4F0",color:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#B03030":"#1A5C4A",borderRadius:8,marginBottom:14,fontSize:12}}>{passwordMsg}</div>}
+        <div style={{marginBottom:12}}>
+          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Nueva contraseña</label>
+          <input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres"
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        <div style={{marginBottom:20}}>
+          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Repetí la contraseña</label>
+          <input type="password" value={newPassword2} onChange={e=>setNewPassword2(e.target.value)} placeholder="Repetí tu contraseña"
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        <button disabled={settingPassword} onClick={async()=>{
+          if(newPassword.length < 8){ setPasswordMsg("La contraseña debe tener al menos 8 caracteres."); return; }
+          if(newPassword !== newPassword2){ setPasswordMsg("Las contraseñas no coinciden."); return; }
+          setSettingPassword(true);
+          const {error} = await supabase.auth.updateUser({password: newPassword});
+          if(error){ setPasswordMsg("Error: "+error.message); setSettingPassword(false); return; }
+          setPasswordMsg("¡Contraseña creada! Redirigiendo...");
+          setTimeout(()=>{ setShowSetPassword(false); window.location.hash=""; setAuthLoading(false); window.location.reload(); }, 1500);
+        }} style={{width:"100%",padding:11,background:"#1A5C4A",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:600,cursor:settingPassword?"not-allowed":"pointer",opacity:settingPassword?0.7:1}}>
+          {settingPassword?"Guardando...":"Crear contraseña"}
+        </button>
+      </div>
+    </div>
+  );
+
+  // Password set screen (from invite or recovery link)
+  if(showSetPassword) return (
+    <div style={{minHeight:"100vh",background:"#EDF5F1",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif"}}>
+      <div style={{background:"#FFFFFF",borderRadius:16,border:"1px solid #DDE8E4",padding:"40px",width:380,boxShadow:"0 4px 24px rgba(0,0,0,0.06)"}}>
+        <div style={{textAlign:"center",marginBottom:28}}>
+          <img src={LOGO_TT} alt="Tu Terapia" style={{height:40,marginBottom:14,display:"block",margin:"0 auto 14px"}}/>
+          <div style={{fontSize:20,fontWeight:700,color:"#18211E"}}>Creá tu contraseña</div>
+          <div style={{fontSize:13,color:"#607870",marginTop:6}}>Elegí una contraseña para acceder al dashboard</div>
+        </div>
+        {passwordMsg&&<div style={{padding:"10px 14px",background:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#FAEAEA":"#E6F4F0",color:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#B03030":"#1A5C4A",borderRadius:8,marginBottom:14,fontSize:12}}>{passwordMsg}</div>}
+        <div style={{marginBottom:12}}>
+          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Nueva contraseña</label>
+          <input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres"
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        <div style={{marginBottom:20}}>
+          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Repetí la contraseña</label>
+          <input type="password" value={newPassword2} onChange={e=>setNewPassword2(e.target.value)} placeholder="Repetí tu contraseña"
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        <button disabled={settingPassword} onClick={async()=>{
+          if(newPassword.length<8){setPasswordMsg("La contraseña debe tener al menos 8 caracteres.");return;}
+          if(newPassword!==newPassword2){setPasswordMsg("Las contraseñas no coinciden.");return;}
+          setSettingPassword(true);
+          const {error}=await supabase.auth.updateUser({password:newPassword});
+          if(error){setPasswordMsg("Error: "+error.message);setSettingPassword(false);return;}
+          setPasswordMsg("¡Contraseña creada! Redirigiendo...");
+          setTimeout(()=>{setShowSetPassword(false);window.location.hash="";setAuthLoading(false);window.location.reload();},1500);
+        }} style={{width:"100%",padding:11,background:"#1A5C4A",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:600,cursor:settingPassword?"not-allowed":"pointer",opacity:settingPassword?0.7:1}}>
+          {settingPassword?"Guardando...":"Crear contraseña"}
+        </button>
+      </div>
+    </div>
+  );
+
   if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando...</div>;
   if(!authUser) return <LoginView onLogin={(ud,pd)=>{ setAuthUser(ud); setUserPerms(pd); }}/>;
 
@@ -420,6 +504,7 @@ export default function Dashboard(){
     canjeadas: s.canjeadas||0,
     realizadas: s.realizadas||0,
     nuevos: s.nuevos||0,
+    activos: s.activos||0,
     total_historico: s.total_historico||0,
     c1: s.c1||0, c2: s.c2||0, c3: s.c3||0, c4: s.c4||0, c5: s.c5||0,
     partial: s.partial||false,
@@ -791,6 +876,18 @@ export default function Dashboard(){
           </div>}
         </Section>
         
+        <Section title="Pacientes activos por mes">
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:10,lineHeight:1.6}}>Personas que realizaron al menos una sesión ese mes.</div>
+          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={c.monthlyData} barSize={13}>
+              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
+              <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
+              <Bar dataKey="activos" name="Activos" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
+            </BarChart>
+          </ResponsiveContainer></div>
+        </Section>
         <Section title="Nuevos pacientes por mes">
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={c.monthlyData} barSize={13}>
