@@ -506,6 +506,7 @@ export default function Dashboard(){
     nuevos: s.nuevos||0,
     activos: s.activos||0,
     total_historico: s.total_historico||0,
+    primera_vez: s.primera_vez||0,
     c1: s.c1||0, c2: s.c2||0, c3: s.c3||0, c4: s.c4||0, c5: s.c5||0,
     partial: s.partial||false,
   })) : null;
@@ -548,6 +549,22 @@ export default function Dashboard(){
     nps: dbNps.length>0 ? dbNps[0].value : baseC.nps,
     npsDate: dbNps.length>0 ? dbNps[0].date : baseC.npsDate,
   };
+
+  // Calculate firstTime from sessions data
+  const calcFirstTimeCount = (()=>{
+    const data = supabaseMonthlyData || baseC.monthlyData;
+    const total = data.reduce((s,m)=>s+(m.primera_vez||0),0);
+    return total > 0 ? total : null;
+  })();
+  const calcTotHistorico = (()=>{
+    const data = supabaseMonthlyData || baseC.monthlyData;
+    const lastWithHist=[...data].reverse().find(m=>m.total_historico>0);
+    return lastWithHist?lastWithHist.total_historico:null;
+  })();
+  if(calcFirstTimeCount!==null) {
+    c.firstTimeCount = calcFirstTimeCount;
+    c.firstTimePct = calcTotHistorico ? Math.round((calcFirstTimeCount/calcTotHistorico)*100) : null;
+  }
 
   const getHeaderText = (module, sub, field) => {
     const found = dbHeaderTexts.find(h=>h.module===module&&(h.sub===sub||(!h.sub&&!sub)));
