@@ -30,9 +30,9 @@ const COMPANIES = {
   tcs:{
     name:"TCS", industry:"Tecnología",
     planType:"Cuponera Fija", planCoverage:"100%", monthlyPlan:300,
-    startDate:"Julio 2025", sessionPriceRef:1600, coveragePct:1.0,
+    startDate:"Julio 2025", sessionPriceRef:1375, coveragePct:1.0,
     accountManager:{name:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:"093399250",whatsapp:"59893399250",calendar:"https://calendar.google.com/calendar/r/eventnew?add=firoldi@tuterapia.com.uy&text=Reunión+con+Tu+Terapia&details=Reunión+de+seguimiento+del+beneficio+de+salud+mental",initials:"FI"},
-    plan:{type:"Cuponera Fija",sessionsMonth:300,priceRef:1600,start:"Jul 2025",renewal:"Jul 2026",status:"activo"},
+    plan:{type:"Cuponera Fija",sessionsMonth:300,priceRef:1375,start:"Jul 2025",renewal:"Jul 2026",status:"activo"},
     monthlyData:[
       {month:"Jul 25",canjeadas:4,  realizadas:1,  nuevos:0, c1:4,  c2:0, c3:0, c4:0,  c5:0,  partial:true},
       {month:"Ago 25",canjeadas:306,realizadas:232,nuevos:66,c1:144,c2:12,c3:11,c4:6,  c5:13},
@@ -139,6 +139,9 @@ const MODULES=[
   {id:"estrategico",label:"Estrategia de Bienestar", subs:["Bienestar del equipo","Consultoría Tu Terapia","Recursos y reportes"]},
   {id:"gestion",    label:"Gestión",            subs:["Facturación","Plan activo","Equipo TT"],restricted:true},
 ];
+
+const MONTH_ORDER = {Ene:1,Feb:2,Mar:3,Abr:4,May:5,Jun:6,Jul:7,Ago:8,Sep:9,Oct:10,Nov:11,Dic:12};
+const MONTH_LABEL = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",7:"Jul",8:"Ago",9:"Sep",10:"Oct",11:"Nov",12:"Dic"};
 
 const WSHOP_COLORS={Activación:P.primary,"Concientización":"#1A3A8B",Mindfulness:"#5040A0",Liderazgo:P.accent,"8M":"#8B1A3A"};
 const TYPE_COLORS={Campaña:{bg:"#FFF0E6",tx:"#7A3800"},Guía:{bg:P.lighter,tx:P.primary},Protocolo:{bg:"#EEF4FF",tx:"#1A3A8B"},Reporte:{bg:P.gray50,tx:P.textMuted}};
@@ -501,6 +504,8 @@ export default function Dashboard(){
   const supabaseMonthlyData = dbSessions.length>0 ? dbSessions.map(s=>({
     month: s.month,
     year: s.year,
+    monthOrder: MONTH_ORDER[s.month]||0,
+    label: `${s.month} ${String(s.year).slice(2)}`,
     canjeadas: s.canjeadas||0,
     realizadas: s.realizadas||0,
     nuevos: s.nuevos||0,
@@ -509,7 +514,7 @@ export default function Dashboard(){
     primera_vez: s.primera_vez||0,
     c1: s.c1||0, c2: s.c2||0, c3: s.c3||0, c4: s.c4||0, c5: s.c5||0,
     partial: s.partial||false,
-  })) : null;
+  })).sort((a,b)=> a.year!==b.year ? a.year-b.year : a.monthOrder-b.monthOrder) : null;
 
   // Build billing from Supabase if available
   const supabaseBilling = dbBilling.length>0 ? dbBilling.map(b=>({
@@ -525,9 +530,25 @@ export default function Dashboard(){
     ...baseC,
     // Override with Supabase data when available
     name: dbCompany?.name || baseC.name,
-    monthlyData: supabaseMonthlyData || baseC.monthlyData,
+    monthlyData: (supabaseMonthlyData || baseC.monthlyData).map(m=>({
+      ...m,
+      label: m.label || m.month, // use precomputed label or fallback to month string
+    })),
     billing: supabaseBilling || baseC.billing,
-    workshops: dbWorkshops.length>0 ? dbWorkshops : baseC.workshops,
+    workshops: (dbWorkshops.length>0 ? dbWorkshops : baseC.workshops).sort((a,b)=>{
+      const monthNum = (s) => {
+        const full = {Enero:1,Febrero:2,Marzo:3,Abril:4,Mayo:5,Junio:6,Julio:7,Agosto:8,Septiembre:9,Octubre:10,Noviembre:11,Diciembre:12};
+        const abbr = {Ene:1,Feb:2,Mar:3,Abr:4,May:5,Jun:6,Jul:7,Ago:8,Sep:9,Oct:10,Nov:11,Dic:12};
+        return full[s]||abbr[s]||0;
+      };
+      const toNum = (d) => {
+        if(!d) return 0;
+        const parts = d.trim().split(/\s+/);
+        if(parts.length===2 && isNaN(parts[0])) return parseInt(parts[1])*100 + monthNum(parts[0]);
+        return new Date(d).getTime()||0;
+      };
+      return toNum(a.date) - toNum(b.date);
+    }),
     workshopsRecommended: dbWorkshopsRec.length>0 ? dbWorkshopsRec : baseC.workshopsRecommended,
     content: dbContent.length>0 ? dbContent : baseC.content,
     recommendations: dbRecommendations.length>0 ? dbRecommendations : baseC.recommendations,
@@ -598,10 +619,23 @@ export default function Dashboard(){
     {name:"5 sesiones",value:c.monthlyData.reduce((s,m)=>s+m.c5,0)},
   ];
   const totCoup=couponD.reduce((s,d)=>s+d.value,0);
-  const invTotal=totReal*c.sessionPriceRef;
-  const invLastFull=lastFull?lastFull.realizadas*c.sessionPriceRef:0;
+  // Investment: use billing amounts if available, else fallback to realizadas * price
+  const billingMap = {};
+  c.billing.forEach(b=>{ billingMap[b.period]=b.amount; });
+  const MONTH_TO_PERIOD = (label) => {
+    const [mon, yr] = (label||"").split(" ");
+    const fullYr = yr ? (parseInt(yr)<100 ? 2000+parseInt(yr) : parseInt(yr)) : 0;
+    const monNames = {Ene:"Ene",Feb:"Feb",Mar:"Mar",Abr:"Abr",May:"May",Jun:"Jun",Jul:"Jul",Ago:"Ago",Sep:"Sep",Oct:"Oct",Nov:"Nov",Dic:"Dic"};
+    return `${monNames[mon]||mon} ${fullYr}`;
+  };
+  const invTrend=c.monthlyData.map(m=>{
+    const period = MONTH_TO_PERIOD(m.label||m.month);
+    const billed = billingMap[period];
+    return {label:m.label||m.month, investment: billed || Math.round(m.realizadas*c.sessionPriceRef), partial:m.partial};
+  });
+  const invTotal=c.billing.filter(b=>b.status==="pagado"||b.status==="pendiente").reduce((s,b)=>s+b.amount,0) || totReal*c.sessionPriceRef;
+  const invLastFull=lastFull?(billingMap[MONTH_TO_PERIOD(lastFull.label||lastFull.month)]||lastFull.realizadas*c.sessionPriceRef):0;
   const invPerPat=totNuev>0?invTotal/totNuev:0;
-  const invTrend=c.monthlyData.map(m=>({month:m.month,investment:Math.round(m.realizadas*c.sessionPriceRef),partial:m.partial}));
   const billingPaid=c.billing.filter(b=>b.status==="pagado").reduce((s,b)=>s+b.amount,0);
   const billingPending=c.billing.filter(b=>b.status==="pendiente").reduce((s,b)=>s+b.amount,0);
 
@@ -627,7 +661,7 @@ export default function Dashboard(){
           <div style={{fontSize:11,color:P.textMuted}}>Dashboard de bienestar</div>
         </div>
       </button>
-      {mod!=="home"&&activeMod&&<div style={{display:"flex",gap:2,flexWrap:"wrap"}}>
+      {mod!=="home"&&activeMod&&<div style={{display:"flex",gap:2,overflowX:"auto",flexShrink:1,minWidth:0}}>
         {MODULES.map(m=><button key={m.id} onClick={()=>setModule(m.id)} style={{fontSize:12,fontWeight:mod===m.id?700:400,color:mod===m.id?P.primary:P.textMuted,background:"none",border:"none",borderBottom:mod===m.id?`2px solid ${P.primary}`:"2px solid transparent",padding:"8px 14px",cursor:"pointer",whiteSpace:"nowrap"}}>
           {m.label}
         </button>)}
@@ -645,7 +679,7 @@ export default function Dashboard(){
     </div>
 
     {/* Sub nav */}
-    {mod!=="home"&&<div style={{background:P.white,borderBottom:`1px solid ${P.border}`,padding:"0 28px",display:"flex",alignItems:"center",overflowX:"auto"}}>
+    {mod!=="home"&&<div style={{background:P.white,borderBottom:`1px solid ${P.border}`,padding:"0 28px",display:"flex",alignItems:"center",overflowX:"auto",flexWrap:"nowrap"}}>
       <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,color:P.textMuted,background:P.gray50,border:`1px solid ${P.border}`,borderRadius:7,padding:"5px 12px",margin:"6px 12px 6px 0",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
         ← Inicio
       </button>
@@ -835,27 +869,27 @@ export default function Dashboard(){
         <KpiCard label="Tasa de realización" value={`${compRate}%`} sub="Sesiones realizadas / canjeadas"/>
         <KpiCard label="Sesiones realizadas en el último mes" value={lastFull?fmt(lastFull.realizadas):"—"} sub={lastFull?.month}/>
       </div>
-      <Section title={`Sesiones canjeadas por mes — plan ${c.monthlyPlan}/mes`}>
+      <Section title="Sesiones canjeadas por mes">
         {lastM.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
         <div style={{height:210}}><ResponsiveContainer width="100%" height="100%">
           <BarChart data={c.monthlyData} barSize={13}>
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-            <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+            <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil(Math.max(dataMax, c.monthlyPlan)*1.15)]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            <ReferenceLine y={c.monthlyPlan} stroke={P.accent} strokeDasharray="4 3" label={{value:`Plan: ${c.monthlyPlan}`,position:"insideTopRight",fontSize:10,fill:P.accent}}/>
             <Bar dataKey="canjeadas" name="canjeadas" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
         <div style={{marginTop:6,fontSize:11,color:P.textMuted}}>Los desvíos sobre 300 corresponden a sesiones acumuladas de meses anteriores o ajustes manuales.</div>
       </Section>
-      <Section title="Sesiones realizadas por mes">
+      <Section title={`Sesiones realizadas por mes — plan ${c.monthlyPlan}/mes`}>
         <div style={{height:210}}><ResponsiveContainer width="100%" height="100%">
           <BarChart data={c.monthlyData} barSize={13}>
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-            <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+            <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil(Math.max(dataMax, c.monthlyPlan)*1.15)]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
+            <ReferenceLine y={c.monthlyPlan} stroke="#D97706" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`Plan: ${c.monthlyPlan} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#B45309"}}/>
             <Bar dataKey="realizadas" name="realizadas" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
@@ -871,19 +905,19 @@ export default function Dashboard(){
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
           <KpiCard label="Total de pacientes" value={totHistorico} sub="Pacientes únicos históricos"/>
           <KpiCard label="Promedio de sesiones por persona" value={avgPerUser!=null?Math.ceil(avgPerUser):"—"} sub="Histórico acumulado"/>
-          <KpiCard label="Promedio sesiones / persona / mes" value={(totHistorico>0&&fullM.length>0)?Math.ceil(fullSessions/totHistorico/fullM.length):"—"} sub="por persona por mes"/>
+          <KpiCard label="Promedio sesiones / persona / mes" value={(()=>{const sa=fullM.reduce((s,m)=>s+(m.activos||0),0);return sa>0?Math.round(fullSessions/sa):"—";})()} sub="por paciente activo por mes"/>
           <KpiCard label="Promedio sesiones por mes (empresa)" value={avgPerMonth!=null?Math.ceil(avgPerMonth):"—"} sub="Meses completos"/>
         </div>
         <Section title="Primera vez en terapia">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Colaboradores que accedieron a terapia psicológica por primera vez a través del beneficio de TCS.</div>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6,textAlign:"center"}}>Colaboradores que accedieron a terapia psicológica por primera vez a través del beneficio de TCS.</div>
           {c.firstTimeCount!=null?
-            <div style={{display:"flex",gap:20,alignItems:"center",flexWrap:"wrap"}}>
-              <div style={{textAlign:"center",padding:"20px 28px",background:P.lighter,borderRadius:14,border:`1px solid ${P.primary+"44"}`}}>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14,padding:"6px 0 4px"}}>
+              <div style={{textAlign:"center",padding:"20px 34px",background:P.lighter,borderRadius:14,border:`1px solid ${P.primary+"44"}`}}>
                 <div style={{fontSize:42,fontWeight:700,color:P.primary,lineHeight:1,letterSpacing:"-2px"}}>{c.firstTimeCount}</div>
                 <div style={{fontSize:12,color:P.primary,marginTop:4,fontWeight:500}}>personas</div>
               </div>
-              <div style={{flex:1,minWidth:180}}>
-                <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:6}}>{c.firstTimePct}% del total de pacientes activos</div>
+              <div style={{textAlign:"center",maxWidth:480}}>
+                <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:6}}>{c.firstTimePct}% del total de pacientes históricos</div>
                 <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>Estos colaboradores nunca habían accedido a psicología antes de este beneficio.</div>
               </div>
             </div>
@@ -898,7 +932,7 @@ export default function Dashboard(){
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={c.monthlyData} barSize={13}>
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-              <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
               <Bar dataKey="activos" name="Activos" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
@@ -909,7 +943,7 @@ export default function Dashboard(){
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={c.monthlyData} barSize={13}>
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-              <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
               <Bar dataKey="nuevos" name="Nuevos pacientes" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
@@ -1065,11 +1099,27 @@ export default function Dashboard(){
         }
       </Section>
 
-      <Section title="Impacto de acciones colectivas" note="Correlación entre talleres/activaciones y nuevos pacientes.">
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {c.collectiveImpact.length===0
+      <Section title="Impacto de acciones colectivas" note="Talleres y contenidos enviados, junto a la actividad de sesiones de ese mes.">
+        {(()=>{
+          const ABBR={Enero:"Ene",Febrero:"Feb",Marzo:"Mar",Abril:"Abr",Mayo:"May",Junio:"Jun",Julio:"Jul",Agosto:"Ago",Septiembre:"Sep",Setiembre:"Sep",Octubre:"Oct",Noviembre:"Nov",Diciembre:"Dic"};
+          const evKey=(d)=>{if(!d)return null;const p=String(d).trim().split(/\s+/);if(p.length<2)return null;const ab=ABBR[p[0]]||p[0];return `${ab}-${p[1]}`;};
+          const mdIdx={}; c.monthlyData.forEach((m,i)=>{mdIdx[`${m.month}-${m.year}`]=i;});
+          const events=[
+            ...c.workshops.map(w=>({date:w.date,event:w.title,type:"Taller"})),
+            ...c.content.filter(x=>x.sent).map(x=>({date:x.date,event:x.title,type:"Contenido"})),
+          ];
+          const impact=events.map(ev=>{
+            const k=evKey(ev.date); const i=k!=null?mdIdx[k]:undefined;
+            if(i===undefined)return null;
+            const m=c.monthlyData[i]; const prev=i>0?c.monthlyData[i-1]:null;
+            const delta=prev?m.realizadas-prev.realizadas:null;
+            return {...ev,_i:i,newPatients:m.nuevos,date:m.label,
+              note:`${m.realizadas} sesiones realizadas ese mes${delta!=null?` (${delta>=0?"+":""}${delta} vs mes anterior)`:""} · ${m.nuevos} nuevos pacientes.`};
+          }).filter(Boolean).sort((a,b)=>a._i-b._i);
+          return <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {impact.length===0
             ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px 0"}}>Sin datos cargados aún.</div>
-            : c.collectiveImpact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
+            : impact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
                 <div style={{flexShrink:0,textAlign:"center",minWidth:44}}>
                   <div style={{fontSize:18,fontWeight:700,color:P.primary,lineHeight:1}}>+{item.newPatients}</div>
                   <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>nuevos</div>
@@ -1084,7 +1134,8 @@ export default function Dashboard(){
                 </div>
               </div>)
           }
-        </div>
+        </div>;
+        })()}
       </Section>
     </>}
 
@@ -1154,8 +1205,8 @@ export default function Dashboard(){
       const contentEngagement=c.content.length>0?Math.round(((dbContent.length>0?dbContent:c.content).filter(x=>x.downloaded&&x.rating).length/c.content.length)*100):0;
       const contentPts=Math.round(contentEngagement*0.05);
       const iii=normImp2!=null?Math.round(normImp2*0.5+utilScore2+workshopPts+contentPts):null;
-      const invTotal2=c.monthlyData.reduce((s,m)=>s+m.realizadas,0)*c.sessionPriceRef;
-      const invTrend2=c.monthlyData.map(m=>({month:m.month,investment:Math.round(m.realizadas*c.sessionPriceRef),partial:m.partial}));
+      const invTotal2=invTotal;
+      const invTrend2=invTrend; // use same billing-based trend
       const totNuev2=c.monthlyData.reduce((s,m)=>s+m.nuevos,0);
       const fullM2=c.monthlyData.filter(m=>!m.partial);
       const fullReal2=fullM2.reduce((s,m)=>s+m.realizadas,0);
@@ -1197,7 +1248,7 @@ export default function Dashboard(){
           <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal2)}`} sub="UYU · precio de referencia" accent/>
           <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat2)}`} sub={`${totNuev2} pacientes únicos`}/>
           <KpiCard label="Utilización del plan" value={`${compRate2}%`} sub="Realizadas / contratadas"/>
-          <KpiCard label="Sesiones realizadas en el último mes" value={`$ ${fmt(lastFull2?lastFull2.realizadas*c.sessionPriceRef:0)}`} sub={lastFull2?.month}/>
+          <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]||lastFull2.realizadas*c.sessionPriceRef):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
         </div>
 
         <Section title="6 dimensiones del impacto">
@@ -1238,11 +1289,11 @@ export default function Dashboard(){
           </div>
         </Section>
 
-        <Section title="Inversión mensual (UYU)" warnNote="Cálculo de referencia a UY$ 1.600 por sesión.">
+        <Section title="Inversión mensual (UYU)" warnNote="Cálculo de referencia a UY$ 1.375 por sesión.">
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={invTrend2} barSize={13}>
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-              <XAxis dataKey="month" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
               <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend2.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
@@ -1439,4 +1490,5 @@ export default function Dashboard(){
     </div>
   </div>;
 }
+
 
