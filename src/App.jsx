@@ -42,7 +42,7 @@ const TT_TEAM=[
 const MODULES=[
   {id:"individual", label:"Colaboradores",  subs:["Sesiones","Adherencia"]},
   {id:"colectivo",  label:"Cultura de Bienestar",   subs:["Talleres","Contenido"]},
-  {id:"estrategico",label:"Estrategia de Bienestar", subs:["Bienestar del equipo","Consultoría Tu Terapia","Recursos y reportes"]},
+  {id:"estrategico",label:"Estrategia de Bienestar", subs:["Bienestar del equipo","Consultoría Tu Terapia"]},
   {id:"gestion",    label:"Gestión",            subs:["Facturación","Plan activo","Equipo TT"],restricted:true},
 ];
 
@@ -109,7 +109,7 @@ function FunnelBar({label,value,pct,i}){
 
 
 // ── LOGIN ──────────────────────────────────────────────────────────
-function LoginView({ onLogin }) {
+function LoginView({ onLogin, onAdminLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -121,7 +121,15 @@ function LoginView({ onLogin }) {
     const {data, error:authError} = await supabase.auth.signInWithPassword({ email, password });
     if(authError){ setError("Email o contraseña incorrectos."); setLoading(false); return; }
     const {data:userData} = await supabase.from("company_users").select("*, companies(*)").eq("email", email).eq("active", true).single();
-    if(!userData){ await supabase.auth.signOut(); setError("No tenés acceso al dashboard."); setLoading(false); return; }
+    if(!userData){
+      // Admins de Tu Terapia entran con su propia cuenta y ven cualquier empresa
+      const {data:adminData} = await supabase.from("admin_users").select("*").eq("email", email).single();
+      if(adminData){
+        const {data:allCompanies} = await supabase.from("companies").select("id,name").order("name");
+        if(allCompanies?.length){ onAdminLogin(adminData, allCompanies); setLoading(false); return; }
+      }
+      await supabase.auth.signOut(); setError("No tenés acceso al dashboard."); setLoading(false); return;
+    }
     const {data:permsData} = await supabase.from("user_permissions").select("*").eq("user_id", userData.id);
     onLogin(userData, permsData||[]);
     setLoading(false);
@@ -205,6 +213,10 @@ export default function Dashboard(){
   const [authUser, setAuthUser] = useState(null);
   const [userPerms, setUserPerms] = useState([]);
   const [authLoading, setAuthLoading] = useState(true);
+  // Vista admin: usuarios de admin_users pueden ver el dash de cualquier empresa
+  const [adminViewer, setAdminViewer] = useState(null);
+  const [adminCompanies, setAdminCompanies] = useState([]);
+  const [adminCompanyId, setAdminCompanyId] = useState(null);
   const [showSetPassword, setShowSetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
@@ -219,9 +231,6 @@ export default function Dashboard(){
   const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
   const [localConsultoriaActiva,setConsultoriaActiva]=useState(false);
   const [expandedSurvey,setExpandedSurvey]=useState(null);
-  const [expandedReport,setExpandedReport]=useState(null);
-  const [openSections,setOpenSections]=useState({encuestas:true,informes:false,recomendaciones:false,impacto:false});
-  const toggleSection=(key)=>setOpenSections(prev=>({...prev,[key]:!prev[key]}));
 
   const [solicitando,setSolicitando]=useState(false);
   const [contentRatings,setContentRatings]=useState({});
@@ -247,7 +256,13 @@ export default function Dashboard(){
         if(ud&&!udError){
           const {data:pd} = await supabase.from("user_permissions").select("*").eq("user_id",ud.id);
           setAuthUser(ud); setUserPerms(pd||[]);
-        } else { await supabase.auth.signOut(); }
+        } else {
+          const {data:adminData} = await supabase.from("admin_users").select("*").eq("email",session.user.email).single();
+          const {data:allCompanies} = adminData ? await supabase.from("companies").select("id,name").order("name") : {data:null};
+          if(adminData&&allCompanies?.length){
+            setAdminViewer(adminData); setAdminCompanies(allCompanies); setAdminCompanyId(allCompanies[0].id);
+          } else { await supabase.auth.signOut(); }
+        }
       } catch(e) { await supabase.auth.signOut(); }
       setAuthLoading(false);
     });
@@ -255,13 +270,13 @@ export default function Dashboard(){
     const {data:{subscription}} = supabase.auth.onAuthStateChange(async(event, session)=>{
       if(event==="SIGNED_OUT"||event==="TOKEN_REFRESHED"&&!session){
         setAuthUser(null); setUserPerms([]);
+        setAdminViewer(null); setAdminCompanies([]); setAdminCompanyId(null);
       }
     });
     return ()=>subscription.unsubscribe();
   },[]);
 
   // Load dynamic data from Supabase
-  const [dbReports, setDbReports] = useState([]);
   const [dbSurveys, setDbSurveys] = useState([]);
   const [dbContent, setDbContent] = useState([]);
   const [dbWorkshops, setDbWorkshops] = useState([]);
@@ -280,17 +295,15 @@ export default function Dashboard(){
   const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(()=>{
-    if(!authUser) return;
-    const companyId = authUser.company_id;
+    const companyId = authUser?.company_id || adminCompanyId;
     if(!companyId) return;
     setDataLoading(true);
     async function loadData() {
       const [
-        reports, surveys, content, workshops, workshopsRec, talleristas,
+        surveys, content, workshops, workshopsRec, talleristas,
         headerTexts, company, sessions, billing, recommendations,
         milestones, nps, reasons, roiQ
       ] = await Promise.all([
-        supabase.from("informes").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("content").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("workshops").select("*").eq("company_id",companyId).order("date",{ascending:true}),
@@ -306,7 +319,6 @@ export default function Dashboard(){
         supabase.from("consultation_reasons").select("*").eq("company_id",companyId).order("percentage",{ascending:false}),
         supabase.from("roi_by_quarter").select("*").eq("company_id",companyId).order("created_at",{ascending:true}),
       ]);
-      setDbReports(reports.data||[]);
       setDbSurveys(surveys.data||[]);
       setDbContent(content.data||[]);
       setDbWorkshops(workshops.data||[]);
@@ -324,9 +336,10 @@ export default function Dashboard(){
       setDataLoading(false);
     }
     loadData();
-  },[authUser]);
+  },[authUser, adminCompanyId]);
 
   const hasAccess = (moduleId) => {
+    if(adminViewer) return true; // los admins ven todos los módulos que la empresa tiene habilitados
     if(userPerms.length===0) return false;
     const perm = userPerms.find(p=>p.section===moduleId);
     return perm ? perm.visible : false;
@@ -368,7 +381,9 @@ export default function Dashboard(){
   );
 
   if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando...</div>;
-  if(!authUser) return <LoginView onLogin={(ud,pd)=>{ setAuthUser(ud); setUserPerms(pd); }}/>;
+  if(!authUser&&!adminViewer) return <LoginView
+    onLogin={(ud,pd)=>{ setAuthUser(ud); setUserPerms(pd); }}
+    onAdminLogin={(ad,companies)=>{ setAdminViewer(ad); setAdminCompanies(companies); setAdminCompanyId(companies[0].id); }}/>;
   if(dataLoading||!dbCompany) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando datos...</div>;
 
   // Datos 100% desde Supabase — sin fallbacks hardcodeados
@@ -454,7 +469,6 @@ export default function Dashboard(){
     },
     accountManager,
     surveys: SURVEYS_DEFAULT,
-    reports: dbReports,
     nps: dbNps.length>0 ? dbNps[0].value : null,
     npsDate: dbNps.length>0 ? dbNps[0].date : null,
     roiByQ: dbRoiByQ.map(q=>({q:q.quarter,saludMental:q.salud_mental,clima:q.clima,liderazgo:q.liderazgo,engagement:q.engagement,asistencia:q.asistencia,productividad:q.productividad})),
@@ -564,11 +578,19 @@ export default function Dashboard(){
         </button>)}
       </div>}
       <div style={{display:"flex",alignItems:"center",gap:12}}>
-        <div style={{background:P.lighter,borderRadius:20,padding:"5px 14px",border:`1px solid #C8E8DF`,display:"flex",alignItems:"center",gap:6}}>
-          <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
-          <span style={{fontSize:12,fontWeight:500,color:P.primary}}>{c.name}&nbsp;·&nbsp;Plan activo</span>
-        </div>
-        <button onClick={async()=>{ await supabase.auth.signOut(); setAuthUser(null); setUserPerms([]); }}
+        {adminViewer
+          ? <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:10,fontWeight:700,background:P.accentBg,color:P.accent,padding:"3px 10px",borderRadius:20,letterSpacing:"0.04em",textTransform:"uppercase"}}>Vista admin</span>
+              <select value={adminCompanyId||""} onChange={e=>{setAdminCompanyId(e.target.value); goHome();}}
+                style={{padding:"6px 10px",border:`1px solid ${P.border}`,borderRadius:8,fontSize:12,fontWeight:600,color:P.primary,background:P.white,cursor:"pointer",outline:"none"}}>
+                {adminCompanies.map(co=><option key={co.id} value={co.id}>{co.name}</option>)}
+              </select>
+            </div>
+          : <div style={{background:P.lighter,borderRadius:20,padding:"5px 14px",border:`1px solid #C8E8DF`,display:"flex",alignItems:"center",gap:6}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
+              <span style={{fontSize:12,fontWeight:500,color:P.primary}}>{c.name}&nbsp;·&nbsp;Plan activo</span>
+            </div>}
+        <button onClick={async()=>{ await supabase.auth.signOut(); setAuthUser(null); setUserPerms([]); setAdminViewer(null); setAdminCompanies([]); setAdminCompanyId(null); }}
           style={{fontSize:11,color:P.textMuted,background:"none",border:`1px solid ${P.border}`,borderRadius:6,padding:"5px 12px",cursor:"pointer",fontWeight:500}}>
           Cerrar sesión
         </button>
@@ -938,7 +960,7 @@ export default function Dashboard(){
         {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
       </div>
       <div style={{fontSize:13,color:"#2a6aaa"}}>
-        {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · encuestas Q pendientes`:sub==="Consultoría Tu Terapia"?(c.consultoriaActiva?"Una inversión que se traduce en personas más sanas":"Activá la consultoría para ver el análisis de impacto"):`${c.reports.length} informes disponibles · ${c.recommendations.length} recomendaciones activas`)}
+        {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · ${c.recommendations.length} recomendaciones activas`:c.consultoriaActiva?"Una inversión que se traduce en personas más sanas":"Activá la consultoría para ver el análisis de impacto")}
       </div>
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
@@ -999,6 +1021,24 @@ export default function Dashboard(){
               })}
             </div>
         }
+      </Section>
+
+      <Section title="Recomendaciones de Tu Terapia">
+        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Hallazgos sobre la salud mental y bienestar del equipo, elaborados por nuestros profesionales.</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {c.recommendations.length===0&&<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"14px 0"}}>Sin recomendaciones activas por el momento.</div>}
+          {c.recommendations.map((r,i)=>{
+            const u=URGENCY[r.urgency];
+            return <div key={i} style={{padding:"16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,borderLeft:`3px solid ${u.tx}`}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                <Label text={u.label} bg={u.bg} tx={u.tx}/>
+                <span style={{fontSize:10,color:P.textMuted}}>{r.date}</span>
+              </div>
+              <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:5,letterSpacing:"-0.1px"}}>{r.action}</div>
+              <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>{r.reason}</div>
+            </div>;
+          })}
+        </div>
       </Section>
 
       <Section title="Impacto de acciones colectivas" note="Talleres y contenidos enviados, junto a la actividad de sesiones de ese mes.">
@@ -1072,10 +1112,12 @@ export default function Dashboard(){
             <div style={{fontSize:14,color:"#607870",maxWidth:440,lineHeight:1.7,marginBottom:32}}>
               Accedé al Índice Tu Terapia, métricas de impacto, análisis de inversión y seguimiento del bienestar organizacional de tu equipo.
             </div>
-            <button onClick={solicitarConsultoria} disabled={solicitando}
-              style={{background:"#1A5C4A",color:"#fff",border:"none",borderRadius:10,padding:"13px 28px",fontSize:14,fontWeight:600,cursor:solicitando?"not-allowed":"pointer",opacity:solicitando?0.7:1,letterSpacing:"-0.1px"}}>
-              {solicitando?"Enviando solicitud...":"Activar Consultoría Tu Terapia"}
-            </button>
+            {adminViewer
+              ? <div style={{fontSize:12,color:"#607870",fontStyle:"italic"}}>Vista admin — el cliente ve acá el botón para solicitar la activación.</div>
+              : <button onClick={solicitarConsultoria} disabled={solicitando}
+                  style={{background:"#1A5C4A",color:"#fff",border:"none",borderRadius:10,padding:"13px 28px",fontSize:14,fontWeight:600,cursor:solicitando?"not-allowed":"pointer",opacity:solicitando?0.7:1,letterSpacing:"-0.1px"}}>
+                  {solicitando?"Enviando solicitud...":"Activar Consultoría Tu Terapia"}
+                </button>}
           </> : <>
             <div style={{fontSize:18,fontWeight:700,color:"#1A5C4A",marginBottom:8}}>Solicitud enviada</div>
             <div style={{fontSize:13,color:"#607870",maxWidth:380,lineHeight:1.7,marginBottom:20}}>
@@ -1191,44 +1233,7 @@ export default function Dashboard(){
           </div>
         </Section>
 
-        <Section title="Inversión mensual (UYU)" warnNote={planKind==="fee_fijo"?`Fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}.`:`Cálculo de referencia a UY$ ${fmt(c.sessionPriceRef)} por sesión${planKind==="a_demanda"&&coveragePct<1?` (cobertura ${Math.round(coveragePct*100)}%)`:""}.`}>
-          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={invTrend2} barSize={13}>
-              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
-              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend2.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
-            </BarChart>
-          </ResponsiveContainer></div>
-        </Section>
-
-        <Section title="Benchmark vs. red Tu Terapia" note="Disponible en la próxima fase.">
-          <div style={{padding:"20px",textAlign:"center",color:P.textMuted}}>
-            <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Próximamente</div>
-            <div style={{fontSize:12}}>Compará el Índice Tu Terapia con el promedio de la red.</div>
-          </div>
-        </Section>
-      </>;
-    })()}
-
-    {/* ── ESTRATÉGICO - Recursos y reportes ── */}
-    {mod==="estrategico"&&sub==="Recursos y reportes"&&<>
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:0,marginBottom:14,overflow:"hidden"}}>
-        <div onClick={()=>c.consultoriaActiva&&toggleSection("encuestas")}
-          style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:c.consultoriaActiva?"pointer":"default",userSelect:"none",opacity:c.consultoriaActiva?1:0.6}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Encuesta para tu equipo</div>
-            {!c.consultoriaActiva&&<span style={{fontSize:10,background:P.accentBg,color:P.accent,padding:"2px 8px",borderRadius:20,fontWeight:600}}>Requiere Consultoría Tu Terapia</span>}
-          </div>
-          {c.consultoriaActiva&&<span style={{fontSize:14,color:P.textMuted,transform:openSections.encuestas?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>}
-        </div>
-        {!c.consultoriaActiva&&<div style={{padding:"12px 20px 16px",borderTop:`1px solid ${P.border}`}}>
-          <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>
-            Esta sección se activa junto con la <b>Consultoría Estratégica Tu Terapia</b>. Al activarla, podrás descargar la encuesta de Índice Tu Terapia para aplicar a tu equipo.
-          </div>
-        </div>}
-        {c.consultoriaActiva&&openSections.encuestas&&<div style={{padding:"0 20px 16px"}}>
+        <Section title="Encuesta para tu equipo">
           <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>Descargá la encuesta, aplicala a tu equipo y envianos los resultados a {c.accountManager.email} para que los procesemos y mostremos en este panel.</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             {(dbSurveys.length>0?dbSurveys:c.surveys).map((s,i)=>{
@@ -1257,70 +1262,28 @@ export default function Dashboard(){
               </div>;
             })}
           </div>
-        </div>}
-      </div>
+        </Section>
 
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:0,marginBottom:14,overflow:"hidden"}}>
-        <div onClick={()=>toggleSection("informes")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:"pointer",userSelect:"none"}}>
-          <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Informes de uso</div>
-          <span style={{fontSize:14,color:P.textMuted,transform:openSections.informes?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
-        </div>
-        {openSections.informes&&<div style={{padding:"0 20px 16px"}}>
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {c.reports.length===0
-            ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px 0"}}>Sin informes disponibles aún.</div>
-            : c.reports.map((r,i)=>{
-              const isOpen=expandedReport===i;
-              const fileUrl=r.file_url||null;
-              return <div key={i} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:10,overflow:"hidden"}}>
-                <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer"}} onClick={()=>setExpandedReport(isOpen?null:i)}>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:12,fontWeight:600,color:P.text}}>{r.title}</div>
-                    <div style={{fontSize:11,color:P.textMuted}}>{r.period||r.date}</div>
-                  </div>
-                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                    {fileUrl
-                      ? <a href={fileUrl} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{background:P.primary,color:"#fff",borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,textDecoration:"none"}}>⬇ Descargar</a>
-                      : <span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Próximamente</span>
-                    }
-                    <span style={{fontSize:16,color:P.textMuted,transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
-                  </div>
-                </div>
-                {isOpen&&<div style={{borderTop:`1px solid ${P.border}`,padding:"12px 14px",background:P.gray50,fontSize:11,color:P.textMuted,lineHeight:1.7}}>
-                  Informe de uso del plan Tu Terapia. Incluye sesiones realizadas, nuevos pacientes, talleres y métricas de adherencia del período.
-                </div>}
-              </div>;
-            })
-          }
-        </div>
-        </div>}
-      </div>
+        <Section title="Inversión mensual (UYU)" warnNote={planKind==="fee_fijo"?`Fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}.`:`Cálculo de referencia a UY$ ${fmt(c.sessionPriceRef)} por sesión${planKind==="a_demanda"&&coveragePct<1?` (cobertura ${Math.round(coveragePct*100)}%)`:""}.`}>
+          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={invTrend2} barSize={13}>
+              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
+              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
+              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
+              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend2.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
+            </BarChart>
+          </ResponsiveContainer></div>
+        </Section>
 
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:0,marginBottom:14,overflow:"hidden"}}>
-        <div onClick={()=>toggleSection("recomendaciones")} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",cursor:"pointer",userSelect:"none"}}>
-          <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Recomendaciones de Tu Terapia</div>
-          <span style={{fontSize:14,color:P.textMuted,transform:openSections.recomendaciones?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
-        </div>
-        {openSections.recomendaciones&&<div style={{padding:"0 20px 16px"}}>
-        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Hallazgos sobre la salud mental y bienestar del equipo, elaborados por nuestros profesionales.</div>
-        <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          {c.recommendations.length===0&&<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"14px 0"}}>Sin recomendaciones activas por el momento.</div>}
-          {c.recommendations.map((r,i)=>{
-            const u=URGENCY[r.urgency];
-            return <div key={i} style={{padding:"16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,borderLeft:`3px solid ${u.tx}`}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                <Label text={u.label} bg={u.bg} tx={u.tx}/>
-                <span style={{fontSize:10,color:P.textMuted}}>{r.date}</span>
-              </div>
-              <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:5,letterSpacing:"-0.1px"}}>{r.action}</div>
-              <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>{r.reason}</div>
-            </div>;
-          })}
-        </div>
-        </div>}
-      </div>
-    </>
-    }
+        <Section title="Benchmark vs. red Tu Terapia" note="Disponible en la próxima fase.">
+          <div style={{padding:"20px",textAlign:"center",color:P.textMuted}}>
+            <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Próximamente</div>
+            <div style={{fontSize:12}}>Compará el Índice Tu Terapia con el promedio de la red.</div>
+          </div>
+        </Section>
+      </>;
+    })()}
 
     {/* ── GESTIÓN ── */}
     {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#607870,#8B9E98)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
