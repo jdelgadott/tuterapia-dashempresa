@@ -31,13 +31,7 @@ const SURVEYS_DEFAULT = [
   {title:"Encuesta de Indice Tu Terapia",desc:"22 preguntas - 6 dimensiones - ~10 min - aplicar a todo el equipo o por sector",isMain:true,dims:["Bienestar y salud mental","Clima y comunicación","Liderazgo efectivo","Engagement y compromiso","Ausentismo percibido","Productividad sostenible"]},
 ];
 
-const PLAN_LABELS = {cuponera_fija:"Cuponera Fija", fee_fijo:"Fee Fijo Mensual", a_demanda:"A Demanda", talleres:"Talleres"};
-const PLAN_DEFAULT_MODULES = {
-  cuponera_fija:["individual","colectivo","estrategico","gestion"],
-  fee_fijo:["individual","colectivo","estrategico","gestion"],
-  a_demanda:["individual","colectivo","estrategico","gestion"],
-  talleres:["colectivo","estrategico","gestion"],
-};
+const PLAN_LABELS = {cuponera_fija:"Cuponera Fija", fee_fijo:"Fee Fijo Mensual", a_demanda:"A Demanda"};
 
 const TT_TEAM=[
   {name:"Nacho",fullName:"Juan Ignacio Delgado",role:"Desarrollo de Negocio",email:"jdelgado@tuterapia.com.uy",phone:"099495218",whatsapp:"598099495218",calendar:null,initials:"JD",area:"Alianzas B2B",photo:"nacho"},
@@ -492,7 +486,7 @@ export default function Dashboard(){
   const activeMod=MODULES.find(m=>m.id===mod);
 
   const goHome=()=>{ setMod("home"); setSub(null); };
-  const setModule=(id)=>{ setMod(id); setSub(MODULES.find(x=>x.id===id)?.subs[0]||null); };
+  const setModule=(id)=>{ setMod(id); setSub(visibleSubs(id)[0]||null); };
 
   const fullM=c.monthlyData.filter(m=>!m.partial);
   const totCanj=c.monthlyData.reduce((s,m)=>s+m.canjeadas,0);
@@ -524,7 +518,6 @@ export default function Dashboard(){
   };
   const estMonthCost = (m) =>
     planKind==="fee_fijo" ? (c.monthlyFee||0)
-    : planKind==="talleres" ? 0
     : Math.round(sesOf(m)*c.sessionPriceRef*(planKind==="a_demanda"?coveragePct:1));
   const invTrend=c.monthlyData.map(m=>{
     const billed = billingMap[MONTH_TO_PERIOD(m.label||m.month)];
@@ -542,14 +535,17 @@ export default function Dashboard(){
   // Resumen del plan para headers
   const planSummary = planKind==="cuponera_fija" ? `${c.plan.type} · ${c.plan.sessionsMonth||"—"} sesiones por mes`
     : planKind==="fee_fijo" ? `${c.plan.type} · ${Math.round((1-coveragePct)*100)>0?`${Math.round((1-coveragePct)*100)}% OFF`:"beneficio"} para colaboradores`
-    : planKind==="a_demanda" ? `${c.plan.type} · cobertura ${Math.round(coveragePct*100)}% por sesión${c.monthlyCap?` · tope ${c.monthlyCap}/mes`:""}`
-    : `${c.plan.type} · talleres puntuales o ciclos`;
+    : `${c.plan.type} · cobertura ${Math.round(coveragePct*100)}% por sesión${c.monthlyCap?` · tope ${c.monthlyCap}/mes`:""}`;
 
-  // Visibilidad de módulos: config por empresa (o default según plan) + permisos del usuario
-  const companyModules = (Array.isArray(dbCompany?.visible_modules) && dbCompany.visible_modules.length>0)
-    ? dbCompany.visible_modules
-    : (PLAN_DEFAULT_MODULES[planKind] || MODULES.map(m=>m.id));
-  const moduleVisible = (id) => companyModules.includes(id) && hasAccess(id);
+  // Visibilidad por empresa: objeto {módulo:[subs visibles]}; null = todo visible.
+  // Soporta el formato legacy (array de ids de módulo) por si quedó guardado.
+  const defaultVisibility = Object.fromEntries(MODULES.map(m=>[m.id,m.subs]));
+  const vmRaw = dbCompany?.visible_modules;
+  const companyVisibility = Array.isArray(vmRaw)
+    ? Object.fromEntries(vmRaw.map(id=>[id, MODULES.find(m=>m.id===id)?.subs||[]]))
+    : (vmRaw && typeof vmRaw==="object") ? vmRaw : defaultVisibility;
+  const moduleVisible = (id) => (companyVisibility[id]||[]).length>0 && hasAccess(id);
+  const visibleSubs = (id) => (MODULES.find(m=>m.id===id)?.subs||[]).filter(s=>(companyVisibility[id]||[]).includes(s));
 
   return <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif",background:P.bg,minHeight:"100vh",color:P.text}}>
 
@@ -584,7 +580,7 @@ export default function Dashboard(){
       <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,color:P.textMuted,background:P.gray50,border:`1px solid ${P.border}`,borderRadius:7,padding:"5px 12px",margin:"6px 12px 6px 0",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
         ← Inicio
       </button>
-      {activeMod?.subs&&activeMod.subs.map(s=><button key={s} onClick={()=>setSub(s)} style={{fontSize:12,fontWeight:sub===s?600:400,color:sub===s?P.primary:P.textMuted,background:"none",border:"none",borderBottom:sub===s?`2px solid ${P.primary}`:"2px solid transparent",padding:"9px 16px",cursor:"pointer",whiteSpace:"nowrap",letterSpacing:"0.01em"}}>{s}</button>)}
+      {activeMod?.subs&&visibleSubs(activeMod.id).map(s=><button key={s} onClick={()=>setSub(s)} style={{fontSize:12,fontWeight:sub===s?600:400,color:sub===s?P.primary:P.textMuted,background:"none",border:"none",borderBottom:sub===s?`2px solid ${P.primary}`:"2px solid transparent",padding:"9px 16px",cursor:"pointer",whiteSpace:"nowrap",letterSpacing:"0.01em"}}>{s}</button>)}
     </div>}
 
     <div style={{padding:"28px",maxWidth:960,margin:"0 auto"}}>
@@ -1195,7 +1191,7 @@ export default function Dashboard(){
           </div>
         </Section>
 
-        <Section title="Inversión mensual (UYU)" warnNote={planKind==="fee_fijo"?`Fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}.`:planKind==="talleres"?"Inversión según facturación de talleres y ciclos.":`Cálculo de referencia a UY$ ${fmt(c.sessionPriceRef)} por sesión${planKind==="a_demanda"&&coveragePct<1?` (cobertura ${Math.round(coveragePct*100)}%)`:""}.`}>
+        <Section title="Inversión mensual (UYU)" warnNote={planKind==="fee_fijo"?`Fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}.`:`Cálculo de referencia a UY$ ${fmt(c.sessionPriceRef)} por sesión${planKind==="a_demanda"&&coveragePct<1?` (cobertura ${Math.round(coveragePct*100)}%)`:""}.`}>
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={invTrend2} barSize={13}>
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
@@ -1370,8 +1366,7 @@ export default function Dashboard(){
         const rows=[["Tipo",c.plan.type]];
         if(planKind==="cuponera_fija") rows.push(["Sesiones incluidas",c.plan.sessionsMonth?`${c.plan.sessionsMonth}/mes`:"—"],["Precio de referencia",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}/sesión`:"—"]);
         else if(planKind==="fee_fijo") rows.push(["Fee mensual",c.plan.monthlyFee?`UY$ ${fmt(c.plan.monthlyFee)}`:"—"],["Beneficio para colaboradores",`${Math.round((1-coveragePct)*100)}% OFF por sesión`]);
-        else if(planKind==="a_demanda") rows.push(["Cobertura por sesión",`${Math.round(coveragePct*100)}%`],["Precio de referencia",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}/sesión`:"—"],["Tope mensual",c.plan.monthlyCap?`${c.plan.monthlyCap} sesiones`:"Sin tope"]);
-        else rows.push(["Modalidad","Talleres puntuales o ciclos"]);
+        else rows.push(["Cobertura por sesión",`${Math.round(coveragePct*100)}%`],["Precio de referencia",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}/sesión`:"—"],["Tope mensual",c.plan.monthlyCap?`${c.plan.monthlyCap} sesiones`:"Sin tope"]);
         rows.push(["Inicio",c.plan.start],["Renovación",c.plan.renewal],["Estado",c.plan.status]);
         return rows;
       })().map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"11px 0",borderBottom:`1px solid ${P.border}`}}>
