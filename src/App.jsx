@@ -1147,7 +1147,7 @@ export default function Dashboard(){
       async function solicitarConsultoria() {
         setSolicitando(true);
         try {
-          await supabase.from("companies").update({ consultoria_solicitada: true }).eq("name", "TCS");
+          await supabase.rpc("solicitar_consultoria");
           await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": "Bearer re_9rj91mUx_K7pxQ8tKqs6SFoZmZskNTi2n" },
