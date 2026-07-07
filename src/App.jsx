@@ -1053,13 +1053,8 @@ export default function Dashboard(){
       async function solicitarConsultoria() {
         setSolicitando(true);
         try {
-          await supabase.rpc("solicitar_consultoria");
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": "Bearer re_9rj91mUx_K7pxQ8tKqs6SFoZmZskNTi2n" },
-            body: JSON.stringify({ from: "onboarding@resend.dev", to: c.accountManager.email, subject: "Solicitud de activación — Consultoría Estratégica Tu Terapia", html: `<p><b>${c.name}</b> solicitó activar la Consultoría Estratégica Tu Terapia desde su dashboard.</p><p>Contactarse a la brevedad para iniciar el proceso.</p>` })
-          });
-        } catch(e) { console.log("mail error", e); }
+          await supabase.functions.invoke("solicitar-consultoria");
+        } catch(e) { console.log("solicitud error", e); }
         setConsultoriaSolicitado(true);
         setSolicitando(false);
       }
