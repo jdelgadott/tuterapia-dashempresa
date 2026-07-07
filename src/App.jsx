@@ -508,6 +508,11 @@ export default function Dashboard(){
   const compRate=fullCanj>0?Math.round(fullReal/fullCanj*100):0;
   const lastFull=fullM[fullM.length-1];
   const lastM=c.monthlyData[c.monthlyData.length-1];
+  // Cuponera muestra canjeadas + realizadas; a demanda y fee fijo solo canjeadas ("Sesiones" a secas)
+  const usesRealizadas = planKind==="cuponera_fija";
+  const sesOf = (m) => usesRealizadas ? m.realizadas : m.canjeadas;
+  const totSes = usesRealizadas ? totReal : totCanj;
+  const sesWord = usesRealizadas ? "sesiones realizadas" : "sesiones";
   // Inversión: monto de billing si existe; si no, estimación según tipo de plan
   const billingMap = {};
   c.billing.forEach(b=>{ billingMap[b.period]=b.amount; });
@@ -520,7 +525,7 @@ export default function Dashboard(){
   const estMonthCost = (m) =>
     planKind==="fee_fijo" ? (c.monthlyFee||0)
     : planKind==="talleres" ? 0
-    : Math.round(m.realizadas*c.sessionPriceRef*(planKind==="a_demanda"?coveragePct:1));
+    : Math.round(sesOf(m)*c.sessionPriceRef*(planKind==="a_demanda"?coveragePct:1));
   const invTrend=c.monthlyData.map(m=>{
     const billed = billingMap[MONTH_TO_PERIOD(m.label||m.month)];
     return {label:m.label||m.month, investment: billed!=null ? billed : estMonthCost(m), partial:m.partial};
@@ -603,11 +608,11 @@ export default function Dashboard(){
       {(()=>{
         // Mini sparkline data — sessions trend last 6 months
         const lastSix=c.monthlyData.slice(-6);
-        const maxSes=Math.max(...lastSix.map(m=>m.realizadas),1);
+        const maxSes=Math.max(...lastSix.map(m=>sesOf(m)),1);
         const sparkW=80, sparkH=32;
         const pts=lastSix.map((m,i)=>{
           const x=Math.round(i*(sparkW/(lastSix.length-1)));
-          const y=Math.round(sparkH-(m.realizadas/maxSes)*sparkH);
+          const y=Math.round(sparkH-(sesOf(m)/maxSes)*sparkH);
           return `${x},${y}`;
         }).join(' ');
 
@@ -640,12 +645,12 @@ export default function Dashboard(){
               <polyline points={pts} fill="none" stroke={P.primary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               {lastSix.map((m,i)=>{
                 const x=Math.round(i*(sparkW/(lastSix.length-1)));
-                const y=Math.round(sparkH-(m.realizadas/maxSes)*sparkH);
+                const y=Math.round(sparkH-(sesOf(m)/maxSes)*sparkH);
                 return i===lastSix.length-1?<circle key={i} cx={x} cy={y} r="3" fill={P.primary}/>:null;
               })}
             </svg>
-            <div style={{fontSize:32,fontWeight:800,color:P.primary,letterSpacing:"-1px",lineHeight:1}}>{fmt(totReal)}</div>
-            <div style={{fontSize:12,fontWeight:600,color:P.text}}>sesiones realizadas</div>
+            <div style={{fontSize:32,fontWeight:800,color:P.primary,letterSpacing:"-1px",lineHeight:1}}>{fmt(totSes)}</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>{sesWord}</div>
             <div style={{fontSize:10,color:P.textMuted}}>desde el inicio</div>
           </div>}
 
@@ -759,15 +764,15 @@ export default function Dashboard(){
         {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud este mes":`${totNuev} personas eligieron cuidar su salud mental`)}
       </div>
       <div style={{fontSize:13,color:"#4a7a52",opacity:0.85}}>
-        {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totReal)} sesiones realizadas${planKind==="cuponera_fija"?` · ${compRate}% de utilización del plan`:""}`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:"")}
+        {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totSes)} ${sesWord}${planKind==="cuponera_fija"?` · ${compRate}% de utilización del plan`:""}`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:"")}
       </div>
     </div>}
     {mod==="individual"&&sub==="Sesiones"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-        {planKind==="cuponera_fija"&&<KpiCard label="Sesiones Canjeadas" value={fmt(totCanj)}/>}
-        <KpiCard label="Sesiones Realizadas" value={fmt(totReal)} sub="Desde inicio"/>
-        {planKind==="cuponera_fija"&&<KpiCard label="Tasa de realización" value={`${compRate}%`} sub="Sesiones realizadas / canjeadas"/>}
-        <KpiCard label="Sesiones realizadas en el último mes" value={lastFull?fmt(lastFull.realizadas):"—"} sub={lastFull?.month}/>
+        {usesRealizadas&&<KpiCard label="Sesiones Canjeadas" value={fmt(totCanj)}/>}
+        <KpiCard label={usesRealizadas?"Sesiones Realizadas":"Sesiones"} value={fmt(totSes)} sub="Desde inicio"/>
+        {usesRealizadas&&<KpiCard label="Tasa de realización" value={`${compRate}%`} sub="Sesiones realizadas / canjeadas"/>}
+        <KpiCard label={usesRealizadas?"Sesiones realizadas en el último mes":"Sesiones en el último mes"} value={lastFull?fmt(sesOf(lastFull)):"—"} sub={lastFull?.month}/>
       </div>
       {planKind==="cuponera_fija"&&<Section title="Sesiones canjeadas por mes">
         {lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
@@ -782,7 +787,8 @@ export default function Dashboard(){
         </ResponsiveContainer></div>
         <div style={{marginTop:6,fontSize:11,color:P.textMuted}}>{`Los desvíos sobre ${c.monthlyPlan} corresponden a sesiones acumuladas de meses anteriores o ajustes manuales.`}</div>
       </Section>}
-      <Section title={planRefLine?`Sesiones realizadas por mes — ${planKind==="a_demanda"?"tope":"plan"} ${planRefLine}/mes`:"Sesiones realizadas por mes"}>
+      <Section title={`Sesiones${usesRealizadas?" realizadas":""} por mes${planRefLine?` — ${planKind==="a_demanda"?"tope":"plan"} ${planRefLine}/mes`:""}`}>
+        {!usesRealizadas&&lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
         <div style={{height:210}}><ResponsiveContainer width="100%" height="100%">
           <BarChart data={c.monthlyData} barSize={13}>
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
@@ -790,7 +796,7 @@ export default function Dashboard(){
             <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil(Math.max(dataMax, planRefLine||0)*1.15)||"auto"]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
             {planRefLine&&<ReferenceLine y={planRefLine} stroke="#D97706" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#B45309"}}/>}
-            <Bar dataKey="realizadas" name="realizadas" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
+            <Bar dataKey={usesRealizadas?"realizadas":"canjeadas"} name={usesRealizadas?"realizadas":"Sesiones"} radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
       </Section>
@@ -798,7 +804,7 @@ export default function Dashboard(){
     </>}
 
     {mod==="individual"&&sub==="Adherencia"&&(()=>{
-      const fullSessions=fullM.reduce((s,m)=>s+m.realizadas,0);
+      const fullSessions=fullM.reduce((s,m)=>s+sesOf(m),0);
       const avgPerUser=totHistorico>0?Math.round((fullSessions/totHistorico)*10)/10:0;
       const avgPerMonth=fullM.length>0?Math.round((fullSessions/fullM.length)*10)/10:0;
       return <>
@@ -1012,9 +1018,9 @@ export default function Dashboard(){
             const k=evKey(ev.date); const i=k!=null?mdIdx[k]:undefined;
             if(i===undefined)return null;
             const m=c.monthlyData[i]; const prev=i>0?c.monthlyData[i-1]:null;
-            const delta=prev?m.realizadas-prev.realizadas:null;
+            const delta=prev?sesOf(m)-sesOf(prev):null;
             return {...ev,_i:i,newPatients:m.nuevos,date:m.label,
-              note:`${m.realizadas} sesiones realizadas ese mes${delta!=null?` (${delta>=0?"+":""}${delta} vs mes anterior)`:""} · ${m.nuevos} nuevos pacientes.`};
+              note:`${sesOf(m)} ${sesWord} ese mes${delta!=null?` (${delta>=0?"+":""}${delta} vs mes anterior)`:""} · ${m.nuevos} nuevos pacientes.`};
           }).filter(Boolean).sort((a,b)=>a._i-b._i);
           return <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {impact.length===0
