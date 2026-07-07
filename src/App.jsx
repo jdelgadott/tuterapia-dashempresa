@@ -564,7 +564,7 @@ export default function Dashboard(){
   return <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif",background:P.bg,minHeight:"100vh",color:P.text}}>
 
     {/* Header */}
-    <div style={{background:P.white,borderBottom:`2px solid ${P.primary}`,padding:"0 28px",display:"flex",alignItems:"center",justifyContent:"space-between",height:68,flexWrap:"wrap",gap:12}}>
+    <div style={{background:P.white,borderBottom:`2px solid ${P.primary}`,padding:"10px 28px",display:"flex",alignItems:"center",justifyContent:"space-between",minHeight:48,flexWrap:"wrap",gap:12,rowGap:8}}>
       <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:14,background:"none",border:"none",cursor:"pointer",padding:0}}>
         <img src={LOGO_TT} alt="Tu Terapia" style={{height:44,objectFit:"contain",flexShrink:0}}/>
         <div style={{textAlign:"left"}}>
