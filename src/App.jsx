@@ -15,10 +15,11 @@ const P = {
 const fmt = (n) => new Intl.NumberFormat("es-UY").format(Math.round(n));
 
 function monthsDiff(startStr){
+  if(!startStr) return 0;
   const map={Enero:0,Febrero:1,Marzo:2,Abril:3,Mayo:4,Junio:5,Julio:6,Agosto:7,Septiembre:8,Octubre:9,Noviembre:10,Diciembre:11};
   const [mon,yr]=startStr.split(" ");
   const d=new Date(parseInt(yr),map[mon]||6,1);
-  const now=new Date(2026,4,1);
+  const now=new Date();
   return Math.max(0,(now.getFullYear()-d.getFullYear())*12+now.getMonth()-d.getMonth());
 }
 
@@ -26,105 +27,16 @@ const FLOR_PHOTO = "data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1
 const NACHO_PHOTO = "data:image/jpeg;base64,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";
 const ISMA_PHOTO = "data:image/jpeg;base64,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";
 
-const COMPANIES = {
-  tcs:{
-    name:"TCS", industry:"Tecnología",
-    planType:"Cuponera Fija", planCoverage:"100%", monthlyPlan:300,
-    startDate:"Julio 2025", sessionPriceRef:1375, coveragePct:1.0,
-    accountManager:{name:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:"093399250",whatsapp:"59893399250",calendar:"https://calendar.google.com/calendar/r/eventnew?add=firoldi@tuterapia.com.uy&text=Reunión+con+Tu+Terapia&details=Reunión+de+seguimiento+del+beneficio+de+salud+mental",initials:"FI"},
-    plan:{type:"Cuponera Fija",sessionsMonth:300,priceRef:1375,start:"Jul 2025",renewal:"Jul 2026",status:"activo"},
-    monthlyData:[
-      {month:"Jul 25",canjeadas:4,  realizadas:1,  nuevos:0, c1:4,  c2:0, c3:0, c4:0,  c5:0,  partial:true},
-      {month:"Ago 25",canjeadas:306,realizadas:232,nuevos:66,c1:144,c2:12,c3:11,c4:6,  c5:13},
-      {month:"Sep 25",canjeadas:276,realizadas:263,nuevos:15,c1:131,c2:9, c3:3, c4:12, c5:14},
-      {month:"Oct 25",canjeadas:310,realizadas:301,nuevos:14,c1:120,c2:8, c3:4, c4:13, c5:22},
-      {month:"Nov 25",canjeadas:300,realizadas:290,nuevos:9, c1:134,c2:5, c3:4, c4:16, c5:16},
-      {month:"Dic 25",canjeadas:299,realizadas:274,nuevos:6, c1:150,c2:1, c3:9, c4:10, c5:16},
-      {month:"Ene 26",canjeadas:306,realizadas:280,nuevos:15,c1:149,c2:2, c3:7, c4:13, c5:16},
-      {month:"Feb 26",canjeadas:324,realizadas:307,nuevos:11,c1:146,c2:0, c3:3, c4:16, c5:21},
-      {month:"Mar 26",canjeadas:347,realizadas:296,nuevos:8, c1:171,c2:2, c3:4, c4:15, c5:20},
-      {month:"Abr 26",canjeadas:340,realizadas:260,nuevos:3, c1:141,c2:4, c3:5, c4:14, c5:24},
-      {month:"May 26",canjeadas:266,realizadas:69, nuevos:5, c1:110,c2:3, c3:3, c4:14, c5:17,partial:true},
-    ],
-    wellbeingByQ:[
-      {q:"Q3 2025",score:null},{q:"Q4 2025",score:null},{q:"Q1 2026",score:null},{q:"Q2 2026",score:null},
-    ],
-    roiByQ:[
-      {q:"Q3 2025",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
-      {q:"Q4 2025",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
-      {q:"Q1 2026",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
-      {q:"Q2 2026",saludMental:null,clima:null,liderazgo:null,engagement:null,asistencia:null,productividad:null},
-    ],
-    nps:null, npsDate:null, consultationReasons:[], firstTimePct:null, firstTimeCount:null,
-    workshops:[
-      {title:"Activación del beneficio",date:"Ago 2025",speaker:"Juan I. Delgado",initials:"JD",type:"Activación",lang:"Español",rating:4.8},
-      {title:"Activación del beneficio",date:"Ago 2025",speaker:"Nico, CEO",initials:"NC",type:"Activación",lang:"Inglés",rating:4.7},
-      {title:"Concientización en salud mental",date:"Sep 2025",speaker:"Equipo Tu Terapia",initials:"TT",type:"Concientización",rating:4.6},
-      {title:"Mindfulness en el trabajo",date:"Oct 2025",speaker:"Equipo Tu Terapia",initials:"TT",type:"Mindfulness",rating:4.9},
-      {title:"Liderazgo consciente",date:"Nov 2025",speaker:"Equipo Tu Terapia",initials:"TT",type:"Liderazgo",rating:4.7},
-      {title:"Liderazgo para equipos",date:"Feb 2026",speaker:"Equipo Tu Terapia",initials:"TT",type:"Liderazgo",rating:4.8},
-      {title:"Salud mental y perspectiva de género",date:"Mar 2026",speaker:"Caro Barros · Carina Roveta",initials:"CB",type:"8M",rating:4.9},
-    ],
-    workshopsRecommended:[
-      {title:"Gestión del estrés y resiliencia",desc:"Para equipos en contextos de alta demanda operativa",month:"Jun 2026"},
-      {title:"Comunicación no violenta",desc:"Mejora el clima y los vínculos entre áreas",month:"Jul 2026"},
-      {title:"Productividad sostenible",desc:"Foco y energía sin burnout",month:"Ago 2026"},
-    ],
-    collectiveImpact:[
-      {event:"Activación del beneficio (×2)",date:"Ago 2025",type:"Activación",newPatients:66,note:"Mayor incorporación mensual registrada — 66 nuevos pacientes en el mismo período."},
-      {event:"Concientización en salud mental",date:"Sep 2025",type:"Taller",newPatients:15,note:"Sostenimiento del flujo de nuevos pacientes tras la activación inicial."},
-      {event:"Mindfulness en el trabajo",date:"Oct 2025",type:"Taller",newPatients:14,note:"Segundo mes consecutivo con alta incorporación, correlacionado con el taller de bienestar."},
-      {event:"Liderazgo para equipos",date:"Feb 2026",type:"Taller",newPatients:11,note:"Repunte de nuevos pacientes tras el taller de liderazgo, el mayor desde Oct 2025."},
-    ],
-    surveys:[
-      {title:"Encuesta de Indice Tu Terapia",desc:"22 preguntas - 6 dimensiones - ~10 min - aplicar a todo el equipo o por sector",isMain:true,dims:["Bienestar y salud mental","Clima y comunicación","Liderazgo efectivo","Engagement y compromiso","Ausentismo percibido","Productividad sostenible"]},
-    ],
-    workshopTarget:5,
-    content:[
-      {title:"Kit de activacion del beneficio Tu Terapia",type:"Campana",date:"Ago 2025",downloaded:true,rating:5,sent:true},
-      {title:"Material 8M - Salud mental y perspectiva de genero",type:"Campana",date:"Mar 2026",downloaded:true,rating:4,sent:true},
-      {title:"Guia para lideres: como hablar de salud mental",type:"Guia",date:"Sep 2025",downloaded:true,rating:4,sent:false},
-      {title:"Protocolo de acompanamiento en crisis",type:"Protocolo",date:"Nov 2025",downloaded:false,rating:null,sent:false},
-      {title:"Protocolo de derivacion a psicologia",type:"Protocolo",date:"Ene 2026",downloaded:false,rating:null,sent:false},
-    ],
-    reports:[
-      {title:"Informe de uso Q3 2025",date:"Oct 2025",downloadable:true},
-      {title:"Informe de uso Q4 2025",date:"Ene 2026",downloadable:true},
-      {title:"Informe de uso Q1 2026",date:"Abr 2026",downloadable:true,isNew:true},
-    ],
-    recommendations:[
-      {action:"Campaña de reconexión con el beneficio",reason:"Se detecta descenso en la frecuencia de consultas relacionadas con estrés laboral en el último trimestre, lo que puede indicar subregistro o barrera de acceso más que mejora real del bienestar.",urgency:"alta",date:"May 2026"},
-      {action:"Atención al aumento de consultas por vínculos interpersonales",reason:"Los datos de la plataforma muestran crecimiento sostenido en motivos de consulta relacionados con dinámica de equipo y comunicación — señal temprana de tensión organizacional.",urgency:"media",date:"May 2026"},
-      {action:"Profundizar el abordaje de bienestar en mandos medios",reason:"El perfil de uso indica que los líderes intermedios tienen menor frecuencia de consulta que el promedio del equipo, a pesar de ser el grupo con mayor exposición a situaciones de presión.",urgency:"baja",date:"May 2026"},
-    ],
-    milestones:[
-      {label:"100 sesiones financiadas",reached:true,date:"Sep 2025",value:100},
-      {label:"500 sesiones financiadas",reached:true,date:"Oct 2025",value:500},
-      {label:"1.000 sesiones financiadas",reached:true,date:"Dic 2025",value:1000},
-      {label:"2.000 sesiones financiadas",reached:true,date:"Mar 2026",value:2000},
-      {label:"3.000 sesiones financiadas",reached:false,value:3000},
-      {label:"Primer taller realizado",reached:true,date:"Ago 2025"},
-      {label:"5 talleres realizados",reached:true,date:"Nov 2025"},
-      {label:"7 talleres realizados",reached:true,date:"Mar 2026"},
-      {label:"10 talleres realizados",reached:false},
-      {label:"6 meses de alianza",reached:true,date:"Ene 2026"},
-      {label:"10 meses de alianza",reached:true,date:"May 2026"},
-      {label:"Primer año de alianza",reached:false,date:"Jul 2026"},
-    ],
-    billing:[
-      {period:"Jul 2025",amount:1600,   status:"pagado",  invoice:"TT-2025-071",fileUrl:null},
-      {period:"Ago 2025",amount:371200, status:"pagado",  invoice:"TT-2025-081",fileUrl:null},
-      {period:"Sep 2025",amount:420800, status:"pagado",  invoice:"TT-2025-091",fileUrl:null},
-      {period:"Oct 2025",amount:481600, status:"pagado",  invoice:"TT-2025-101",fileUrl:null},
-      {period:"Nov 2025",amount:464000, status:"pagado",  invoice:"TT-2025-111",fileUrl:null},
-      {period:"Dic 2025",amount:438400, status:"pagado",  invoice:"TT-2025-121",fileUrl:null},
-      {period:"Ene 2026",amount:448000, status:"pagado",  invoice:"TT-2026-011",fileUrl:null},
-      {period:"Feb 2026",amount:491200, status:"pagado",  invoice:"TT-2026-021",fileUrl:null},
-      {period:"Mar 2026",amount:473600, status:"pagado",  invoice:"TT-2026-031",fileUrl:null},
-      {period:"Abr 2026",amount:416000, status:"pagado",  invoice:"TT-2026-041",fileUrl:null},
-      {period:"May 2026",amount:110400, status:"pendiente",invoice:"TT-2026-051",fileUrl:null},
-    ],
-  },
+const SURVEYS_DEFAULT = [
+  {title:"Encuesta de Indice Tu Terapia",desc:"22 preguntas - 6 dimensiones - ~10 min - aplicar a todo el equipo o por sector",isMain:true,dims:["Bienestar y salud mental","Clima y comunicación","Liderazgo efectivo","Engagement y compromiso","Ausentismo percibido","Productividad sostenible"]},
+];
+
+const PLAN_LABELS = {cuponera_fija:"Cuponera Fija", fee_fijo:"Fee Fijo Mensual", a_demanda:"A Demanda", talleres:"Talleres"};
+const PLAN_DEFAULT_MODULES = {
+  cuponera_fija:["individual","colectivo","estrategico","gestion"],
+  fee_fijo:["individual","colectivo","estrategico","gestion"],
+  a_demanda:["individual","colectivo","estrategico","gestion"],
+  talleres:["colectivo","estrategico","gestion"],
 };
 
 const TT_TEAM=[
@@ -305,7 +217,6 @@ export default function Dashboard(){
   const [passwordMsg, setPasswordMsg] = useState("");
   const [settingPassword, setSettingPassword] = useState(false);
 
-  const [ck,setCk]=useState("tcs");
   const [mod,setMod]=useState("home");
   const [sub,setSub]=useState(null);
   const [npsVal,setNpsVal]=useState(null);
@@ -371,6 +282,7 @@ export default function Dashboard(){
   const [dbNps, setDbNps] = useState([]);
   const [dbConsultationReasons, setDbConsultationReasons] = useState([]);
   const [dbWorkshopsRec, setDbWorkshopsRec] = useState([]);
+  const [dbRoiByQ, setDbRoiByQ] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(()=>{
@@ -382,7 +294,7 @@ export default function Dashboard(){
       const [
         reports, surveys, content, workshops, workshopsRec, talleristas,
         headerTexts, company, sessions, billing, recommendations,
-        milestones, nps, reasons
+        milestones, nps, reasons, roiQ
       ] = await Promise.all([
         supabase.from("informes").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
@@ -398,6 +310,7 @@ export default function Dashboard(){
         supabase.from("milestones").select("*").eq("company_id",companyId).order("created_at"),
         supabase.from("nps_data").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("consultation_reasons").select("*").eq("company_id",companyId).order("percentage",{ascending:false}),
+        supabase.from("roi_by_quarter").select("*").eq("company_id",companyId).order("created_at",{ascending:true}),
       ]);
       setDbReports(reports.data||[]);
       setDbSurveys(surveys.data||[]);
@@ -413,6 +326,7 @@ export default function Dashboard(){
       setDbMilestones(milestones.data||[]);
       setDbNps(nps.data||[]);
       setDbConsultationReasons(reasons.data||[]);
+      setDbRoiByQ(roiQ.data||[]);
       setDataLoading(false);
     }
     loadData();
@@ -459,49 +373,12 @@ export default function Dashboard(){
     </div>
   );
 
-  // Password set screen (from invite or recovery link)
-  if(showSetPassword) return (
-    <div style={{minHeight:"100vh",background:"#EDF5F1",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif"}}>
-      <div style={{background:"#FFFFFF",borderRadius:16,border:"1px solid #DDE8E4",padding:"40px",width:380,boxShadow:"0 4px 24px rgba(0,0,0,0.06)"}}>
-        <div style={{textAlign:"center",marginBottom:28}}>
-          <img src={LOGO_TT} alt="Tu Terapia" style={{height:40,marginBottom:14,display:"block",margin:"0 auto 14px"}}/>
-          <div style={{fontSize:20,fontWeight:700,color:"#18211E"}}>Creá tu contraseña</div>
-          <div style={{fontSize:13,color:"#607870",marginTop:6}}>Elegí una contraseña para acceder al dashboard</div>
-        </div>
-        {passwordMsg&&<div style={{padding:"10px 14px",background:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#FAEAEA":"#E6F4F0",color:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#B03030":"#1A5C4A",borderRadius:8,marginBottom:14,fontSize:12}}>{passwordMsg}</div>}
-        <div style={{marginBottom:12}}>
-          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Nueva contraseña</label>
-          <input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres"
-            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
-        </div>
-        <div style={{marginBottom:20}}>
-          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Repetí la contraseña</label>
-          <input type="password" value={newPassword2} onChange={e=>setNewPassword2(e.target.value)} placeholder="Repetí tu contraseña"
-            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
-        </div>
-        <button disabled={settingPassword} onClick={async()=>{
-          if(newPassword.length<8){setPasswordMsg("La contraseña debe tener al menos 8 caracteres.");return;}
-          if(newPassword!==newPassword2){setPasswordMsg("Las contraseñas no coinciden.");return;}
-          setSettingPassword(true);
-          const {error}=await supabase.auth.updateUser({password:newPassword});
-          if(error){setPasswordMsg("Error: "+error.message);setSettingPassword(false);return;}
-          setPasswordMsg("¡Contraseña creada! Redirigiendo...");
-          setTimeout(()=>{setShowSetPassword(false);window.location.hash="";setAuthLoading(false);window.location.reload();},1500);
-        }} style={{width:"100%",padding:11,background:"#1A5C4A",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:600,cursor:settingPassword?"not-allowed":"pointer",opacity:settingPassword?0.7:1}}>
-          {settingPassword?"Guardando...":"Crear contraseña"}
-        </button>
-      </div>
-    </div>
-  );
-
   if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando...</div>;
   if(!authUser) return <LoginView onLogin={(ud,pd)=>{ setAuthUser(ud); setUserPerms(pd); }}/>;
+  if(dataLoading||!dbCompany) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando datos...</div>;
 
-  // Merge hardcoded TCS data with Supabase data
-  const baseC = COMPANIES[ck];
-  
-  // Build monthlyData from Supabase sessions if available
-  const supabaseMonthlyData = dbSessions.length>0 ? dbSessions.map(s=>({
+  // Datos 100% desde Supabase — sin fallbacks hardcodeados
+  const supabaseMonthlyData = dbSessions.map(s=>({
     month: s.month,
     year: s.year,
     monthOrder: MONTH_ORDER[s.month]||0,
@@ -514,28 +391,41 @@ export default function Dashboard(){
     primera_vez: s.primera_vez||0,
     c1: s.c1||0, c2: s.c2||0, c3: s.c3||0, c4: s.c4||0, c5: s.c5||0,
     partial: s.partial||false,
-  })).sort((a,b)=> a.year!==b.year ? a.year-b.year : a.monthOrder-b.monthOrder) : null;
+  })).sort((a,b)=> a.year!==b.year ? a.year-b.year : a.monthOrder-b.monthOrder);
 
-  // Build billing from Supabase if available
-  const supabaseBilling = dbBilling.length>0 ? dbBilling.map(b=>({
+  const supabaseBilling = dbBilling.map(b=>({
     period: b.period,
     amount: b.amount||0,
     status: b.status||"pendiente",
     invoice: b.invoice||"",
     fileUrl: b.file_url||null,
-  })) : null;
+  }));
 
-  // Build company config from Supabase if available
+  const planKind = dbCompany?.plan_kind || "cuponera_fija";
+  const coveragePct = dbCompany?.coverage_pct!=null ? Number(dbCompany.coverage_pct) : 1;
+  const accountManager = TT_TEAM.find(t=>t.email===dbCompany?.referente_email) || TT_TEAM.find(t=>t.name==="Flor");
+
+  // Placeholder de trimestres cuando no hay datos de encuestas
+  const emptyQuarters = (()=>{
+    const d=new Date(); const qs=[];
+    let q=Math.floor(d.getMonth()/3)+1, y=d.getFullYear();
+    for(let i=0;i<4;i++){ qs.unshift({q:`Q${q} ${y}`,score:null}); q--; if(q===0){q=4;y--;} }
+    return qs;
+  })();
+
   const c = {
-    ...baseC,
-    // Override with Supabase data when available
-    name: dbCompany?.name || baseC.name,
-    monthlyData: (supabaseMonthlyData || baseC.monthlyData).map(m=>({
-      ...m,
-      label: m.label || m.month, // use precomputed label or fallback to month string
-    })),
-    billing: supabaseBilling || baseC.billing,
-    workshops: (dbWorkshops.length>0 ? dbWorkshops : baseC.workshops).sort((a,b)=>{
+    name: dbCompany?.name || "",
+    planKind,
+    coveragePct,
+    monthlyPlan: dbCompany?.monthly_plan || 0,
+    monthlyFee: dbCompany?.monthly_fee || null,
+    monthlyCap: dbCompany?.monthly_cap || null,
+    sessionPriceRef: dbCompany?.session_price_ref || 0,
+    workshopTarget: dbCompany?.workshop_target || 5,
+    startDate: dbCompany?.start_date || null,
+    monthlyData: supabaseMonthlyData,
+    billing: supabaseBilling,
+    workshops: [...dbWorkshops].sort((a,b)=>{
       const monthNum = (s) => {
         const full = {Enero:1,Febrero:2,Marzo:3,Abril:4,Mayo:5,Junio:6,Julio:7,Agosto:8,Septiembre:9,Octubre:10,Noviembre:11,Diciembre:12};
         const abbr = {Ene:1,Feb:2,Mar:3,Abr:4,May:5,Jun:6,Jul:7,Ago:8,Sep:9,Oct:10,Nov:11,Dic:12};
@@ -549,36 +439,43 @@ export default function Dashboard(){
       };
       return toNum(a.date) - toNum(b.date);
     }),
-    workshopsRecommended: dbWorkshopsRec.length>0 ? dbWorkshopsRec : baseC.workshopsRecommended,
-    content: dbContent.length>0 ? dbContent : baseC.content,
-    recommendations: dbRecommendations.length>0 ? dbRecommendations : baseC.recommendations,
-    milestones: dbMilestones.length>0 ? dbMilestones : baseC.milestones,
-    consultationReasons: dbConsultationReasons.length>0 ? dbConsultationReasons : baseC.consultationReasons,
-    consultoriaActiva: dbCompany?.consultoria_activa || baseC.consultoriaActiva || false,
-    consultoriaSolicitada: dbCompany?.consultoria_solicitada || baseC.consultoriaSolicitada || false,
-    plan: dbCompany ? {
-      type: dbCompany.plan_type || baseC.plan.type,
-      coverage: dbCompany.plan_coverage || baseC.plan.coverage,
-      sessionsMonth: dbCompany.monthly_plan || baseC.plan.sessionsMonth,
-      priceRef: dbCompany.session_price_ref || baseC.plan.priceRef,
-      renewal: baseC.plan.renewal,
-    } : baseC.plan,
-    sessionPriceRef: dbCompany?.session_price_ref || baseC.sessionPriceRef,
-    workshopTarget: dbCompany?.workshop_target || baseC.workshopTarget,
-    startDate: dbCompany?.start_date || baseC.startDate,
-    // NPS from Supabase
-    nps: dbNps.length>0 ? dbNps[0].value : baseC.nps,
-    npsDate: dbNps.length>0 ? dbNps[0].date : baseC.npsDate,
+    workshopsRecommended: dbWorkshopsRec,
+    content: dbContent,
+    recommendations: dbRecommendations,
+    milestones: dbMilestones,
+    consultationReasons: dbConsultationReasons,
+    consultoriaActiva: dbCompany?.consultoria_activa || false,
+    consultoriaSolicitada: dbCompany?.consultoria_solicitada || false,
+    plan: {
+      kind: planKind,
+      type: PLAN_LABELS[planKind] || dbCompany?.plan_type || "—",
+      coverage: dbCompany?.plan_coverage || `${Math.round(coveragePct*100)}%`,
+      sessionsMonth: dbCompany?.monthly_plan || null,
+      priceRef: dbCompany?.session_price_ref || null,
+      monthlyFee: dbCompany?.monthly_fee || null,
+      monthlyCap: dbCompany?.monthly_cap || null,
+      start: dbCompany?.start_date || "—",
+      renewal: dbCompany?.renewal || "—",
+      status: "activo",
+    },
+    accountManager,
+    surveys: SURVEYS_DEFAULT,
+    reports: dbReports,
+    nps: dbNps.length>0 ? dbNps[0].value : null,
+    npsDate: dbNps.length>0 ? dbNps[0].date : null,
+    roiByQ: dbRoiByQ.map(q=>({q:q.quarter,saludMental:q.salud_mental,clima:q.clima,liderazgo:q.liderazgo,engagement:q.engagement,asistencia:q.asistencia,productividad:q.productividad})),
+    wellbeingByQ: dbRoiByQ.length>0 ? dbRoiByQ.map(q=>({q:q.quarter,score:q.salud_mental})) : emptyQuarters,
+    firstTimePct: null, firstTimeCount: null,
   };
 
   // Calculate firstTime from sessions data
   const calcFirstTimeCount = (()=>{
-    const data = supabaseMonthlyData || baseC.monthlyData;
+    const data = c.monthlyData;
     const total = data.reduce((s,m)=>s+(m.primera_vez||0),0);
     return total > 0 ? total : null;
   })();
   const calcTotHistorico = (()=>{
-    const data = supabaseMonthlyData || baseC.monthlyData;
+    const data = c.monthlyData;
     const lastWithHist=[...data].reverse().find(m=>m.total_historico>0);
     return lastWithHist?lastWithHist.total_historico:null;
   })();
@@ -611,15 +508,7 @@ export default function Dashboard(){
   const compRate=fullCanj>0?Math.round(fullReal/fullCanj*100):0;
   const lastFull=fullM[fullM.length-1];
   const lastM=c.monthlyData[c.monthlyData.length-1];
-  const couponD=[
-    {name:"1 sesión", value:c.monthlyData.reduce((s,m)=>s+m.c1,0)},
-    {name:"2 sesiones",value:c.monthlyData.reduce((s,m)=>s+m.c2,0)},
-    {name:"3 sesiones",value:c.monthlyData.reduce((s,m)=>s+m.c3,0)},
-    {name:"4 sesiones",value:c.monthlyData.reduce((s,m)=>s+m.c4,0)},
-    {name:"5 sesiones",value:c.monthlyData.reduce((s,m)=>s+m.c5,0)},
-  ];
-  const totCoup=couponD.reduce((s,d)=>s+d.value,0);
-  // Investment: use billing amounts if available, else fallback to realizadas * price
+  // Inversión: monto de billing si existe; si no, estimación según tipo de plan
   const billingMap = {};
   c.billing.forEach(b=>{ billingMap[b.period]=b.amount; });
   const MONTH_TO_PERIOD = (label) => {
@@ -628,27 +517,34 @@ export default function Dashboard(){
     const monNames = {Ene:"Ene",Feb:"Feb",Mar:"Mar",Abr:"Abr",May:"May",Jun:"Jun",Jul:"Jul",Ago:"Ago",Sep:"Sep",Oct:"Oct",Nov:"Nov",Dic:"Dic"};
     return `${monNames[mon]||mon} ${fullYr}`;
   };
+  const estMonthCost = (m) =>
+    planKind==="fee_fijo" ? (c.monthlyFee||0)
+    : planKind==="talleres" ? 0
+    : Math.round(m.realizadas*c.sessionPriceRef*(planKind==="a_demanda"?coveragePct:1));
   const invTrend=c.monthlyData.map(m=>{
-    const period = MONTH_TO_PERIOD(m.label||m.month);
-    const billed = billingMap[period];
-    return {label:m.label||m.month, investment: billed || Math.round(m.realizadas*c.sessionPriceRef), partial:m.partial};
+    const billed = billingMap[MONTH_TO_PERIOD(m.label||m.month)];
+    return {label:m.label||m.month, investment: billed!=null ? billed : estMonthCost(m), partial:m.partial};
   });
-  const invTotal=c.billing.filter(b=>b.status==="pagado"||b.status==="pendiente").reduce((s,b)=>s+b.amount,0) || totReal*c.sessionPriceRef;
-  const invLastFull=lastFull?(billingMap[MONTH_TO_PERIOD(lastFull.label||lastFull.month)]||lastFull.realizadas*c.sessionPriceRef):0;
-  const invPerPat=totNuev>0?invTotal/totNuev:0;
+  const invTotal=c.billing.filter(b=>b.status==="pagado"||b.status==="pendiente").reduce((s,b)=>s+b.amount,0) || invTrend.reduce((s,m)=>s+m.investment,0);
+  const invLastFull=lastFull?(billingMap[MONTH_TO_PERIOD(lastFull.label||lastFull.month)]??estMonthCost(lastFull)):0;
   const billingPaid=c.billing.filter(b=>b.status==="pagado").reduce((s,b)=>s+b.amount,0);
   const billingPending=c.billing.filter(b=>b.status==="pendiente").reduce((s,b)=>s+b.amount,0);
 
-  const QUADRANTS=[
-    {id:"individual", label:"Colaboradores", color:P.primary, borderColor:P.primary,
-     stats:[`${fmt(totReal)} sesiones realizadas`,`${totNuev} pacientes únicos`,`${compRate}% tasa de realización`]},
-    {id:"colectivo",  label:"Cultura de Bienestar",  color:P.purple, borderColor:P.purple,
-     stats:[`${c.workshops.length} talleres realizados`,`${c.content.length} recursos disponibles`,"Próximo: Jun 2026"]},
-    {id:"estrategico",label:"Estrategia de Bienestar",color:P.accent, borderColor:P.accent,
-     stats:["NPS: pendiente Q2","Bienestar: pendiente Q2",`${c.recommendations.length} recomendaciones activas`]},
-    {id:"gestion",    label:"Gestión",          color:P.textMuted, borderColor:P.border, restricted:true,
-     stats:[`$ ${fmt(billingPaid)} facturado`,`Renovación ${c.plan.renewal}`,"Plan activo"]},
-  ];
+  // Línea de referencia del plan en charts: tope de cuponera o tope opcional de a-demanda
+  const planRefLine = planKind==="cuponera_fija" ? (c.monthlyPlan||null)
+    : planKind==="a_demanda" && c.monthlyCap ? c.monthlyCap : null;
+
+  // Resumen del plan para headers
+  const planSummary = planKind==="cuponera_fija" ? `${c.plan.type} · ${c.plan.sessionsMonth||"—"} sesiones por mes`
+    : planKind==="fee_fijo" ? `${c.plan.type} · ${Math.round((1-coveragePct)*100)>0?`${Math.round((1-coveragePct)*100)}% OFF`:"beneficio"} para colaboradores`
+    : planKind==="a_demanda" ? `${c.plan.type} · cobertura ${Math.round(coveragePct*100)}% por sesión${c.monthlyCap?` · tope ${c.monthlyCap}/mes`:""}`
+    : `${c.plan.type} · talleres puntuales o ciclos`;
+
+  // Visibilidad de módulos: config por empresa (o default según plan) + permisos del usuario
+  const companyModules = (Array.isArray(dbCompany?.visible_modules) && dbCompany.visible_modules.length>0)
+    ? dbCompany.visible_modules
+    : (PLAN_DEFAULT_MODULES[planKind] || MODULES.map(m=>m.id));
+  const moduleVisible = (id) => companyModules.includes(id) && hasAccess(id);
 
   return <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif",background:P.bg,minHeight:"100vh",color:P.text}}>
 
@@ -662,7 +558,7 @@ export default function Dashboard(){
         </div>
       </button>
       {mod!=="home"&&activeMod&&<div style={{display:"flex",gap:2,overflowX:"auto",flexShrink:1,minWidth:0}}>
-        {MODULES.map(m=><button key={m.id} onClick={()=>setModule(m.id)} style={{fontSize:12,fontWeight:mod===m.id?700:400,color:mod===m.id?P.primary:P.textMuted,background:"none",border:"none",borderBottom:mod===m.id?`2px solid ${P.primary}`:"2px solid transparent",padding:"8px 14px",cursor:"pointer",whiteSpace:"nowrap"}}>
+        {MODULES.filter(m=>moduleVisible(m.id)).map(m=><button key={m.id} onClick={()=>setModule(m.id)} style={{fontSize:12,fontWeight:mod===m.id?700:400,color:mod===m.id?P.primary:P.textMuted,background:"none",border:"none",borderBottom:mod===m.id?`2px solid ${P.primary}`:"2px solid transparent",padding:"8px 14px",cursor:"pointer",whiteSpace:"nowrap"}}>
           {m.label}
         </button>)}
       </div>}
@@ -693,7 +589,7 @@ export default function Dashboard(){
       {/* Saludo + frase central */}
       <div style={{textAlign:"center",padding:"48px 24px 36px",maxWidth:640,margin:"0 auto"}}>
         <div style={{fontSize:11,fontWeight:700,color:P.textMuted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:16}}>
-          TCS · {months} meses juntos
+          {c.name}{months>0?` · ${months} meses juntos`:""}
         </div>
         <div style={{fontSize:36,fontWeight:800,color:P.text,lineHeight:1.15,letterSpacing:"-1.5px",marginBottom:16}}>
           Tu equipo se está sintiendo mejor
@@ -735,9 +631,9 @@ export default function Dashboard(){
           </svg>;
         };
 
-        return <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:1,background:P.border,borderRadius:16,overflow:"hidden",marginBottom:20,border:`1px solid ${P.border}`}}>
+        return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:1,background:P.border,borderRadius:16,overflow:"hidden",marginBottom:20,border:`1px solid ${P.border}`}}>
           {/* Sesiones — sparkline */}
-          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
+          {moduleVisible("individual")&&<div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
             <svg width={sparkW} height={sparkH+4} style={{overflow:"visible"}}>
               <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.primary} stopOpacity="0.15"/><stop offset="100%" stopColor={P.primary} stopOpacity="0"/></linearGradient></defs>
               <polygon points={`0,${sparkH} ${pts} ${sparkW},${sparkH}`} fill="url(#g1)"/>
@@ -751,10 +647,10 @@ export default function Dashboard(){
             <div style={{fontSize:32,fontWeight:800,color:P.primary,letterSpacing:"-1px",lineHeight:1}}>{fmt(totReal)}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>sesiones realizadas</div>
             <div style={{fontSize:10,color:P.textMuted}}>desde el inicio</div>
-          </div>
+          </div>}
 
           {/* Personas — sparkline */}
-          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
+          {moduleVisible("individual")&&<div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
             <svg width={sparkW} height={sparkH+4} style={{overflow:"visible"}}>
               <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.light} stopOpacity="0.15"/><stop offset="100%" stopColor={P.light} stopOpacity="0"/></linearGradient></defs>
               <polygon points={`0,${sparkH} ${ptsNew} ${sparkW},${sparkH}`} fill="url(#g2)"/>
@@ -768,17 +664,17 @@ export default function Dashboard(){
             <div style={{fontSize:32,fontWeight:800,color:P.light,letterSpacing:"-1px",lineHeight:1}}>{totNuev}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>personas acompañadas</div>
             <div style={{fontSize:10,color:P.textMuted}}>pacientes únicos</div>
-          </div>
+          </div>}
 
           {/* Primera vez en terapia — ring */}
-          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
+          {moduleVisible("individual")&&<div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
             <div style={{position:"relative",width:60,height:60}}>
               <Ring pct={c.firstTimePct!=null?c.firstTimePct:0} color={P.primary} size={60} stroke={5}/>
               <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:12,fontWeight:700,color:P.primary}}>{c.firstTimePct!=null?`${c.firstTimePct}%`:"—"}</div>
             </div>
             <div style={{fontSize:12,fontWeight:600,color:P.text,textAlign:"center",lineHeight:1.4}}>Primera vez en terapia</div>
             <div style={{fontSize:11,color:P.textMuted}}>{c.firstTimeCount!=null?`${c.firstTimeCount} personas`:"pendiente"}</div>
-          </div>
+          </div>}
 
           {/* Talleres — ring */}
           <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
@@ -800,7 +696,7 @@ export default function Dashboard(){
           {id:"colectivo",  label:"Cultura de Bienestar",    color:"#9070b8", accent:"#F5F0FA"},
           {id:"estrategico",label:"Estrategia de Bienestar", color:"#2a6aaa", accent:"#e8f2fc"},
           {id:"gestion",    label:"Gestión",                 color:P.textMuted, accent:P.gray50, restricted:true},
-        ].filter(p=>hasAccess(p.id)).map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
+        ].filter(p=>moduleVisible(p.id)).map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
           background:P.white,
           border:`1px solid ${P.border}`,
           borderTop:`3px solid ${p.color}`,
@@ -821,6 +717,7 @@ export default function Dashboard(){
           <div style={{display:"flex",alignItems:"flex-start",gap:0,minWidth:"max-content",position:"relative",paddingTop:8,paddingBottom:4}}>
             {/* Horizontal line */}
             <div style={{position:"absolute",top:15,left:16,right:16,height:1.5,background:`linear-gradient(to right, ${P.primary}, ${P.border})`}}/>
+            {c.milestones.filter(m=>m.reached).length===0&&<div style={{fontSize:12,color:P.textMuted,padding:"10px 16px"}}>Los hitos de la alianza aparecerán acá a medida que avancen juntos.</div>}
             {c.milestones.filter(m=>m.reached).map((m,i)=><div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,width:120,flexShrink:0,paddingTop:0}}>
               <div style={{width:18,height:18,borderRadius:"50%",background:m.reached?P.primary:P.white,border:`2px solid ${m.reached?P.primary:P.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,zIndex:1,position:"relative"}}>
                 {m.reached&&<span style={{fontSize:9,color:P.white,lineHeight:1}}>★</span>}
@@ -838,15 +735,18 @@ export default function Dashboard(){
       <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"24px 28px"}}>
         <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:16,textAlign:"center"}}>Tu referente en Tu Terapia</div>
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
-          <img src={FLOR_PHOTO} alt="Flor" style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 10%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
+          {c.accountManager.photo==="flor"?<img src={FLOR_PHOTO} alt={c.accountManager.name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 10%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
+          :c.accountManager.photo==="nacho"?<img src={NACHO_PHOTO} alt={c.accountManager.name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 20%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
+          :c.accountManager.photo==="isma"?<img src={ISMA_PHOTO} alt={c.accountManager.name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 15%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
+          :<Avatar initials={c.accountManager.initials} size={64}/>}
           <div style={{textAlign:"center"}}>
-            <div style={{fontSize:16,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>Flor</div>
+            <div style={{fontSize:16,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{c.accountManager.name}</div>
             <div style={{fontSize:12,color:P.textMuted}}>{c.accountManager.role}</div>
           </div>
           <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center",marginTop:4}}>
             <a href={`mailto:${c.accountManager.email}`} style={{display:"flex",alignItems:"center",gap:6,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:`1px solid ${P.border}`}}>✉ Mail</a>
-            <a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%20Flor%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>
-            <a href={c.accountManager.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C5D5F5"}}>📅 Agendar reunión</a>
+            <a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>
+            {c.accountManager.calendar&&<a href={c.accountManager.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C5D5F5"}}>📅 Agendar reunión</a>}
           </div>
         </div>
       </div>
@@ -859,18 +759,18 @@ export default function Dashboard(){
         {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud este mes":`${totNuev} personas eligieron cuidar su salud mental`)}
       </div>
       <div style={{fontSize:13,color:"#4a7a52",opacity:0.85}}>
-        {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totReal)} sesiones realizadas · ${compRate}% de utilización del plan`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:"")}
+        {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totReal)} sesiones realizadas${planKind==="cuponera_fija"?` · ${compRate}% de utilización del plan`:""}`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:"")}
       </div>
     </div>}
     {mod==="individual"&&sub==="Sesiones"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-        <KpiCard label="Sesiones Canjeadas" value={fmt(totCanj)}/>
+        {planKind==="cuponera_fija"&&<KpiCard label="Sesiones Canjeadas" value={fmt(totCanj)}/>}
         <KpiCard label="Sesiones Realizadas" value={fmt(totReal)} sub="Desde inicio"/>
-        <KpiCard label="Tasa de realización" value={`${compRate}%`} sub="Sesiones realizadas / canjeadas"/>
+        {planKind==="cuponera_fija"&&<KpiCard label="Tasa de realización" value={`${compRate}%`} sub="Sesiones realizadas / canjeadas"/>}
         <KpiCard label="Sesiones realizadas en el último mes" value={lastFull?fmt(lastFull.realizadas):"—"} sub={lastFull?.month}/>
       </div>
-      <Section title="Sesiones canjeadas por mes">
-        {lastM.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
+      {planKind==="cuponera_fija"&&<Section title="Sesiones canjeadas por mes">
+        {lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
         <div style={{height:210}}><ResponsiveContainer width="100%" height="100%">
           <BarChart data={c.monthlyData} barSize={13}>
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
@@ -880,16 +780,16 @@ export default function Dashboard(){
             <Bar dataKey="canjeadas" name="canjeadas" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
-        <div style={{marginTop:6,fontSize:11,color:P.textMuted}}>Los desvíos sobre 300 corresponden a sesiones acumuladas de meses anteriores o ajustes manuales.</div>
-      </Section>
-      <Section title={`Sesiones realizadas por mes — plan ${c.monthlyPlan}/mes`}>
+        <div style={{marginTop:6,fontSize:11,color:P.textMuted}}>{`Los desvíos sobre ${c.monthlyPlan} corresponden a sesiones acumuladas de meses anteriores o ajustes manuales.`}</div>
+      </Section>}
+      <Section title={planRefLine?`Sesiones realizadas por mes — ${planKind==="a_demanda"?"tope":"plan"} ${planRefLine}/mes`:"Sesiones realizadas por mes"}>
         <div style={{height:210}}><ResponsiveContainer width="100%" height="100%">
           <BarChart data={c.monthlyData} barSize={13}>
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil(Math.max(dataMax, c.monthlyPlan)*1.15)]}/>
+            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil(Math.max(dataMax, planRefLine||0)*1.15)||"auto"]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            <ReferenceLine y={c.monthlyPlan} stroke="#D97706" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`Plan: ${c.monthlyPlan} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#B45309"}}/>
+            {planRefLine&&<ReferenceLine y={planRefLine} stroke="#D97706" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#B45309"}}/>}
             <Bar dataKey="realizadas" name="realizadas" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
@@ -909,7 +809,7 @@ export default function Dashboard(){
           <KpiCard label="Promedio sesiones por mes (empresa)" value={avgPerMonth!=null?Math.ceil(avgPerMonth):"—"} sub="Meses completos"/>
         </div>
         <Section title="Primera vez en terapia">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6,textAlign:"center"}}>Colaboradores que accedieron a terapia psicológica por primera vez a través del beneficio de TCS.</div>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6,textAlign:"center"}}>Colaboradores que accedieron a terapia psicológica por primera vez a través del beneficio de {c.name}.</div>
           {c.firstTimeCount!=null?
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14,padding:"6px 0 4px"}}>
               <div style={{textAlign:"center",padding:"20px 34px",background:P.lighter,borderRadius:14,border:`1px solid ${P.primary+"44"}`}}>
@@ -965,7 +865,7 @@ export default function Dashboard(){
     </div>}
     {mod==="colectivo"&&sub==="Talleres"&&(()=>{
       // Use Supabase workshops if available, fallback to hardcoded
-      const workshops = dbWorkshops.length>0 ? dbWorkshops : c.workshops;
+      const workshops = c.workshops;
       return <>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
           <KpiCard label="Talleres realizados" value={workshops.length} sub={`de ${c.workshopTarget||5} anuales`}/>
@@ -1002,7 +902,7 @@ export default function Dashboard(){
         <Section title="Recursos y material">
           <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Descargá el material, evalualo y marcalo como enviado cuando lo compartas con tu equipo.</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {(dbContent.length>0?dbContent:c.content).map((item,i)=>{
+            {c.content.map((item,i)=>{
               const col=TYPE_COLORS[item.type]||{bg:P.lighter,tx:P.primary};
               return <div key={i} style={{padding:"14px 16px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
                 <div style={{display:"flex",alignItems:"flex-start",gap:12,flexWrap:"wrap"}}>
@@ -1198,13 +1098,14 @@ export default function Dashboard(){
       const hasData2=firstQ2&&lastQ2&&firstQ2!==lastQ2;
       const avgImp2=hasData2?dimKeys2.map(k=>lastQ2[k]!=null&&firstQ2[k]!=null?lastQ2[k]-firstQ2[k]:null).filter(v=>v!==null).reduce((a,b,_,arr)=>a+b/arr.length,0):null;
       const normImp2=avgImp2!=null?Math.max(0,Math.min(100,Math.round((avgImp2/9)*100))):null;
-      const utilScore2=Math.round(compRate*0.3);
+      const hasUtil=planKind==="cuponera_fija";
+      const utilScore2=hasUtil?Math.round(compRate*0.3):0;
       const workshopTarget=c.workshopTarget||5;
       const workshopScore=Math.min(100,Math.round((c.workshops.length/workshopTarget)*100));
-      const workshopPts=Math.round(workshopScore*0.15);
-      const contentEngagement=c.content.length>0?Math.round(((dbContent.length>0?dbContent:c.content).filter(x=>x.downloaded&&x.rating).length/c.content.length)*100):0;
-      const contentPts=Math.round(contentEngagement*0.05);
-      const iii=normImp2!=null?Math.round(normImp2*0.5+utilScore2+workshopPts+contentPts):null;
+      const workshopPts=Math.round(workshopScore*(hasUtil?0.15:0.20));
+      const contentEngagement=c.content.length>0?Math.round((c.content.filter(x=>x.downloaded&&x.rating).length/c.content.length)*100):0;
+      const contentPts=Math.round(contentEngagement*(hasUtil?0.05:0.10));
+      const iii=normImp2!=null?Math.round(normImp2*(hasUtil?0.5:0.7)+utilScore2+workshopPts+contentPts):null;
       const invTotal2=invTotal;
       const invTrend2=invTrend; // use same billing-based trend
       const totNuev2=c.monthlyData.reduce((s,m)=>s+m.nuevos,0);
@@ -1227,12 +1128,16 @@ export default function Dashboard(){
             {showIII&&<div style={{position:"absolute",top:"calc(100% + 8px)",left:0,width:290,background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"14px 16px",boxShadow:"0 4px 20px rgba(0,0,0,0.10)",zIndex:20}}>
               <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Composición del Índice Tu Terapia</div>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {[
+                {(hasUtil?[
                   ["50%","Mejora en dimensiones de bienestar",normImp2!=null?`${Math.round(normImp2*0.5)}pts`:"—","Evolución Q inicial → Q actual en 6 dimensiones."],
                   ["30%","Utilización del plan individual",`${utilScore2}pts`,`Sesiones realizadas sobre contratadas (${compRate2}% actual).`],
                   ["15%","Actividad colectiva — talleres",`${workshopPts}pts`,`${c.workshops.length} de ${workshopTarget} talleres anuales realizados.`],
                   ["5%","Engagement con contenido",`${contentPts}pts`,"Piezas descargadas y evaluadas por RRHH."],
-                ].map(([pct,label,pts,desc])=><div key={pct} style={{paddingBottom:8,borderBottom:`1px solid ${P.border}`}}>
+                ]:[
+                  ["70%","Mejora en dimensiones de bienestar",normImp2!=null?`${Math.round(normImp2*0.7)}pts`:"—","Evolución Q inicial → Q actual en 6 dimensiones."],
+                  ["20%","Actividad colectiva — talleres",`${workshopPts}pts`,`${c.workshops.length} de ${workshopTarget} talleres anuales realizados.`],
+                  ["10%","Engagement con contenido",`${contentPts}pts`,"Piezas descargadas y evaluadas por RRHH."],
+                ]).map(([pct,label,pts,desc])=><div key={pct} style={{paddingBottom:8,borderBottom:`1px solid ${P.border}`}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
                     <span style={{fontSize:12,fontWeight:600,color:P.text}}><b>{pct}</b> {label}</span>
                     <span style={{fontSize:12,fontWeight:700,color:P.primary,flexShrink:0,marginLeft:8}}>{pts}</span>
@@ -1241,14 +1146,14 @@ export default function Dashboard(){
                 </div>)}
               </div>
               <div style={{marginTop:8,fontSize:10,color:P.textMuted,background:P.gray50,borderRadius:6,padding:"6px 10px"}}>
-                Índice Tu Terapia = (bienestar×50%) + (utilización×30%) + (talleres×15%) + (contenido×5%)
+                {hasUtil?"Índice Tu Terapia = (bienestar×50%) + (utilización×30%) + (talleres×15%) + (contenido×5%)":"Índice Tu Terapia = (bienestar×70%) + (talleres×20%) + (contenido×10%)"}
               </div>
             </div>}
           </div>
           <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal2)}`} sub="UYU · precio de referencia" accent/>
           <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat2)}`} sub={`${totNuev2} pacientes únicos`}/>
-          <KpiCard label="Utilización del plan" value={`${compRate2}%`} sub="Realizadas / contratadas"/>
-          <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]||lastFull2.realizadas*c.sessionPriceRef):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
+          {hasUtil&&<KpiCard label="Utilización del plan" value={`${compRate2}%`} sub="Realizadas / contratadas"/>}
+          <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]??estMonthCost(lastFull2)):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
         </div>
 
         <Section title="6 dimensiones del impacto">
@@ -1289,7 +1194,7 @@ export default function Dashboard(){
           </div>
         </Section>
 
-        <Section title="Inversión mensual (UYU)" warnNote="Cálculo de referencia a UY$ 1.375 por sesión.">
+        <Section title="Inversión mensual (UYU)" warnNote={planKind==="fee_fijo"?`Fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}.`:planKind==="talleres"?"Inversión según facturación de talleres y ciclos.":`Cálculo de referencia a UY$ ${fmt(c.sessionPriceRef)} por sesión${planKind==="a_demanda"&&coveragePct<1?` (cobertura ${Math.round(coveragePct*100)}%)`:""}.`}>
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={invTrend2} barSize={13}>
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
@@ -1365,9 +1270,9 @@ export default function Dashboard(){
         </div>
         {openSections.informes&&<div style={{padding:"0 20px 16px"}}>
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {(dbReports.length>0?dbReports:c.reports).length===0
+          {c.reports.length===0
             ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px 0"}}>Sin informes disponibles aún.</div>
-            : (dbReports.length>0?dbReports:c.reports).map((r,i)=>{
+            : c.reports.map((r,i)=>{
               const isOpen=expandedReport===i;
               const fileUrl=r.file_url||null;
               return <div key={i} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:10,overflow:"hidden"}}>
@@ -1402,6 +1307,7 @@ export default function Dashboard(){
         {openSections.recomendaciones&&<div style={{padding:"0 20px 16px"}}>
         <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Hallazgos sobre la salud mental y bienestar del equipo, elaborados por nuestros profesionales.</div>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {c.recommendations.length===0&&<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"14px 0"}}>Sin recomendaciones activas por el momento.</div>}
           {c.recommendations.map((r,i)=>{
             const u=URGENCY[r.urgency];
             return <div key={i} style={{padding:"16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,borderLeft:`3px solid ${u.tx}`}}>
@@ -1426,7 +1332,7 @@ export default function Dashboard(){
         {sub==="Facturación"?"Tu plan activo, todo en orden":sub==="Plan activo"?"El acuerdo que hace posible el bienestar de tu equipo":"Las personas detrás del beneficio, siempre disponibles"}
       </div>
       <div style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>
-        {sub==="Facturación"?`Renovación ${c.plan.renewal} · ${c.billing.filter(b=>b.status==="pagado").length} períodos pagados`:sub==="Plan activo"?`${c.plan.type} · ${c.plan.sessionsMonth} sesiones por mes`:"Nuestro equipo está disponible para vos"}
+        {sub==="Facturación"?`Renovación ${c.plan.renewal} · ${c.billing.filter(b=>b.status==="pagado").length} períodos pagados`:sub==="Plan activo"?planSummary:"Nuestro equipo está disponible para vos"}
       </div>
     </div>}
     {mod==="gestion"&&sub==="Facturación"&&<>
@@ -1459,7 +1365,15 @@ export default function Dashboard(){
     </>}
 
     {mod==="gestion"&&sub==="Plan activo"&&<Section title="Detalles del plan">
-      {[["Tipo",c.plan.type],["Sesiones incluidas",`${c.plan.sessionsMonth}/mes`],["Precio de referencia",`UY$ ${fmt(c.plan.priceRef)}/sesión`],["Inicio",c.plan.start],["Renovación",c.plan.renewal],["Estado",c.plan.status]].map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"11px 0",borderBottom:`1px solid ${P.border}`}}>
+      {(()=>{
+        const rows=[["Tipo",c.plan.type]];
+        if(planKind==="cuponera_fija") rows.push(["Sesiones incluidas",c.plan.sessionsMonth?`${c.plan.sessionsMonth}/mes`:"—"],["Precio de referencia",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}/sesión`:"—"]);
+        else if(planKind==="fee_fijo") rows.push(["Fee mensual",c.plan.monthlyFee?`UY$ ${fmt(c.plan.monthlyFee)}`:"—"],["Beneficio para colaboradores",`${Math.round((1-coveragePct)*100)}% OFF por sesión`]);
+        else if(planKind==="a_demanda") rows.push(["Cobertura por sesión",`${Math.round(coveragePct*100)}%`],["Precio de referencia",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}/sesión`:"—"],["Tope mensual",c.plan.monthlyCap?`${c.plan.monthlyCap} sesiones`:"Sin tope"]);
+        else rows.push(["Modalidad","Talleres puntuales o ciclos"]);
+        rows.push(["Inicio",c.plan.start],["Renovación",c.plan.renewal],["Estado",c.plan.status]);
+        return rows;
+      })().map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"11px 0",borderBottom:`1px solid ${P.border}`}}>
         <span style={{fontSize:12,color:P.textMuted}}>{l}</span>
         <span style={{fontSize:12,fontWeight:600,color:P.text}}>{v}</span>
       </div>)}
@@ -1485,7 +1399,7 @@ export default function Dashboard(){
     </>}
 
     <div style={{textAlign:"center",marginTop:32,paddingBottom:32,fontSize:10,color:P.textMuted,letterSpacing:"0.02em"}}>
-      Datos actualizados a mayo 2026 · Tu Terapia — Salud Mental para Empresas
+      {lastM?`Datos actualizados a ${lastM.label} · `:""}Tu Terapia — Salud Mental para Empresas
     </div>
     </div>
   </div>;
