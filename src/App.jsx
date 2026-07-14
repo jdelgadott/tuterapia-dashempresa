@@ -1172,7 +1172,6 @@ export default function Dashboard(){
       // ── Inversión y retorno ──
       const valorLista = totSes*LIST_PRICE_AVG;
       const colabTotal = colabSessionCost ? totCanj*colabSessionCost : 0;
-      const roi = invTotal2>0 ? valorLista/invTotal2 : null;
       const costoEfectivoFee = planKind==="fee_fijo"&&lastFull2&&sesOf(lastFull2)>0 ? Math.round((c.monthlyFee||0)/sesOf(lastFull2)) : null;
       const ahorroPct = companySessionCost&&planKind!=="fee_fijo" ? Math.round((1-companySessionCost/LIST_PRICE_AVG)*100) : null;
       return <>
@@ -1181,9 +1180,21 @@ export default function Dashboard(){
           : planKind==="a_demanda" ? `Inversión estimada = sesiones × costo por sesión del convenio (promedio online/presencial${coveragePct<1?`, tu ${Math.round(coveragePct*100)}% con descuento`:""}). La facturación real, cuando existe, tiene prioridad. Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)}).`
           : `Inversión según facturación real (o sesiones × UY$ ${fmt(c.sessionPriceRef)} de tu convenio). Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)} promedio online/presencial).`
         }>
-          {roi!=null&&roi>=1.05&&<div style={{padding:"14px 18px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:10,marginBottom:14}}>
-            <div style={{fontSize:16,fontWeight:700,color:P.primary,letterSpacing:"-0.2px"}}>Por cada $1 que invertiste, tu equipo recibió ${roi.toFixed(2).replace(".",",")} en terapia</div>
-            <div style={{fontSize:11,color:P.textMuted,marginTop:3}}>{fmt(totSes)} {sesWord} a precio de lista valen UY$ {fmt(valorLista)} — tu inversión fue UY$ {fmt(invTotal2)}.</div>
+          {totSes>0&&<div style={{padding:"14px 18px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:10,marginBottom:14}}>
+            <div style={{fontSize:16,fontWeight:700,color:P.primary,letterSpacing:"-0.2px"}}>
+              {planKind==="fee_fijo"
+                ? `${fmt(totSes)} sesiones de terapia para tu equipo — con ${Math.round((1-coveragePct)*100)}% OFF para cada colaborador`
+                : planKind==="a_demanda"&&coveragePct<1
+                ? `${fmt(totSes)} sesiones de terapia para tu equipo — financiadas junto a tus colaboradores`
+                : `${fmt(totSes)} sesiones de terapia para tu equipo${ahorroPct>0?` — un ${ahorroPct}% bajo el precio de lista`:""}`}
+            </div>
+            <div style={{fontSize:11,color:P.textMuted,marginTop:3}}>
+              {planKind==="fee_fijo"
+                ? `Tu inversión: UY$ ${fmt(invTotal2)} de fee acumulado${costoEfectivoFee?` · el último mes cada sesión te quedó a $ ${fmt(costoEfectivoFee)}`:""}.`
+                : planKind==="a_demanda"&&coveragePct<1
+                ? `Tu inversión: UY$ ${fmt(invTotal2)} (tu ${Math.round(coveragePct*100)}% con descuento de convenio) · aporte de colaboradores: UY$ ${fmt(colabTotal)}.`
+                : `Tu inversión: UY$ ${fmt(invTotal2)} · a precio de lista valdrían UY$ ${fmt(valorLista)}.`}
+            </div>
             {colabTotal>0&&<div style={{fontSize:11,color:P.primary,marginTop:6,fontWeight:600}}>Inversión conjunta en salud mental (empresa + colaboradores): UY$ {fmt(invTotal2+colabTotal)}</div>}
           </div>}
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:14}}>
