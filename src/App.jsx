@@ -546,6 +546,8 @@ export default function Dashboard(){
   };
   const estMonthCost = (m) =>
     planKind==="fee_fijo" ? (c.monthlyFee||0)
+    // Cuponera: la empresa paga el pool completo todos los meses, se use o no (lo no usado se redistribuye)
+    : planKind==="cuponera_fija" ? (c.monthlyPlan||0)*(c.sessionPriceRef||0)
     : Math.round(sesOf(m)*(companySessionCost||0));
   const invTrend=c.monthlyData.map(m=>{
     const billed = billingMap[MONTH_TO_PERIOD(m.label||m.month)];
@@ -1178,7 +1180,7 @@ export default function Dashboard(){
         <Section title="Inversión y retorno" note={
           planKind==="fee_fijo" ? `Inversión = fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}. El costo efectivo por sesión baja cuanto más usa tu equipo el beneficio. Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)} promedio online/presencial).`
           : planKind==="a_demanda" ? `Inversión estimada = sesiones × costo por sesión del convenio (promedio online/presencial${coveragePct<1?`, tu ${Math.round(coveragePct*100)}% con descuento`:""}). La facturación real, cuando existe, tiene prioridad. Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)}).`
-          : `Inversión según facturación real (o sesiones × UY$ ${fmt(c.sessionPriceRef)} de tu convenio). Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)} promedio online/presencial).`
+          : `Inversión según facturación real (cuando existe) o tu cuponera: ${c.monthlyPlan||"—"} sesiones × UY$ ${fmt(c.sessionPriceRef)} por mes — se abona el pool completo y las sesiones no utilizadas se pueden redistribuir. Valor recibido = sesiones utilizadas × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)} promedio online/presencial).`
         }>
           {totSes>0&&<div style={{padding:"14px 18px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:10,marginBottom:14}}>
             <div style={{fontSize:16,fontWeight:700,color:P.primary,letterSpacing:"-0.2px"}}>
