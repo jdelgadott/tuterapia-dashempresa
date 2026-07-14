@@ -32,6 +32,8 @@ const SURVEYS_DEFAULT = [
 ];
 
 const PLAN_LABELS = {cuponera_fija:"Cuponera Fija", fee_fijo:"Fee Fijo Mensual", a_demanda:"A Demanda"};
+// Precios de lista Tu Terapia (UYU, IVA 10% incluido) — base del cálculo de valor recibido
+const LIST_PRICE_ONLINE=1600, LIST_PRICE_PRESENCIAL=1850, LIST_PRICE_AVG=Math.round((LIST_PRICE_ONLINE+LIST_PRICE_PRESENCIAL)/2);
 
 const TT_TEAM=[
   {name:"Nacho",fullName:"Juan Ignacio Delgado",role:"Desarrollo de Negocio",email:"jdelgado@tuterapia.com.uy",phone:"099495218",whatsapp:"598099495218",calendar:null,initials:"JD",area:"Alianzas B2B",photo:"nacho"},
@@ -226,7 +228,6 @@ export default function Dashboard(){
   const [mod,setMod]=useState("home");
   const [sub,setSub]=useState(null);
   const [npsVal,setNpsVal]=useState(null);
-  const [showIII,setShowIII]=useState(false);
 
   const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
   const [localConsultoriaActiva,setConsultoriaActiva]=useState(false);
@@ -430,6 +431,10 @@ export default function Dashboard(){
     monthlyFee: dbCompany?.monthly_fee || null,
     monthlyCap: dbCompany?.monthly_cap || null,
     sessionPriceRef: dbCompany?.session_price_ref || 0,
+    sessionCostOnline: dbCompany?.session_cost_online || null,
+    sessionCostPresencial: dbCompany?.session_cost_presencial || null,
+    userSessionLimit: dbCompany?.user_session_limit || null,
+    userMonthlyLimit: dbCompany?.user_monthly_limit || null,
     workshopTarget: dbCompany?.workshop_target || 5,
     startDate: dbCompany?.start_date || null,
     monthlyData: supabaseMonthlyData,
@@ -521,6 +526,15 @@ export default function Dashboard(){
   const sesOf = (m) => usesRealizadas ? m.realizadas : m.canjeadas;
   const totSes = usesRealizadas ? totReal : totCanj;
   const sesWord = usesRealizadas ? "sesiones realizadas" : "sesiones";
+  // Costo por sesión que asume la empresa, según convenio (cargado desde el admin).
+  // A demanda: promedio online/presencial (los datos de sesiones no distinguen modalidad); cuponera: único blended.
+  const adCosts=[c.sessionCostOnline,c.sessionCostPresencial].filter(v=>v>0);
+  const companySessionCost = planKind==="a_demanda"
+    ? (adCosts.length?Math.round(adCosts.reduce((a,b)=>a+b,0)/adCosts.length):Math.round(LIST_PRICE_AVG*coveragePct))
+    : (c.sessionPriceRef||null);
+  // Co-pago a demanda <100%: aporte del colaborador por sesión (su parte es a precio de lista, sin el descuento de convenio)
+  const colabSessionCost = planKind==="a_demanda"&&coveragePct<1&&companySessionCost
+    ? Math.round(companySessionCost*(1-coveragePct)/(coveragePct*0.95)) : null;
   // Inversión: monto de billing si existe; si no, estimación según tipo de plan
   const billingMap = {};
   c.billing.forEach(b=>{ billingMap[b.period]=b.amount; });
@@ -532,7 +546,7 @@ export default function Dashboard(){
   };
   const estMonthCost = (m) =>
     planKind==="fee_fijo" ? (c.monthlyFee||0)
-    : Math.round(sesOf(m)*c.sessionPriceRef*(planKind==="a_demanda"?coveragePct:1));
+    : Math.round(sesOf(m)*(companySessionCost||0));
   const invTrend=c.monthlyData.map(m=>{
     const billed = billingMap[MONTH_TO_PERIOD(m.label||m.month)];
     return {label:m.label||m.month, investment: billed!=null ? billed : estMonthCost(m), partial:m.partial};
@@ -1155,48 +1169,56 @@ export default function Dashboard(){
       const lastFull2=fullM2[fullM2.length-1];
       const totHistorico2=(()=>{const lh=[...c.monthlyData].reverse().find(m=>m.total_historico>0);return lh?lh.total_historico:totNuev2;})();
   const invPerPat2=totHistorico2>0?invTotal2/totHistorico2:0;
+      // ── Inversión y retorno ──
+      const valorLista = totSes*LIST_PRICE_AVG;
+      const colabTotal = colabSessionCost ? totCanj*colabSessionCost : 0;
+      const roi = invTotal2>0 ? valorLista/invTotal2 : null;
+      const costoEfectivoFee = planKind==="fee_fijo"&&lastFull2&&sesOf(lastFull2)>0 ? Math.round((c.monthlyFee||0)/sesOf(lastFull2)) : null;
+      const ahorroPct = companySessionCost&&planKind!=="fee_fijo" ? Math.round((1-companySessionCost/LIST_PRICE_AVG)*100) : null;
       return <>
-        {/* III KPI card */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
-          <div onMouseEnter={()=>setShowIII(true)} onMouseLeave={()=>setShowIII(false)}
-            style={{position:"relative",background:iii!=null?P.lighter:P.gray50,border:`1px solid ${iii!=null?P.primary+"44":P.border}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,cursor:"default"}}>
-            <div style={{fontSize:21,fontWeight:700,color:iii!=null?P.primary:P.textMuted,lineHeight:1.1,letterSpacing:"-0.5px"}}>{iii!=null?iii:"—"}<span style={{fontSize:12,fontWeight:400,color:P.textMuted}}> /100</span></div>
-            <div style={{fontSize:12,fontWeight:600,color:P.text}}>Índice Tu Terapia</div>
-            <div style={{fontSize:11,color:P.textMuted}}>{iii!=null?(iii>=70?"Impacto alto":iii>=50?"Impacto medio":"En desarrollo"):"Pendiente Q1"}</div>
-            <div style={{fontSize:10,color:P.primary,marginTop:2}}>Hover para ver composición</div>
-            {showIII&&<div style={{position:"absolute",top:"calc(100% + 8px)",left:0,width:290,background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"14px 16px",boxShadow:"0 4px 20px rgba(0,0,0,0.10)",zIndex:20}}>
-              <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:10}}>Composición del Índice Tu Terapia</div>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {(hasUtil?[
-                  ["50%","Mejora en dimensiones de bienestar",normImp2!=null?`${Math.round(normImp2*0.5)}pts`:"—","Evolución Q inicial → Q actual en 6 dimensiones."],
-                  ["30%","Utilización del plan individual",`${utilScore2}pts`,`Sesiones realizadas sobre contratadas (${compRate2}% actual).`],
-                  ["15%","Actividad colectiva — talleres",`${workshopPts}pts`,`${c.workshops.length} de ${workshopTarget} talleres anuales realizados.`],
-                  ["5%","Engagement con contenido",`${contentPts}pts`,"Piezas descargadas y evaluadas por RRHH."],
-                ]:[
-                  ["70%","Mejora en dimensiones de bienestar",normImp2!=null?`${Math.round(normImp2*0.7)}pts`:"—","Evolución Q inicial → Q actual en 6 dimensiones."],
-                  ["20%","Actividad colectiva — talleres",`${workshopPts}pts`,`${c.workshops.length} de ${workshopTarget} talleres anuales realizados.`],
-                  ["10%","Engagement con contenido",`${contentPts}pts`,"Piezas descargadas y evaluadas por RRHH."],
-                ]).map(([pct,label,pts,desc])=><div key={pct} style={{paddingBottom:8,borderBottom:`1px solid ${P.border}`}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                    <span style={{fontSize:12,fontWeight:600,color:P.text}}><b>{pct}</b> {label}</span>
-                    <span style={{fontSize:12,fontWeight:700,color:P.primary,flexShrink:0,marginLeft:8}}>{pts}</span>
-                  </div>
-                  <div style={{fontSize:11,color:P.textMuted,lineHeight:1.5}}>{desc}</div>
-                </div>)}
-              </div>
-              <div style={{marginTop:8,fontSize:10,color:P.textMuted,background:P.gray50,borderRadius:6,padding:"6px 10px"}}>
-                {hasUtil?"Índice Tu Terapia = (bienestar×50%) + (utilización×30%) + (talleres×15%) + (contenido×5%)":"Índice Tu Terapia = (bienestar×70%) + (talleres×20%) + (contenido×10%)"}
-              </div>
-            </div>}
+        <Section title="Inversión y retorno" note={
+          planKind==="fee_fijo" ? `Inversión = fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}. El costo efectivo por sesión baja cuanto más usa tu equipo el beneficio. Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)} promedio online/presencial).`
+          : planKind==="a_demanda" ? `Inversión estimada = sesiones × costo por sesión del convenio (promedio online/presencial${coveragePct<1?`, tu ${Math.round(coveragePct*100)}% con descuento`:""}). La facturación real, cuando existe, tiene prioridad. Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)}).`
+          : `Inversión según facturación real (o sesiones × UY$ ${fmt(c.sessionPriceRef)} de tu convenio). Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)} promedio online/presencial).`
+        }>
+          {roi!=null&&roi>=1.05&&<div style={{padding:"14px 18px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:10,marginBottom:14}}>
+            <div style={{fontSize:16,fontWeight:700,color:P.primary,letterSpacing:"-0.2px"}}>Por cada $1 que invertiste, tu equipo recibió ${roi.toFixed(2).replace(".",",")} en terapia</div>
+            <div style={{fontSize:11,color:P.textMuted,marginTop:3}}>{fmt(totSes)} {sesWord} a precio de lista valen UY$ {fmt(valorLista)} — tu inversión fue UY$ {fmt(invTotal2)}.</div>
+            {colabTotal>0&&<div style={{fontSize:11,color:P.primary,marginTop:6,fontWeight:600}}>Inversión conjunta en salud mental (empresa + colaboradores): UY$ {fmt(invTotal2+colabTotal)}</div>}
+          </div>}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:14}}>
+            <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal2)}`} sub={planKind==="a_demanda"&&coveragePct<1?`Tu ${Math.round(coveragePct*100)}% del convenio`:"UYU"} accent/>
+            <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]??estMonthCost(lastFull2)):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
+            {planKind==="fee_fijo"
+              ? <KpiCard label="Costo efectivo por sesión" value={costoEfectivoFee?`$ ${fmt(costoEfectivoFee)}`:"—"} sub={lastFull2?`Fee ÷ sesiones de ${lastFull2.label||lastFull2.month}`:"Sin datos aún"} warn/>
+              : <KpiCard label={planKind==="a_demanda"?"Costo por sesión (tu parte)":"Costo por sesión"} value={companySessionCost?`$ ${fmt(companySessionCost)}`:"—"} sub={ahorroPct>0?`vs $ ${fmt(LIST_PRICE_AVG)} de lista (−${ahorroPct}%)`:planKind==="a_demanda"?`Online $ ${fmt(c.sessionCostOnline||0)} · Presencial $ ${fmt(c.sessionCostPresencial||0)}`:"Convenio"}/>}
+            {colabTotal>0&&<KpiCard label="Aporte de colaboradores" value={`$ ${fmt(colabTotal)}`} sub={`Co-pago ${Math.round((1-coveragePct)*100)}% · $ ${fmt(colabSessionCost)}/sesión`}/>}
+            <KpiCard label="Valor recibido por el equipo" value={`$ ${fmt(valorLista)}`} sub={`${fmt(totSes)} ${sesWord} a precio de lista`}/>
+            <KpiCard label="Inversión por paciente único" value={`$ ${fmt(invPerPat2)}`} sub={`${totHistorico2} pacientes históricos`}/>
           </div>
-          <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal2)}`} sub="UYU · precio de referencia" accent/>
-          <KpiCard label="Por paciente único" value={`$ ${fmt(invPerPat2)}`} sub={`${totNuev2} pacientes únicos`}/>
-          {hasUtil&&<KpiCard label="Utilización del plan" value={`${compRate2}%`} sub="Realizadas / contratadas"/>}
-          <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]??estMonthCost(lastFull2)):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
-        </div>
+          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={invTrend2} barSize={13}>
+              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
+              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
+              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
+              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend2.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
+            </BarChart>
+          </ResponsiveContainer></div>
+        </Section>
 
-        <Section title="6 dimensiones del impacto">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Medidas por encuesta. Escala 1–10.</div>
+        <Section title="Bienestar medido">
+          <div style={{display:"flex",alignItems:"center",gap:16,padding:"14px 16px",background:iii!=null?P.lighter:P.gray50,border:`1px solid ${iii!=null?P.primary+"44":P.border}`,borderRadius:10,marginBottom:14,flexWrap:"wrap"}}>
+            <div>
+              <div style={{fontSize:26,fontWeight:800,color:iii!=null?P.primary:P.textMuted,letterSpacing:"-0.5px",lineHeight:1}}>{iii!=null?iii:"—"}<span style={{fontSize:13,fontWeight:400,color:P.textMuted}}> /100</span></div>
+              <div style={{fontSize:12,fontWeight:600,color:P.text,marginTop:3}}>Índice Tu Terapia</div>
+            </div>
+            <div style={{flex:1,minWidth:200,fontSize:11,color:P.textMuted,lineHeight:1.6}}>
+              {iii!=null?(iii>=70?"Impacto alto. ":iii>=50?"Impacto medio. ":"En desarrollo. "):"Se calcula con la primera encuesta trimestral. "}
+              Combina la mejora en las 6 dimensiones de bienestar medidas por encuesta{hasUtil?", la utilización del plan":""}, los talleres realizados y el engagement con el contenido.
+            </div>
+          </div>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>6 dimensiones medidas por encuesta. Escala 1–10.</div>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             {[
               {key:"saludMental",label:"Bienestar y salud mental",desc:"Bienestar emocional, estrés y equilibrio vida-trabajo",color:"#1A5C4A"},
@@ -1264,24 +1286,6 @@ export default function Dashboard(){
           </div>
         </Section>
 
-        <Section title="Inversión mensual (UYU)" warnNote={planKind==="fee_fijo"?`Fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}.`:`Cálculo de referencia a UY$ ${fmt(c.sessionPriceRef)} por sesión${planKind==="a_demanda"&&coveragePct<1?` (cobertura ${Math.round(coveragePct*100)}%)`:""}.`}>
-          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={invTrend2} barSize={13}>
-              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
-              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend2.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
-            </BarChart>
-          </ResponsiveContainer></div>
-        </Section>
-
-        <Section title="Benchmark vs. red Tu Terapia" note="Disponible en la próxima fase.">
-          <div style={{padding:"20px",textAlign:"center",color:P.textMuted}}>
-            <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Próximamente</div>
-            <div style={{fontSize:12}}>Compará el Índice Tu Terapia con el promedio de la red.</div>
-          </div>
-        </Section>
       </>;
     })()}
 
@@ -1324,12 +1328,20 @@ export default function Dashboard(){
       </Section>
     </>}
 
-    {mod==="gestion"&&sub==="Plan activo"&&<Section title="Detalles del plan">
+    {mod==="gestion"&&sub==="Plan activo"&&<Section title="Detalles del plan"
+      note={planKind==="a_demanda"&&coveragePct<1?`Los costos por sesión indicados corresponden al ${Math.round(coveragePct*100)}% que financia la empresa (con descuento por convenio) — el resto lo aporta cada colaborador como co-pago.`:null}>
       {(()=>{
         const rows=[["Tipo",c.plan.type]];
-        if(planKind==="cuponera_fija") rows.push(["Sesiones incluidas",c.plan.sessionsMonth?`${c.plan.sessionsMonth}/mes`:"—"],["Precio de referencia",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}/sesión`:"—"]);
+        if(planKind==="cuponera_fija") rows.push(["Sesiones incluidas",c.plan.sessionsMonth?`${c.plan.sessionsMonth}/mes`:"—"],["Costo por sesión (único blended)",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}`:"—"]);
         else if(planKind==="fee_fijo") rows.push(["Fee mensual",c.plan.monthlyFee?`UY$ ${fmt(c.plan.monthlyFee)}`:"—"],["Beneficio para colaboradores",`${Math.round((1-coveragePct)*100)}% OFF por sesión`]);
-        else rows.push(["Cobertura por sesión",`${Math.round(coveragePct*100)}%`],["Precio de referencia",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}/sesión`:"—"],["Tope mensual",c.plan.monthlyCap?`${c.plan.monthlyCap} sesiones`:"Sin tope"]);
+        else {
+          rows.push(["Cobertura por sesión",`${Math.round(coveragePct*100)}%`]);
+          if(c.sessionCostOnline) rows.push(["Costo sesión online (empresa)",`UY$ ${fmt(c.sessionCostOnline)}`]);
+          if(c.sessionCostPresencial) rows.push(["Costo sesión presencial (empresa)",`UY$ ${fmt(c.sessionCostPresencial)}`]);
+          rows.push(["Tope mensual",c.plan.monthlyCap?`${c.plan.monthlyCap} sesiones`:"Sin tope"]);
+        }
+        rows.push(["Límite por colaborador",c.userSessionLimit?`${c.userSessionLimit} sesiones`:"Sin límite"],
+                  ["Límite por colaborador por mes",c.userMonthlyLimit?`${c.userMonthlyLimit} sesiones/mes`:"Sin límite"]);
         rows.push(["Inicio",c.plan.start],["Renovación",c.plan.renewal],["Estado",c.plan.status]);
         return rows;
       })().map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"11px 0",borderBottom:`1px solid ${P.border}`}}>
