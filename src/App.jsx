@@ -13,6 +13,7 @@ const P = {
   purple:"#c6b2da", purpleBg:"#F5F0FA",
 };
 const fmt = (n) => new Intl.NumberFormat("es-UY").format(Math.round(n));
+const semLabel = (s) => String(s||"").replace(/^S1 (\d{4})/,"1er sem $1").replace(/^S2 (\d{4})/,"2do sem $1");
 
 function monthsDiff(startStr){
   if(!startStr) return 0;
@@ -412,6 +413,7 @@ export default function Dashboard(){
   const [dbWorkshopsRec, setDbWorkshopsRec] = useState([]);
   const [dbRoiByQ, setDbRoiByQ] = useState([]);
   const [dbEncuestaProm, setDbEncuestaProm] = useState([]);
+  const [dbEncuestaComments, setDbEncuestaComments] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(()=>{
@@ -422,7 +424,7 @@ export default function Dashboard(){
       const [
         surveys, content, workshops, workshopsRec, talleristas,
         headerTexts, company, sessions, billing, recommendations,
-        milestones, nps, reasons, roiQ, encProm
+        milestones, nps, reasons, roiQ, encProm, encComments
       ] = await Promise.all([
         supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("content").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
@@ -439,6 +441,7 @@ export default function Dashboard(){
         supabase.from("consultation_reasons").select("*").eq("company_id",companyId).order("percentage",{ascending:false}),
         supabase.from("roi_by_quarter").select("*").eq("company_id",companyId).order("created_at",{ascending:true}),
         supabase.rpc("encuesta_promedios"),
+        supabase.rpc("encuesta_comentarios"),
       ]);
       setDbSurveys(surveys.data||[]);
       setDbContent(content.data||[]);
@@ -455,6 +458,7 @@ export default function Dashboard(){
       setDbConsultationReasons(reasons.data||[]);
       setDbRoiByQ(roiQ.data||[]);
       setDbEncuestaProm((encProm.data||[]).filter(r=>r.company_id===companyId));
+      setDbEncuestaComments((encComments.data||[]).filter(r=>r.company_id===companyId));
       setDataLoading(false);
     }
     loadData();
@@ -543,18 +547,23 @@ export default function Dashboard(){
   // Placeholder de trimestres cuando no hay datos de encuestas
   const emptyQuarters = (()=>{
     const d=new Date(); const qs=[];
-    let q=Math.floor(d.getMonth()/3)+1, y=d.getFullYear();
-    for(let i=0;i<4;i++){ qs.unshift({q:`Q${q} ${y}`,score:null}); q--; if(q===0){q=4;y--;} }
+    let s=d.getMonth()<6?1:2, y=d.getFullYear();
+    for(let i=0;i<4;i++){ qs.unshift({q:`S${s} ${y}`,score:null}); s--; if(s===0){s=2;y--;} }
     return qs;
   })();
 
-  // Trimestres de bienestar: lo cargado a mano (roi_by_quarter) tiene prioridad; la encuesta web llena los que falten (solo n>=3)
+  // Períodos SEMESTRALES de bienestar ("S1 2026"): la encuesta web los genera sola (n>=3);
+  // lo cargado a mano en roi_by_quarter (mapeado Q1-Q2→S1, Q3-Q4→S2) tiene prioridad.
   const mergedRoiByQ = (()=>{
-    const manual = dbRoiByQ.map(q=>({q:q.quarter,saludMental:q.salud_mental,clima:q.clima,liderazgo:q.liderazgo,engagement:q.engagement,asistencia:q.asistencia,productividad:q.productividad}));
-    const manualQs = new Set(manual.map(r=>r.q));
-    const auto = dbEncuestaProm.filter(r=>!manualQs.has(r.quarter)).map(r=>({q:r.quarter,saludMental:Number(r.salud_mental),clima:Number(r.clima),liderazgo:Number(r.liderazgo),engagement:Number(r.engagement),asistencia:Number(r.asistencia),productividad:Number(r.productividad),auto:true,n:Number(r.n)}));
-    const qNum=(s)=>{const m=(s||"").match(/Q(\d)\s+(\d{4})/);return m?parseInt(m[2])*10+parseInt(m[1]):0;};
-    return [...manual,...auto].sort((a,b)=>qNum(a.q)-qNum(b.q));
+    const map={};
+    dbEncuestaProm.forEach(r=>{ map[r.period]={q:r.period,saludMental:Number(r.salud_mental),clima:Number(r.clima),liderazgo:Number(r.liderazgo),engagement:Number(r.engagement),asistencia:Number(r.asistencia),productividad:Number(r.productividad),auto:true,n:Number(r.n)}; });
+    dbRoiByQ.forEach(q=>{
+      const m=(q.quarter||"").match(/Q(\d)\s+(\d{4})/);
+      const s=m?`S${parseInt(m[1])<=2?1:2} ${m[2]}`:q.quarter;
+      map[s]={q:s,saludMental:q.salud_mental,clima:q.clima,liderazgo:q.liderazgo,engagement:q.engagement,asistencia:q.asistencia,productividad:q.productividad};
+    });
+    const sNum=(s)=>{const m=(s||"").match(/S(\d)\s+(\d{4})/);return m?parseInt(m[2])*10+parseInt(m[1]):0;};
+    return Object.values(map).sort((a,b)=>sNum(a.q)-sNum(b.q));
   })();
 
   const c = {
@@ -1135,10 +1144,10 @@ export default function Dashboard(){
       </div>
 
       <Section title="Seguimiento de personas que usan el beneficio">
-        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Encuesta trimestral intraplataforma · escala 1–10.</div>
+        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Encuesta de bienestar semestral · escala 1–10 · promedio de la dimensión "Bienestar y salud mental".</div>
         <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
           {c.wellbeingByQ.map((q,i)=><div key={i} style={{flex:1,minWidth:110,padding:"16px",background:q.score!=null?P.lighter:P.gray50,border:`1px solid ${q.score!=null?P.primary+"44":P.border}`,borderRadius:10,textAlign:"center"}}>
-            <div style={{fontSize:10,fontWeight:600,color:P.textMuted,marginBottom:8,letterSpacing:"0.04em",textTransform:"uppercase"}}>{q.q}</div>
+            <div style={{fontSize:10,fontWeight:600,color:P.textMuted,marginBottom:8,letterSpacing:"0.04em",textTransform:"uppercase"}}>{semLabel(q.q)}</div>
             {q.score!=null?<><div style={{fontSize:26,fontWeight:700,color:P.primary,letterSpacing:"-1px"}}>{q.score}</div><div style={{fontSize:10,color:P.textMuted}}>/10</div></>
             :<div style={{fontSize:12,color:P.textMuted,padding:"6px 0"}}>Pendiente</div>}
           </div>)}
@@ -1354,7 +1363,7 @@ export default function Dashboard(){
           </ResponsiveContainer></div>
         </Section>
 
-        <Section title="Bienestar medido" note={c.roiByQ.some(r=>r.auto)?"Los promedios se calculan automáticamente con las respuestas de la encuesta web de tu equipo. Para preservar el anonimato, un trimestre se muestra recién a partir de 3 respuestas.":null}>
+        <Section title="Bienestar medido" note={c.roiByQ.some(r=>r.auto)?"Los promedios se calculan automáticamente con las respuestas de la encuesta semestral de tu equipo. Para preservar el anonimato, un semestre se muestra recién a partir de 3 respuestas.":null}>
           <div style={{display:"flex",alignItems:"center",gap:16,padding:"14px 16px",background:iii!=null?P.lighter:P.gray50,border:`1px solid ${iii!=null?P.primary+"44":P.border}`,borderRadius:10,marginBottom:14,flexWrap:"wrap"}}>
             <div>
               <div style={{fontSize:26,fontWeight:800,color:iii!=null?P.primary:P.textMuted,letterSpacing:"-0.5px",lineHeight:1}}>{iii!=null?iii:"—"}<span style={{fontSize:13,fontWeight:400,color:P.textMuted}}> /100</span></div>
@@ -1377,8 +1386,8 @@ export default function Dashboard(){
             ].map((dim,i)=>{
               const scores=c.roiByQ.map(q=>q[dim.key]).filter(v=>v!==null);
               const latest=scores.length>0?scores[scores.length-1]:null;
-              const first=scores.length>0?scores[0]:null;
-              const trend=scores.length>1?latest-first:null;
+              const prev=scores.length>1?scores[scores.length-2]:null;
+              const trend=prev!=null?Math.round((latest-prev)*10)/10:null;
               return <div key={i} style={{padding:"12px 14px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
                 <div style={{width:4,height:36,borderRadius:2,background:dim.color,flexShrink:0}}/>
                 <div style={{flex:1,minWidth:140}}>
@@ -1389,11 +1398,11 @@ export default function Dashboard(){
                   {latest!=null?<>
                     <div style={{textAlign:"center"}}>
                       <div style={{fontSize:18,fontWeight:700,color:dim.color}}>{latest}</div>
-                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>último Q</div>
+                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>último sem</div>
                     </div>
                     {trend!=null&&<div style={{textAlign:"center"}}>
                       <div style={{fontSize:14,fontWeight:700,color:trend>0?"#22C55E":trend<0?P.red:P.textMuted}}>{trend>0?"+":""}{trend}</div>
-                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>evolución</div>
+                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>vs anterior</div>
                     </div>}
                   </>:<span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente</span>}
                 </div>
@@ -1401,6 +1410,12 @@ export default function Dashboard(){
             })}
           </div>
         </Section>
+
+        {dbEncuestaComments.length>0&&<Section title="La voz del equipo" note="Comentarios anónimos de la encuesta de bienestar, seleccionados junto a Tu Terapia.">
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {dbEncuestaComments.slice(0,6).map((r,i)=><div key={i} style={{padding:"12px 16px",background:P.lighter,borderRadius:10,borderLeft:`3px solid ${P.primary}`,fontSize:13,color:P.text,lineHeight:1.7,fontStyle:"italic"}}>"{r.comment}"</div>)}
+          </div>
+        </Section>}
 
         <Section title="Encuesta para tu equipo">
           <div style={{padding:"16px 18px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:10,marginBottom:14}}>
