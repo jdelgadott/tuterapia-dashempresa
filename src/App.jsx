@@ -110,6 +110,123 @@ function FunnelBar({label,value,pct,i}){
 }
 
 
+// ── ENCUESTA ÍNDICE TU TERAPIA (pública, anónima, sin login) ───────
+const ENCUESTA_DIMS=[
+  {label:"Bienestar y salud mental",color:"#1A5C4A",qs:[
+    "En las últimas semanas me sentí tranquilo/a y de buen ánimo la mayor parte del tiempo.",
+    "Siento que puedo manejar el estrés que me genera mi trabajo.",
+    "Logro desconectarme del trabajo al final del día y en mis días libres.",
+    "En general, siento un buen equilibrio entre mi vida personal y mi trabajo.",
+  ]},
+  {label:"Clima y comunicación",color:"#267A62",qs:[
+    "En mi equipo se puede hablar abiertamente, incluso de temas difíciles.",
+    "Cuando surge un conflicto en mi equipo, se resuelve de forma respetuosa.",
+    "Siento que puedo pedir ayuda a mis compañeros/as cuando lo necesito.",
+    "El ambiente de trabajo en mi equipo es agradable.",
+  ]},
+  {label:"Liderazgo",color:"#5040A0",qs:[
+    "Mi líder directo se preocupa genuinamente por mi bienestar.",
+    "Me siento cómodo/a hablando con mi líder si algo me está afectando.",
+    "Mi líder reconoce mi trabajo y mi esfuerzo.",
+    "Mi líder promueve que cuidemos nuestra salud mental (pausas, desconexión, uso del beneficio).",
+  ]},
+  {label:"Compromiso",color:"#2a6aaa",qs:[
+    "Mi trabajo me motiva y le encuentro sentido.",
+    "Me siento orgulloso/a de trabajar en esta empresa.",
+    "Me imagino trabajando acá dentro de un año.",
+    "Siento que la empresa se preocupa por mí como persona, no solo como trabajador/a.",
+  ]},
+  {label:"Energía y presencia",color:"#8B4A8B",qs:[
+    "Tengo la energía necesaria para encarar mi jornada de trabajo.",
+    "En el último mes, mi estado de ánimo no me llevó a faltar (ni a querer faltar) al trabajo.",
+    "Me siento presente y conectado/a durante mi jornada, no solo físicamente.",
+  ]},
+  {label:"Productividad sostenible",color:"#B03030",qs:[
+    "Logro concentrarme en mis tareas sin que el cansancio o las preocupaciones me lo impidan.",
+    "Mi carga de trabajo es manejable de forma sostenida en el tiempo.",
+    "Termino la mayoría de los días con la sensación de haber avanzado.",
+  ]},
+];
+const ENCUESTA_QS=ENCUESTA_DIMS.flatMap((d,di)=>d.qs.map(text=>({dim:di,text})));
+
+function EncuestaView({ companyId }) {
+  const [step,setStep]=useState(-1); // -1 bienvenida · 0-21 preguntas · 22 comentario · 23 gracias
+  const [answers,setAnswers]=useState({});
+  const [comment,setComment]=useState("");
+  const [sending,setSending]=useState(false);
+  const [error,setError]=useState("");
+  const total=ENCUESTA_QS.length;
+
+  async function submit(){
+    setSending(true); setError("");
+    const body={company_id:companyId, answers:Object.fromEntries(ENCUESTA_QS.map((_,i)=>[`q${i+1}`,answers[i]])), comment:comment.trim()||null};
+    const {data,error:fnError}=await supabase.functions.invoke("encuesta-respuesta",{body});
+    setSending(false);
+    if(fnError||data?.error){ setError("No pudimos enviar tus respuestas. Revisá tu conexión y volvé a intentar."); return; }
+    setStep(23);
+  }
+
+  const shell=(children)=><div style={{minHeight:"100vh",background:"#EDF5F1",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif",padding:"0 16px"}}>
+    <div style={{width:"100%",maxWidth:520,paddingTop:20,paddingBottom:40}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:step>=0&&step<22?14:28}}>
+        <img src={LOGO_TT} alt="Tu Terapia" style={{height:34,borderRadius:7}}/>
+        <div style={{fontSize:13,fontWeight:700,color:P.primary}}>Tu Terapia</div>
+        <div style={{fontSize:11,color:P.textMuted}}>· Encuesta de bienestar</div>
+      </div>
+      {step>=0&&step<22&&<div style={{height:5,background:"#DDE8E4",borderRadius:3,marginBottom:24,overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${Math.round(step/total*100)}%`,background:P.primary,borderRadius:3,transition:"width 0.25s"}}/>
+      </div>}
+      {children}
+    </div>
+  </div>;
+
+  if(step===-1) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"32px 28px",textAlign:"center"}}>
+    <div style={{fontSize:22,fontWeight:800,color:P.text,letterSpacing:"-0.4px",marginBottom:10}}>¿Cómo estás en el trabajo?</div>
+    <div style={{fontSize:14,color:P.textMuted,lineHeight:1.7,marginBottom:22}}>Tu empresa quiere saber cómo está el bienestar del equipo para poder cuidarlo mejor, junto a Tu Terapia.</div>
+    <div style={{textAlign:"left",display:"flex",flexDirection:"column",gap:10,marginBottom:26}}>
+      {[["🔒","100% anónima — no te pedimos nombre, mail ni ningún dato personal."],["⏱️","Son 22 preguntas, te lleva menos de 10 minutos."],["🎯","Respondé del 1 (para nada de acuerdo) al 10 (totalmente de acuerdo), pensando en las últimas semanas."]].map(([ic,t])=><div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+        <span style={{fontSize:16}}>{ic}</span><span style={{fontSize:13,color:P.text,lineHeight:1.6}}>{t}</span>
+      </div>)}
+    </div>
+    <button onClick={()=>setStep(0)} style={{width:"100%",padding:"14px",background:P.primary,color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:"pointer"}}>Comenzar</button>
+  </div>);
+
+  if(step===23) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"40px 28px",textAlign:"center"}}>
+    <div style={{fontSize:44,marginBottom:12}}>💚</div>
+    <div style={{fontSize:20,fontWeight:800,color:P.primary,marginBottom:8}}>¡Gracias por tu tiempo!</div>
+    <div style={{fontSize:13,color:P.textMuted,lineHeight:1.7}}>Tus respuestas se enviaron de forma anónima. Con ellas, tu empresa y Tu Terapia van a seguir mejorando el cuidado del bienestar del equipo.</div>
+  </div>);
+
+  if(step===22) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"28px"}}>
+    <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>Última — opcional</div>
+    <div style={{fontSize:17,fontWeight:700,color:P.text,lineHeight:1.5,marginBottom:16}}>¿Querés contarnos algo más sobre tu bienestar en el trabajo?</div>
+    <textarea value={comment} onChange={e=>setComment(e.target.value)} maxLength={2000} rows={5} placeholder="Escribí acá (anónimo)…"
+      style={{width:"100%",boxSizing:"border-box",padding:"12px 14px",border:`1px solid ${P.border}`,borderRadius:10,fontSize:14,fontFamily:"inherit",outline:"none",resize:"vertical",marginBottom:16}}/>
+    {error&&<div style={{padding:"10px 14px",background:P.redBg,color:P.red,borderRadius:8,marginBottom:14,fontSize:12}}>{error}</div>}
+    <div style={{display:"flex",gap:10}}>
+      <button onClick={()=>setStep(21)} style={{padding:"13px 18px",background:"none",border:`1px solid ${P.border}`,borderRadius:10,fontSize:13,color:P.textMuted,cursor:"pointer"}}>← Atrás</button>
+      <button onClick={submit} disabled={sending} style={{flex:1,padding:"13px",background:P.primary,color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:sending?"not-allowed":"pointer",opacity:sending?0.7:1}}>{sending?"Enviando…":"Enviar respuestas"}</button>
+    </div>
+  </div>);
+
+  const q=ENCUESTA_QS[step]; const dim=ENCUESTA_DIMS[q.dim];
+  return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"26px 24px"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+      <span style={{fontSize:10,fontWeight:700,color:dim.color,background:dim.color+"18",padding:"3px 10px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.05em"}}>{dim.label}</span>
+      <span style={{fontSize:11,color:P.textMuted}}>{step+1} de {total}</span>
+    </div>
+    <div style={{fontSize:18,fontWeight:700,color:P.text,lineHeight:1.5,marginBottom:22,minHeight:80}}>{q.text}</div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8,marginBottom:10}}>
+      {Array.from({length:10},(_,i)=>i+1).map(v=><button key={v} onClick={()=>{setAnswers({...answers,[step]:v}); setTimeout(()=>setStep(s=>s===step?step+1:s),220);}}
+        style={{padding:"15px 0",borderRadius:10,border:`1.5px solid ${answers[step]===v?P.primary:P.border}`,background:answers[step]===v?P.primary:"#fff",color:answers[step]===v?"#fff":P.text,fontSize:16,fontWeight:700,cursor:"pointer",transition:"all 0.12s"}}>{v}</button>)}
+    </div>
+    <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:P.textMuted,marginBottom:18}}>
+      <span>Para nada de acuerdo</span><span>Totalmente de acuerdo</span>
+    </div>
+    {step>0&&<button onClick={()=>setStep(step-1)} style={{background:"none",border:"none",fontSize:12,color:P.textMuted,cursor:"pointer",padding:0}}>← Volver a la anterior</button>}
+  </div>);
+}
+
 // ── LOGIN ──────────────────────────────────────────────────────────
 function LoginView({ onLogin, onAdminLogin }) {
   const [email, setEmail] = useState("");
@@ -232,6 +349,7 @@ export default function Dashboard(){
   const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
   const [localConsultoriaActiva,setConsultoriaActiva]=useState(false);
   const [expandedSurvey,setExpandedSurvey]=useState(null);
+  const [linkCopied,setLinkCopied]=useState(false);
 
   const [solicitando,setSolicitando]=useState(false);
   const [contentRatings,setContentRatings]=useState({});
@@ -380,6 +498,10 @@ export default function Dashboard(){
       </div>
     </div>
   );
+
+  // Encuesta pública para colaboradores (link compartido por RRHH, sin login)
+  const encuestaMatch = window.location.hash.match(/^#encuesta\/([0-9a-fA-F-]{36})/);
+  if(encuestaMatch) return <EncuestaView companyId={encuestaMatch[1]}/>;
 
   if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando...</div>;
   if(!authUser&&!adminViewer) return <LoginView
@@ -1269,7 +1391,16 @@ export default function Dashboard(){
         </Section>
 
         <Section title="Encuesta para tu equipo">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>Descargá la encuesta, aplicala a tu equipo y envianos los resultados a {c.accountManager.email} para que los procesemos y mostremos en este panel.</div>
+          <div style={{padding:"16px 18px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:10,marginBottom:14}}>
+            <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:4}}>Compartí este link con tu equipo</div>
+            <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6,marginBottom:10}}>Encuesta anónima de 22 preguntas (~10 min), se responde desde el celular sin registrarse. Los resultados los procesa Tu Terapia y se reflejan en este panel.</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+              <code style={{flex:1,minWidth:220,fontSize:11,background:"#fff",border:`1px solid ${P.border}`,borderRadius:8,padding:"9px 12px",color:P.primary,overflowX:"auto",whiteSpace:"nowrap"}}>{`${window.location.origin}/#encuesta/${dbCompany?.id||""}`}</code>
+              <button onClick={()=>{navigator.clipboard.writeText(`${window.location.origin}/#encuesta/${dbCompany?.id||""}`); setLinkCopied(true); setTimeout(()=>setLinkCopied(false),2000);}}
+                style={{background:linkCopied?P.light:P.primary,color:"#fff",border:"none",borderRadius:8,padding:"9px 16px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0}}>{linkCopied?"✓ Copiado":"Copiar link"}</button>
+            </div>
+          </div>
+          <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>¿Preferís aplicarla en papel o por otro canal? Descargá la versión documento y envianos los resultados a {c.accountManager.email}.</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             {(dbSurveys.length>0?dbSurveys:c.surveys).map((s,i)=>{
               const isOpen = expandedSurvey===i;
