@@ -411,6 +411,7 @@ export default function Dashboard(){
   const [dbConsultationReasons, setDbConsultationReasons] = useState([]);
   const [dbWorkshopsRec, setDbWorkshopsRec] = useState([]);
   const [dbRoiByQ, setDbRoiByQ] = useState([]);
+  const [dbEncuestaProm, setDbEncuestaProm] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(()=>{
@@ -421,7 +422,7 @@ export default function Dashboard(){
       const [
         surveys, content, workshops, workshopsRec, talleristas,
         headerTexts, company, sessions, billing, recommendations,
-        milestones, nps, reasons, roiQ
+        milestones, nps, reasons, roiQ, encProm
       ] = await Promise.all([
         supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("content").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
@@ -437,6 +438,7 @@ export default function Dashboard(){
         supabase.from("nps_data").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("consultation_reasons").select("*").eq("company_id",companyId).order("percentage",{ascending:false}),
         supabase.from("roi_by_quarter").select("*").eq("company_id",companyId).order("created_at",{ascending:true}),
+        supabase.rpc("encuesta_promedios"),
       ]);
       setDbSurveys(surveys.data||[]);
       setDbContent(content.data||[]);
@@ -452,6 +454,7 @@ export default function Dashboard(){
       setDbNps(nps.data||[]);
       setDbConsultationReasons(reasons.data||[]);
       setDbRoiByQ(roiQ.data||[]);
+      setDbEncuestaProm((encProm.data||[]).filter(r=>r.company_id===companyId));
       setDataLoading(false);
     }
     loadData();
@@ -545,6 +548,15 @@ export default function Dashboard(){
     return qs;
   })();
 
+  // Trimestres de bienestar: lo cargado a mano (roi_by_quarter) tiene prioridad; la encuesta web llena los que falten (solo n>=3)
+  const mergedRoiByQ = (()=>{
+    const manual = dbRoiByQ.map(q=>({q:q.quarter,saludMental:q.salud_mental,clima:q.clima,liderazgo:q.liderazgo,engagement:q.engagement,asistencia:q.asistencia,productividad:q.productividad}));
+    const manualQs = new Set(manual.map(r=>r.q));
+    const auto = dbEncuestaProm.filter(r=>!manualQs.has(r.quarter)).map(r=>({q:r.quarter,saludMental:Number(r.salud_mental),clima:Number(r.clima),liderazgo:Number(r.liderazgo),engagement:Number(r.engagement),asistencia:Number(r.asistencia),productividad:Number(r.productividad),auto:true,n:Number(r.n)}));
+    const qNum=(s)=>{const m=(s||"").match(/Q(\d)\s+(\d{4})/);return m?parseInt(m[2])*10+parseInt(m[1]):0;};
+    return [...manual,...auto].sort((a,b)=>qNum(a.q)-qNum(b.q));
+  })();
+
   const c = {
     name: dbCompany?.name || "",
     planKind,
@@ -598,8 +610,8 @@ export default function Dashboard(){
     surveys: SURVEYS_DEFAULT,
     nps: dbNps.length>0 ? dbNps[0].value : null,
     npsDate: dbNps.length>0 ? dbNps[0].date : null,
-    roiByQ: dbRoiByQ.map(q=>({q:q.quarter,saludMental:q.salud_mental,clima:q.clima,liderazgo:q.liderazgo,engagement:q.engagement,asistencia:q.asistencia,productividad:q.productividad})),
-    wellbeingByQ: dbRoiByQ.length>0 ? dbRoiByQ.map(q=>({q:q.quarter,score:q.salud_mental})) : emptyQuarters,
+    roiByQ: mergedRoiByQ,
+    wellbeingByQ: mergedRoiByQ.length>0 ? mergedRoiByQ.map(q=>({q:q.q,score:q.saludMental})) : emptyQuarters,
     firstTimePct: null, firstTimeCount: null,
   };
 
@@ -1342,7 +1354,7 @@ export default function Dashboard(){
           </ResponsiveContainer></div>
         </Section>
 
-        <Section title="Bienestar medido">
+        <Section title="Bienestar medido" note={c.roiByQ.some(r=>r.auto)?"Los promedios se calculan automáticamente con las respuestas de la encuesta web de tu equipo. Para preservar el anonimato, un trimestre se muestra recién a partir de 3 respuestas.":null}>
           <div style={{display:"flex",alignItems:"center",gap:16,padding:"14px 16px",background:iii!=null?P.lighter:P.gray50,border:`1px solid ${iii!=null?P.primary+"44":P.border}`,borderRadius:10,marginBottom:14,flexWrap:"wrap"}}>
             <div>
               <div style={{fontSize:26,fontWeight:800,color:iii!=null?P.primary:P.textMuted,letterSpacing:"-0.5px",lineHeight:1}}>{iii!=null?iii:"—"}<span style={{fontSize:13,fontWeight:400,color:P.textMuted}}> /100</span></div>
