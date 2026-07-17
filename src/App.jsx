@@ -1369,43 +1369,40 @@ export default function Dashboard(){
       const lastFull2=fullM2[fullM2.length-1];
       const totHistorico2=(()=>{const lh=[...c.monthlyData].reverse().find(m=>m.total_historico>0);return lh?lh.total_historico:totNuev2;})();
   const invPerPat2=totHistorico2>0?invTotal2/totHistorico2:0;
-      // ── Inversión y retorno ──
-      const valorLista = totSes*LIST_PRICE_AVG;
+      // ── Inversión e impacto: el retorno se muestra con impacto medido, no con descuentos ──
       const colabTotal = colabSessionCost ? totCanj*colabSessionCost : 0;
       const costoEfectivoFee = planKind==="fee_fijo"&&lastFull2&&sesOf(lastFull2)>0 ? Math.round((c.monthlyFee||0)/sesOf(lastFull2)) : null;
-      const ahorroPct = companySessionCost&&planKind!=="fee_fijo" ? Math.round((1-companySessionCost/LIST_PRICE_AVG)*100) : null;
+      const instanciasColectivas = c.workshops.length + c.content.length;
+      // Mejoras medidas: delta último período vs anterior por dimensión
+      const DIMS_NEG=[["saludMental","Bienestar y salud mental"],["clima","Clima y comunicación"],["liderazgo","Liderazgo"],["engagement","Compromiso y permanencia"],["asistencia","Presencia y energía"],["productividad","Productividad sostenible"]];
+      const periodos=c.roiByQ.filter(r=>DIMS_NEG.some(([k])=>r[k]!=null));
+      const ultimo=periodos[periodos.length-1]||null, anterior=periodos.length>1?periodos[periodos.length-2]:null;
+      const mejoras=ultimo&&anterior?DIMS_NEG.map(([k,l])=>({l,delta:ultimo[k]!=null&&anterior[k]!=null?Math.round((ultimo[k]-anterior[k])*10)/10:null})).filter(m=>m.delta!=null&&m.delta>0).sort((a,b)=>b.delta-a.delta).slice(0,3):[];
+      const bizCards=[
+        {k:"engagement",label:"Compromiso y permanencia",why:"Reemplazar a una persona cuesta entre 6 y 9 sueldos — la retención es el mayor ahorro silencioso de RRHH."},
+        {k:"asistencia",label:"Presencia y energía",why:"El ausentismo y el presentismo por malestar emocional son de los costos ocultos más grandes de una organización."},
+        {k:"productividad",label:"Productividad sostenible",why:"Los equipos que se recuperan rinden mejor por más tiempo — sin el costo del burnout."},
+      ].map(b=>({...b,val:ultimo?ultimo[b.k]:null,delta:ultimo&&anterior&&ultimo[b.k]!=null&&anterior[b.k]!=null?Math.round((ultimo[b.k]-anterior[b.k])*10)/10:null}));
       return <>
-        <Section title="Inversión y retorno" note={
-          planKind==="fee_fijo" ? `Inversión = fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}. El costo efectivo por sesión baja cuanto más usa tu equipo el beneficio. Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)} promedio online/presencial).`
-          : planKind==="a_demanda" ? `Inversión estimada = sesiones × costo por sesión del convenio (promedio online/presencial${coveragePct<1?`, tu ${Math.round(coveragePct*100)}% con descuento`:""}). La facturación real, cuando existe, tiene prioridad. Valor recibido = sesiones × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)}).`
-          : `Inversión según facturación real (cuando existe) o tu cuponera: ${c.monthlyPlan||"—"} sesiones × UY$ ${fmt(c.sessionPriceRef)} por mes — se abona el pool completo y las sesiones no utilizadas se pueden redistribuir. Valor recibido = sesiones utilizadas × precio de lista (UY$ ${fmt(LIST_PRICE_AVG)} promedio online/presencial).`
+        <Section title="Inversión e impacto" note={
+          planKind==="fee_fijo" ? `Inversión = fee fijo mensual de UY$ ${fmt(c.monthlyFee||0)}. El costo efectivo por sesión baja cuanto más usa tu equipo el beneficio.`
+          : planKind==="a_demanda" ? `Inversión estimada = sesiones × costo por sesión del convenio. La facturación real, cuando existe, tiene prioridad. Los detalles del convenio están en Gestión → Plan activo.`
+          : `Inversión según facturación real (cuando existe) o tu cuponera: ${c.monthlyPlan||"—"} sesiones × UY$ ${fmt(c.sessionPriceRef)} por mes — las sesiones no utilizadas se pueden redistribuir. Los detalles del convenio están en Gestión → Plan activo.`
         }>
           {totSes>0&&<div style={{padding:"14px 18px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:10,marginBottom:14}}>
             <div style={{fontSize:16,fontWeight:700,color:P.primary,letterSpacing:"-0.2px"}}>
-              {planKind==="fee_fijo"
-                ? `${fmt(totSes)} sesiones de terapia para tu equipo — con ${Math.round((1-coveragePct)*100)}% OFF para cada colaborador`
-                : planKind==="a_demanda"&&coveragePct<1
-                ? `${fmt(totSes)} sesiones de terapia para tu equipo — financiadas junto a tus colaboradores`
-                : `${fmt(totSes)} sesiones de terapia para tu equipo${ahorroPct>0?` — un ${ahorroPct}% bajo el precio de lista`:""}`}
+              Tu inversión está trabajando: {fmt(totSes)} sesiones de terapia, {fmt(totHistorico2)} personas acompañadas{instanciasColectivas>0?` y ${instanciasColectivas} instancias colectivas`:""}
             </div>
-            <div style={{fontSize:11,color:P.textMuted,marginTop:3}}>
-              {planKind==="fee_fijo"
-                ? `Tu inversión: UY$ ${fmt(invTotal2)} de fee acumulado${costoEfectivoFee?` · el último mes cada sesión te quedó a $ ${fmt(costoEfectivoFee)}`:""}.`
-                : planKind==="a_demanda"&&coveragePct<1
-                ? `Tu inversión: UY$ ${fmt(invTotal2)} (tu ${Math.round(coveragePct*100)}% con descuento de convenio) · aporte de colaboradores: UY$ ${fmt(colabTotal)}.`
-                : `Tu inversión: UY$ ${fmt(invTotal2)} · a precio de lista valdrían UY$ ${fmt(valorLista)}.`}
+            <div style={{fontSize:11,color:P.textMuted,marginTop:4,lineHeight:1.6}}>
+              Inversión total: UY$ {fmt(invTotal2)}{invPerPat2>0?` · UY$ ${fmt(invPerPat2)} por persona acompañada`:""}{colabTotal>0?` · aporte de colaboradores (co-pago): UY$ ${fmt(colabTotal)}`:""}. La OMS estima que cada $1 invertido en salud mental retorna ~$4 en salud y productividad.
             </div>
-            {colabTotal>0&&<div style={{fontSize:11,color:P.primary,marginTop:6,fontWeight:600}}>Inversión conjunta en salud mental (empresa + colaboradores): UY$ {fmt(invTotal2+colabTotal)}</div>}
           </div>}
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:14}}>
-            <KpiCard label="Inversión total acumulada" value={`$ ${fmt(invTotal2)}`} sub={planKind==="a_demanda"&&coveragePct<1?`Tu ${Math.round(coveragePct*100)}% del convenio`:"UYU"} accent/>
+            <KpiCard label="Personas acompañadas" value={fmt(totHistorico2)} sub={`${fmt(totSes)} ${sesWord}`} accent/>
+            {c.firstTimeCount>0&&<KpiCard label="Primera vez en terapia" value={c.firstTimePct!=null?`${c.firstTimePct}%`:fmt(c.firstTimeCount)} sub={`${c.firstTimeCount} personas accedieron gracias a tu empresa`}/>}
+            <KpiCard label="Instancias colectivas" value={instanciasColectivas} sub={`${c.workshops.length} talleres · ${c.content.length} campañas y contenidos`}/>
+            <KpiCard label="Inversión total" value={`$ ${fmt(invTotal2)}`} sub={planKind==="fee_fijo"&&costoEfectivoFee?`Fee mensual · $ ${fmt(costoEfectivoFee)}/sesión efectivo`:"UYU acumulado"}/>
             <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]??estMonthCost(lastFull2)):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
-            {planKind==="fee_fijo"
-              ? <KpiCard label="Costo efectivo por sesión" value={costoEfectivoFee?`$ ${fmt(costoEfectivoFee)}`:"—"} sub={lastFull2?`Fee ÷ sesiones de ${lastFull2.label||lastFull2.month}`:"Sin datos aún"} warn/>
-              : <KpiCard label={planKind==="a_demanda"?"Costo por sesión (tu parte)":"Costo por sesión"} value={companySessionCost?`$ ${fmt(companySessionCost)}`:"—"} sub={ahorroPct>0?`vs $ ${fmt(LIST_PRICE_AVG)} de lista (−${ahorroPct}%)`:planKind==="a_demanda"?`Online $ ${fmt(c.sessionCostOnline||0)} · Presencial $ ${fmt(c.sessionCostPresencial||0)}`:"Convenio"}/>}
-            {colabTotal>0&&<KpiCard label="Aporte de colaboradores" value={`$ ${fmt(colabTotal)}`} sub={`Co-pago ${Math.round((1-coveragePct)*100)}% · $ ${fmt(colabSessionCost)}/sesión`}/>}
-            <KpiCard label="Valor recibido por el equipo" value={`$ ${fmt(valorLista)}`} sub={`${fmt(totSes)} ${sesWord} a precio de lista`}/>
-            <KpiCard label="Inversión por paciente único" value={`$ ${fmt(invPerPat2)}`} sub={`${totHistorico2} pacientes históricos`}/>
           </div>
           <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={invTrend2} barSize={13}>
@@ -1416,6 +1413,24 @@ export default function Dashboard(){
               <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend2.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
             </BarChart>
           </ResponsiveContainer></div>
+        </Section>
+
+        <Section title="Retorno medido" note="El retorno de invertir en salud mental se ve en las personas — y en tres indicadores que impactan directo en resultados: retención, presencia y productividad. Medidos con la encuesta semestral de tu equipo.">
+          {mejoras.length>0&&<div style={{padding:"12px 16px",background:P.lighter,borderRadius:10,marginBottom:14}}>
+            <div style={{fontSize:12,fontWeight:700,color:P.primary,marginBottom:2}}>Mejoras medidas este semestre</div>
+            <div style={{fontSize:12,color:P.text}}>{mejoras.map(m=>`${m.l} +${m.delta}`).join(" · ")}</div>
+          </div>}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12}}>
+            {bizCards.map(b=><div key={b.k} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"16px 18px"}}>
+              <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+                <div style={{fontSize:24,fontWeight:800,color:b.val!=null?P.primary:P.textMuted,letterSpacing:"-0.5px"}}>{b.val!=null?Number(b.val).toFixed(1):"—"}<span style={{fontSize:12,fontWeight:400,color:P.textMuted}}> /10</span></div>
+                {b.delta!=null&&b.delta!==0&&<span style={{fontSize:13,fontWeight:700,color:b.delta>0?"#22C55E":P.red}}>{b.delta>0?"▲ +":"▼ "}{b.delta}</span>}
+              </div>
+              <div style={{fontSize:12,fontWeight:700,color:P.text,margin:"4px 0 6px"}}>{b.label}</div>
+              <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>{b.why}</div>
+              {b.val==null&&<div style={{fontSize:10,color:P.textMuted,marginTop:6,fontStyle:"italic"}}>Se mide con la encuesta semestral de tu equipo.</div>}
+            </div>)}
+          </div>
         </Section>
 
         <Section title="Bienestar medido" note={c.roiByQ.some(r=>r.auto)?"Los promedios se calculan automáticamente con las respuestas de la encuesta semestral de tu equipo. Para preservar el anonimato, un semestre se muestra recién a partir de 3 respuestas.":null}>
@@ -1591,6 +1606,9 @@ export default function Dashboard(){
           if(c.sessionCostOnline) rows.push(["Costo sesión online (empresa)",`UY$ ${fmt(c.sessionCostOnline)}`]);
           if(c.sessionCostPresencial) rows.push(["Costo sesión presencial (empresa)",`UY$ ${fmt(c.sessionCostPresencial)}`]);
           rows.push(["Tope mensual",c.plan.monthlyCap?`${c.plan.monthlyCap} sesiones`:"Sin tope"]);
+        }
+        if(planKind!=="fee_fijo"&&companySessionCost>0&&companySessionCost<LIST_PRICE_AVG){
+          rows.push(["Ahorro vs precio de lista",`−${Math.round((1-companySessionCost/LIST_PRICE_AVG)*100)}% (lista promedio UY$ ${fmt(LIST_PRICE_AVG)})`]);
         }
         rows.push(["Límite por colaborador",c.userSessionLimit?`${c.userSessionLimit} sesiones`:"Sin límite"],
                   ["Límite por colaborador por mes",c.userMonthlyLimit?`${c.userMonthlyLimit} sesiones/mes`:"Sin límite"]);
