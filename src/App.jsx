@@ -148,72 +148,114 @@ const ENCUESTA_DIMS=[
     "Termino la mayoría de los días con la sensación de haber avanzado.",
   ]},
 ];
-const ENCUESTA_QS=ENCUESTA_DIMS.flatMap((d,di)=>d.qs.map(text=>({dim:di,text})));
+// Bloque exclusivo para líderes/mandos medios (q23-q30) — el orden importa: mapea al RPC encuesta_promedios
+const ENCUESTA_LIDER_DIMS=[
+  {label:"Gestión y apoyo",color:"#D97706",qs:[
+    "Cuento con herramientas y apoyo de la empresa para acompañar el bienestar de mi equipo.",
+    "Me siento preparado/a para abordar conversaciones difíciles (estrés, ánimo, conflictos) con mi equipo.",
+  ]},
+  {label:"Tu equipo",color:"#B45309",qs:[
+    "Mi equipo sostiene una buena productividad sin sobreexigirse.",
+    "Las personas de mi equipo se muestran presentes y con energía; el ausentismo no es un problema.",
+    "Confío en que las personas clave de mi equipo seguirán en la empresa dentro de un año.",
+    "Mi equipo propone ideas nuevas y mejoras con frecuencia.",
+  ]},
+  {label:"Vos como líder",color:"#92400E",qs:[
+    "Mi propia carga como líder es sostenible; tengo espacio para cuidar mi bienestar.",
+    "La empresa me da espacio real (tiempo y respaldo) para priorizar el bienestar de mi equipo.",
+  ]},
+];
+const encuestaQs=(role)=>{
+  const base=ENCUESTA_DIMS.flatMap(d=>d.qs.map(text=>({label:d.label,color:d.color,text})));
+  return role==="lider" ? [...base, ...ENCUESTA_LIDER_DIMS.flatMap(d=>d.qs.map(text=>({label:d.label,color:d.color,text})))] : base;
+};
 
-function EncuestaView({ companyId }) {
-  const [step,setStep]=useState(-1); // -1 bienvenida · 0-21 preguntas · 22 comentario · 23 gracias
+function EncuestaView({ companyId, role }) {
+  const QS=encuestaQs(role);
+  const total=QS.length;
+  const semKey=(()=>{const d=new Date();return `S${d.getMonth()<6?1:2}_${d.getFullYear()}`;})();
+  const doneKey=`tt_encuesta_${companyId}_${semKey}`;
+  // gate: checking → open | closed | already (una respuesta por dispositivo por semestre)
+  const [gate,setGate]=useState(()=>{ try{return localStorage.getItem(doneKey)?"already":"checking";}catch(e){return "checking";} });
+  const [step,setStep]=useState(-1); // -1 bienvenida · 0..total-1 preguntas · total comentario · total+1 gracias
   const [answers,setAnswers]=useState({});
   const [comment,setComment]=useState("");
   const [sending,setSending]=useState(false);
   const [error,setError]=useState("");
-  const total=ENCUESTA_QS.length;
+
+  useEffect(()=>{
+    if(gate!=="checking") return;
+    supabase.functions.invoke("encuesta-respuesta",{body:{check:true,company_id:companyId}})
+      .then(({data})=>setGate(data?.open?"open":"closed"))
+      .catch(()=>setGate("closed"));
+  },[]);
 
   async function submit(){
     setSending(true); setError("");
-    const body={company_id:companyId, answers:Object.fromEntries(ENCUESTA_QS.map((_,i)=>[`q${i+1}`,answers[i]])), comment:comment.trim()||null};
+    const body={company_id:companyId, role:role==="lider"?"lider":"colaborador", answers:Object.fromEntries(QS.map((_,i)=>[`q${i+1}`,answers[i]])), comment:comment.trim()||null};
     const {data,error:fnError}=await supabase.functions.invoke("encuesta-respuesta",{body});
     setSending(false);
-    if(fnError||data?.error){ setError("No pudimos enviar tus respuestas. Revisá tu conexión y volvé a intentar."); return; }
-    setStep(23);
+    if(fnError||data?.error){
+      setError(data?.error==="cerrada"?"La encuesta ya no está abierta. Consultá con tu equipo de RRHH.":"No pudimos enviar tus respuestas. Revisá tu conexión y volvé a intentar.");
+      return;
+    }
+    try{ localStorage.setItem(doneKey,"1"); }catch(e){}
+    setStep(total+1);
   }
 
   const shell=(children)=><div style={{minHeight:"100vh",background:"#EDF5F1",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif",padding:"0 16px"}}>
     <div style={{width:"100%",maxWidth:520,paddingTop:20,paddingBottom:40}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:step>=0&&step<22?14:28}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:step>=0&&step<total?14:28}}>
         <img src={LOGO_TT} alt="Tu Terapia" style={{height:34,borderRadius:7}}/>
         <div style={{fontSize:13,fontWeight:700,color:P.primary}}>Tu Terapia</div>
-        <div style={{fontSize:11,color:P.textMuted}}>· Encuesta de bienestar</div>
+        <div style={{fontSize:11,color:P.textMuted}}>· Encuesta de bienestar{role==="lider"?" · Líderes":""}</div>
       </div>
-      {step>=0&&step<22&&<div style={{height:5,background:"#DDE8E4",borderRadius:3,marginBottom:24,overflow:"hidden"}}>
+      {step>=0&&step<total&&<div style={{height:5,background:"#DDE8E4",borderRadius:3,marginBottom:24,overflow:"hidden"}}>
         <div style={{height:"100%",width:`${Math.round(step/total*100)}%`,background:P.primary,borderRadius:3,transition:"width 0.25s"}}/>
       </div>}
       {children}
     </div>
   </div>;
+  const centerCard=(emoji,title,text)=>shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"40px 28px",textAlign:"center"}}>
+    <div style={{fontSize:44,marginBottom:12}}>{emoji}</div>
+    <div style={{fontSize:20,fontWeight:800,color:P.primary,marginBottom:8}}>{title}</div>
+    <div style={{fontSize:13,color:P.textMuted,lineHeight:1.7}}>{text}</div>
+  </div>);
+
+  if(gate==="checking") return shell(<div style={{textAlign:"center",padding:"60px 0",color:P.textMuted,fontSize:13}}>Cargando…</div>);
+  if(gate==="already") return centerCard("💚","¡Ya respondiste esta encuesta!","Registramos una respuesta desde este dispositivo en este período. Gracias por tu tiempo.");
+  if(gate==="closed") return centerCard("🕐","La encuesta no está abierta","En este momento no hay una encuesta activa para tu empresa. Consultá con tu equipo de RRHH.");
 
   if(step===-1) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"32px 28px",textAlign:"center"}}>
+    {role==="lider"&&<div style={{display:"inline-block",fontSize:10,fontWeight:700,background:"#FEF3E2",color:"#B45309",padding:"4px 12px",borderRadius:20,letterSpacing:"0.05em",textTransform:"uppercase",marginBottom:12}}>Versión para líderes y mandos medios</div>}
     <div style={{fontSize:22,fontWeight:800,color:P.text,letterSpacing:"-0.4px",marginBottom:10}}>¿Cómo estás en el trabajo?</div>
-    <div style={{fontSize:14,color:P.textMuted,lineHeight:1.7,marginBottom:22}}>Tu empresa quiere saber cómo está el bienestar del equipo para poder cuidarlo mejor, junto a Tu Terapia.</div>
+    <div style={{fontSize:14,color:P.textMuted,lineHeight:1.7,marginBottom:22}}>{role==="lider"?"Tu mirada como líder es doble: cómo estás vos, y cómo ves a tu equipo. Ambas importan para cuidar el bienestar de todos.":"Tu empresa quiere saber cómo está el bienestar del equipo para poder cuidarlo mejor, junto a Tu Terapia."}</div>
     <div style={{textAlign:"left",display:"flex",flexDirection:"column",gap:10,marginBottom:26}}>
-      {[["🔒","100% anónima — no te pedimos nombre, mail ni ningún dato personal."],["⏱️","Son 22 preguntas, te lleva menos de 10 minutos."],["🎯","Respondé del 1 (para nada de acuerdo) al 10 (totalmente de acuerdo), pensando en las últimas semanas."]].map(([ic,t])=><div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+      {[["🔒","100% anónima — no te pedimos nombre, mail ni ningún dato personal."],["⏱️",`Son ${total} preguntas, te lleva ${role==="lider"?"unos 12":"menos de 10"} minutos.`],["🎯","Respondé del 1 (para nada de acuerdo) al 10 (totalmente de acuerdo), pensando en las últimas semanas."]].map(([ic,t])=><div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
         <span style={{fontSize:16}}>{ic}</span><span style={{fontSize:13,color:P.text,lineHeight:1.6}}>{t}</span>
       </div>)}
     </div>
     <button onClick={()=>setStep(0)} style={{width:"100%",padding:"14px",background:P.primary,color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:"pointer"}}>Comenzar</button>
   </div>);
 
-  if(step===23) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"40px 28px",textAlign:"center"}}>
-    <div style={{fontSize:44,marginBottom:12}}>💚</div>
-    <div style={{fontSize:20,fontWeight:800,color:P.primary,marginBottom:8}}>¡Gracias por tu tiempo!</div>
-    <div style={{fontSize:13,color:P.textMuted,lineHeight:1.7}}>Tus respuestas se enviaron de forma anónima. Con ellas, tu empresa y Tu Terapia van a seguir mejorando el cuidado del bienestar del equipo.</div>
-  </div>);
+  if(step===total+1) return centerCard("💚","¡Gracias por tu tiempo!","Tus respuestas se enviaron de forma anónima. Con ellas, tu empresa y Tu Terapia van a seguir mejorando el cuidado del bienestar del equipo.");
 
-  if(step===22) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"28px"}}>
+  if(step===total) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"28px"}}>
     <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:8}}>Última — opcional</div>
-    <div style={{fontSize:17,fontWeight:700,color:P.text,lineHeight:1.5,marginBottom:16}}>¿Querés contarnos algo más sobre tu bienestar en el trabajo?</div>
+    <div style={{fontSize:17,fontWeight:700,color:P.text,lineHeight:1.5,marginBottom:16}}>¿Querés contarnos algo más sobre {role==="lider"?"tu bienestar o el de tu equipo":"tu bienestar en el trabajo"}?</div>
     <textarea value={comment} onChange={e=>setComment(e.target.value)} maxLength={2000} rows={5} placeholder="Escribí acá (anónimo)…"
       style={{width:"100%",boxSizing:"border-box",padding:"12px 14px",border:`1px solid ${P.border}`,borderRadius:10,fontSize:14,fontFamily:"inherit",outline:"none",resize:"vertical",marginBottom:16}}/>
     {error&&<div style={{padding:"10px 14px",background:P.redBg,color:P.red,borderRadius:8,marginBottom:14,fontSize:12}}>{error}</div>}
     <div style={{display:"flex",gap:10}}>
-      <button onClick={()=>setStep(21)} style={{padding:"13px 18px",background:"none",border:`1px solid ${P.border}`,borderRadius:10,fontSize:13,color:P.textMuted,cursor:"pointer"}}>← Atrás</button>
+      <button onClick={()=>setStep(total-1)} style={{padding:"13px 18px",background:"none",border:`1px solid ${P.border}`,borderRadius:10,fontSize:13,color:P.textMuted,cursor:"pointer"}}>← Atrás</button>
       <button onClick={submit} disabled={sending} style={{flex:1,padding:"13px",background:P.primary,color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:sending?"not-allowed":"pointer",opacity:sending?0.7:1}}>{sending?"Enviando…":"Enviar respuestas"}</button>
     </div>
   </div>);
 
-  const q=ENCUESTA_QS[step]; const dim=ENCUESTA_DIMS[q.dim];
+  const q=QS[step];
   return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"26px 24px"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-      <span style={{fontSize:10,fontWeight:700,color:dim.color,background:dim.color+"18",padding:"3px 10px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.05em"}}>{dim.label}</span>
+      <span style={{fontSize:10,fontWeight:700,color:q.color,background:q.color+"18",padding:"3px 10px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.05em"}}>{q.label}</span>
       <span style={{fontSize:11,color:P.textMuted}}>{step+1} de {total}</span>
     </div>
     <div style={{fontSize:18,fontWeight:700,color:P.text,lineHeight:1.5,marginBottom:22,minHeight:80}}>{q.text}</div>
@@ -350,7 +392,7 @@ export default function Dashboard(){
   const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
   const [localConsultoriaActiva,setConsultoriaActiva]=useState(false);
   const [expandedSurvey,setExpandedSurvey]=useState(null);
-  const [linkCopied,setLinkCopied]=useState(false);
+  const [linkCopied,setLinkCopied]=useState(null);
 
   const [solicitando,setSolicitando]=useState(false);
   const [contentRatings,setContentRatings]=useState({});
@@ -509,9 +551,9 @@ export default function Dashboard(){
     </div>
   );
 
-  // Encuesta pública para colaboradores (link compartido por RRHH, sin login)
-  const encuestaMatch = window.location.hash.match(/^#encuesta\/([0-9a-fA-F-]{36})/);
-  if(encuestaMatch) return <EncuestaView companyId={encuestaMatch[1]}/>;
+  // Encuesta pública (link compartido por RRHH, sin login) — /lider abre la versión con bloque de mandos medios
+  const encuestaMatch = window.location.hash.match(/^#encuesta\/([0-9a-fA-F-]{36})(\/lider)?/);
+  if(encuestaMatch) return <EncuestaView companyId={encuestaMatch[1]} role={encuestaMatch[2]?"lider":"colaborador"}/>;
 
   if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando...</div>;
   if(!authUser&&!adminViewer) return <LoginView
@@ -559,11 +601,20 @@ export default function Dashboard(){
   // lo cargado a mano en roi_by_quarter (mapeado Q1-Q2→S1, Q3-Q4→S2) tiene prioridad.
   const mergedRoiByQ = (()=>{
     const map={};
-    dbEncuestaProm.forEach(r=>{ map[r.period]={q:r.period,saludMental:Number(r.salud_mental),clima:Number(r.clima),liderazgo:Number(r.liderazgo),engagement:Number(r.engagement),asistencia:Number(r.asistencia),productividad:Number(r.productividad),auto:true,n:Number(r.n)}; });
+    // La encuesta viene segmentada por rol (colaborador/lider): general = promedio ponderado por n; los segmentos quedan para la comparación
+    const byPeriod={};
+    dbEncuestaProm.forEach(r=>{ (byPeriod[r.period]=byPeriod[r.period]||{})[r.role]=r; });
+    const F=[["saludMental","salud_mental"],["clima","clima"],["liderazgo","liderazgo"],["engagement","engagement"],["asistencia","asistencia"],["productividad","productividad"]];
+    Object.entries(byPeriod).forEach(([per,seg])=>{
+      const rows=Object.values(seg); const totN=rows.reduce((s,r)=>s+Number(r.n),0);
+      const g={q:per,auto:true,n:totN,segments:seg};
+      F.forEach(([k,f])=>{ g[k]=totN?Math.round(rows.reduce((s,r)=>s+Number(r[f]||0)*Number(r.n),0)/totN*10)/10:null; });
+      map[per]=g;
+    });
     dbRoiByQ.forEach(q=>{
       const m=(q.quarter||"").match(/Q(\d)\s+(\d{4})/);
       const s=m?`S${parseInt(m[1])<=2?1:2} ${m[2]}`:q.quarter;
-      map[s]={q:s,saludMental:q.salud_mental,clima:q.clima,liderazgo:q.liderazgo,engagement:q.engagement,asistencia:q.asistencia,productividad:q.productividad};
+      map[s]={q:s,saludMental:q.salud_mental,clima:q.clima,liderazgo:q.liderazgo,engagement:q.engagement,asistencia:q.asistencia,productividad:q.productividad,segments:map[s]?.segments};
     });
     const sNum=(s)=>{const m=(s||"").match(/S(\d)\s+(\d{4})/);return m?parseInt(m[2])*10+parseInt(m[1]):0;};
     return Object.values(map).sort((a,b)=>sNum(a.q)-sNum(b.q));
@@ -1392,11 +1443,20 @@ export default function Dashboard(){
               const latest=scores.length>0?scores[scores.length-1]:null;
               const prev=scores.length>1?scores[scores.length-2]:null;
               const trend=prev!=null?Math.round((latest-prev)*10)/10:null;
+              // Congruencia equipo vs líderes del último período con ambos segmentos
+              const DIM_SQL={saludMental:"salud_mental",clima:"clima",liderazgo:"liderazgo",engagement:"engagement",asistencia:"asistencia",productividad:"productividad"};
+              const seg=[...c.roiByQ].reverse().map(r=>r.segments).find(s=>s&&s.colaborador&&s.lider);
+              const eqV=seg?Number(seg.colaborador[DIM_SQL[dim.key]]):null;
+              const ldV=seg?Number(seg.lider[DIM_SQL[dim.key]]):null;
+              const gap=eqV!=null&&ldV!=null?Math.round((ldV-eqV)*10)/10:null;
               return <div key={i} style={{padding:"12px 14px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
                 <div style={{width:4,height:36,borderRadius:2,background:dim.color,flexShrink:0}}/>
                 <div style={{flex:1,minWidth:140}}>
                   <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:1}}>{dim.label}</div>
                   <div style={{fontSize:11,color:P.textMuted}}>{dim.desc}</div>
+                  {gap!=null&&<div style={{fontSize:10,marginTop:4,color:Math.abs(gap)<0.5?P.primary:Math.abs(gap)<1.5?"#B45309":P.red,fontWeight:600}}>
+                    Equipo {eqV} · Líderes {ldV} · {Math.abs(gap)<0.5?"miradas alineadas":Math.abs(gap)<1.5?`brecha leve (${gap>0?"+":""}${gap})`:`brecha importante (${gap>0?"+":""}${gap})`}
+                  </div>}
                 </div>
                 <div style={{display:"flex",gap:14,alignItems:"center",flexShrink:0}}>
                   {latest!=null?<>
@@ -1415,6 +1475,17 @@ export default function Dashboard(){
           </div>
         </Section>
 
+        {(()=>{
+          const lid=[...c.roiByQ].reverse().map(r=>r.segments?.lider).find(l=>l&&l.lid_gestion!=null);
+          if(!lid) return null;
+          return <Section title="La mirada de los líderes" note={`Bloque exclusivo de la encuesta para líderes y mandos medios · ${lid.n} respuesta${Number(lid.n)!==1?"s":""} · escala 1–10.`}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12}}>
+              {[["Gestión y apoyo",lid.lid_gestion],["Productividad del equipo",lid.lid_productividad],["Presencia y energía",lid.lid_presentismo],["Retención esperada",lid.lid_rotacion],["Creatividad e ideas",lid.lid_creatividad],["Bienestar del líder",lid.lid_bienestar]].map(([l,v])=>
+                <KpiCard key={l} label={l} value={v!=null?Number(v).toFixed(1):"—"} sub="/10"/>)}
+            </div>
+          </Section>;
+        })()}
+
         {dbEncuestaComments.length>0&&<Section title="La voz del equipo" note="Comentarios anónimos de la encuesta de bienestar, seleccionados junto a Tu Terapia.">
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             {dbEncuestaComments.slice(0,6).map((r,i)=><div key={i} style={{padding:"12px 16px",background:P.lighter,borderRadius:10,borderLeft:`3px solid ${P.primary}`,fontSize:13,color:P.text,lineHeight:1.7,fontStyle:"italic"}}>"{r.comment}"</div>)}
@@ -1423,13 +1494,19 @@ export default function Dashboard(){
 
         <Section title="Encuesta para tu equipo">
           <div style={{padding:"16px 18px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:10,marginBottom:14}}>
-            <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:4}}>Compartí este link con tu equipo</div>
-            <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6,marginBottom:10}}>Encuesta anónima de 22 preguntas (~10 min), se responde desde el celular sin registrarse. Los resultados los procesa Tu Terapia y se reflejan en este panel.</div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-              <code style={{flex:1,minWidth:220,fontSize:11,background:"#fff",border:`1px solid ${P.border}`,borderRadius:8,padding:"9px 12px",color:P.primary,overflowX:"auto",whiteSpace:"nowrap"}}>{`${window.location.origin}/#encuesta/${dbCompany?.id||""}`}</code>
-              <button onClick={()=>{navigator.clipboard.writeText(`${window.location.origin}/#encuesta/${dbCompany?.id||""}`); setLinkCopied(true); setTimeout(()=>setLinkCopied(false),2000);}}
-                style={{background:linkCopied?P.light:P.primary,color:"#fff",border:"none",borderRadius:8,padding:"9px 16px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0}}>{linkCopied?"✓ Copiado":"Copiar link"}</button>
-            </div>
+            <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:4}}>Compartí estos links con tu equipo</div>
+            <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6,marginBottom:12}}>Encuesta anónima, se responde desde el celular sin registrarse. <b>Importante:</b> el link de líderes envialo solo a quienes lideran equipos — incluye un bloque adicional sobre gestión y permite comparar la mirada de líderes y colaboradores.</div>
+            {[
+              {key:"gen",label:"Equipo en general",desc:"22 preguntas · ~10 min",url:`${window.location.origin}/#encuesta/${dbCompany?.id||""}`},
+              {key:"lid",label:"Líderes y mandos medios",desc:"30 preguntas · ~12 min",url:`${window.location.origin}/#encuesta/${dbCompany?.id||""}/lider`},
+            ].map(l=><div key={l.key} style={{marginBottom:l.key==="gen"?10:0}}>
+              <div style={{fontSize:11,fontWeight:700,color:P.text,marginBottom:4}}>{l.label} <span style={{fontWeight:400,color:P.textMuted}}>· {l.desc}</span></div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+                <code style={{flex:1,minWidth:220,fontSize:11,background:"#fff",border:`1px solid ${P.border}`,borderRadius:8,padding:"9px 12px",color:P.primary,overflowX:"auto",whiteSpace:"nowrap"}}>{l.url}</code>
+                <button onClick={()=>{navigator.clipboard.writeText(l.url); setLinkCopied(l.key); setTimeout(()=>setLinkCopied(null),2000);}}
+                  style={{background:linkCopied===l.key?P.light:P.primary,color:"#fff",border:"none",borderRadius:8,padding:"9px 16px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0}}>{linkCopied===l.key?"✓ Copiado":"Copiar link"}</button>
+              </div>
+            </div>)}
           </div>
           <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>¿Preferís aplicarla en papel o por otro canal? Descargá la versión documento y envianos los resultados a {c.accountManager.email}.</div>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
