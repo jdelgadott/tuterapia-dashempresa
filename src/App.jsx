@@ -414,6 +414,7 @@ export default function Dashboard(){
   const [dbRoiByQ, setDbRoiByQ] = useState([]);
   const [dbEncuestaProm, setDbEncuestaProm] = useState([]);
   const [dbEncuestaComments, setDbEncuestaComments] = useState([]);
+  const [dbSeguimiento, setDbSeguimiento] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(()=>{
@@ -424,7 +425,7 @@ export default function Dashboard(){
       const [
         surveys, content, workshops, workshopsRec, talleristas,
         headerTexts, company, sessions, billing, recommendations,
-        milestones, nps, reasons, roiQ, encProm, encComments
+        milestones, nps, reasons, roiQ, encProm, encComments, seguimiento
       ] = await Promise.all([
         supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("content").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
@@ -442,6 +443,7 @@ export default function Dashboard(){
         supabase.from("roi_by_quarter").select("*").eq("company_id",companyId).order("created_at",{ascending:true}),
         supabase.rpc("encuesta_promedios"),
         supabase.rpc("encuesta_comentarios"),
+        supabase.from("seguimiento_beneficio").select("*").eq("company_id",companyId).order("created_at"),
       ]);
       setDbSurveys(surveys.data||[]);
       setDbContent(content.data||[]);
@@ -459,6 +461,7 @@ export default function Dashboard(){
       setDbRoiByQ(roiQ.data||[]);
       setDbEncuestaProm((encProm.data||[]).filter(r=>r.company_id===companyId));
       setDbEncuestaComments((encComments.data||[]).filter(r=>r.company_id===companyId));
+      setDbSeguimiento(seguimiento.data||[]);
       setDataLoading(false);
     }
     loadData();
@@ -547,8 +550,8 @@ export default function Dashboard(){
   // Placeholder de trimestres cuando no hay datos de encuestas
   const emptyQuarters = (()=>{
     const d=new Date(); const qs=[];
-    let s=d.getMonth()<6?1:2, y=d.getFullYear();
-    for(let i=0;i<4;i++){ qs.unshift({q:`S${s} ${y}`,score:null}); s--; if(s===0){s=2;y--;} }
+    let q=Math.floor(d.getMonth()/3)+1, y=d.getFullYear();
+    for(let i=0;i<4;i++){ qs.unshift({q:`Q${q} ${y}`,score:null}); q--; if(q===0){q=4;y--;} }
     return qs;
   })();
 
@@ -620,7 +623,8 @@ export default function Dashboard(){
     nps: dbNps.length>0 ? dbNps[0].value : null,
     npsDate: dbNps.length>0 ? dbNps[0].date : null,
     roiByQ: mergedRoiByQ,
-    wellbeingByQ: mergedRoiByQ.length>0 ? mergedRoiByQ.map(q=>({q:q.q,score:q.saludMental})) : emptyQuarters,
+    // Seguimiento intraplataforma (encuesta de TT a usuarios del beneficio) — NO viene de la encuesta web de 6 dimensiones
+    wellbeingByQ: dbSeguimiento.length>0 ? dbSeguimiento.map(s=>({q:s.period,score:Number(s.score)})) : emptyQuarters,
     firstTimePct: null, firstTimeCount: null,
   };
 
@@ -1144,7 +1148,7 @@ export default function Dashboard(){
       </div>
 
       <Section title="Seguimiento de personas que usan el beneficio">
-        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Encuesta de bienestar semestral · escala 1–10 · promedio de la dimensión "Bienestar y salud mental".</div>
+        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Encuesta trimestral que Tu Terapia realiza dentro de la plataforma a las personas que usan el beneficio · escala 1–10.</div>
         <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
           {c.wellbeingByQ.map((q,i)=><div key={i} style={{flex:1,minWidth:110,padding:"16px",background:q.score!=null?P.lighter:P.gray50,border:`1px solid ${q.score!=null?P.primary+"44":P.border}`,borderRadius:10,textAlign:"center"}}>
             <div style={{fontSize:10,fontWeight:600,color:P.textMuted,marginBottom:8,letterSpacing:"0.04em",textTransform:"uppercase"}}>{semLabel(q.q)}</div>
