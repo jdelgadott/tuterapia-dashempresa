@@ -70,21 +70,24 @@ function Stars({rating}){
 }
 function Label({text,bg,tx}){ return <span style={{background:bg,color:tx,fontSize:10,fontWeight:600,letterSpacing:"0.04em",padding:"3px 10px",borderRadius:20,whiteSpace:"nowrap"}}>{text}</span>; }
 function KpiCard({label,value,sub,accent,warn}){
-  return <div style={{background:accent?P.lighter:warn?P.accentBg:P.white,border:`1px solid ${accent?P.primary+"44":warn?P.accent+"44":P.border}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,minWidth:0}}>
-    <div style={{fontSize:21,fontWeight:700,color:accent?P.primary:warn?P.accent:P.text,lineHeight:1.1,letterSpacing:"-0.5px"}}>{value}</div>
-    <div style={{fontSize:12,fontWeight:600,color:P.text}}>{label}</div>
-    {sub&&<div style={{fontSize:11,color:P.textMuted}}>{sub}</div>}
+  return <div style={{background:accent?P.lighter:warn?P.accentBg:P.white,border:`1px solid ${accent?P.primary+"33":warn?P.accent+"33":P.border}`,borderRadius:16,padding:"18px 20px",display:"flex",flexDirection:"column",gap:5,minWidth:0,boxShadow:"0 1px 4px rgba(24,33,30,0.04)"}}>
+    <div style={{fontSize:26,fontWeight:800,color:accent?P.primary:warn?P.accent:P.text,lineHeight:1.05,letterSpacing:"-1px"}}>{value}</div>
+    <div style={{fontSize:11.5,fontWeight:600,color:P.text,letterSpacing:"0.01em"}}>{label}</div>
+    {sub&&<div style={{fontSize:10.5,color:P.textMuted,lineHeight:1.5}}>{sub}</div>}
   </div>;
 }
 function Section({title,children,note,warnNote,action}){
-  return <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"20px 22px",marginBottom:14}}>
-    {title&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-      <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>{title}</div>
+  return <div style={{background:P.white,borderRadius:18,border:`1px solid ${P.border}`,padding:"24px 26px",marginBottom:18,boxShadow:"0 1px 5px rgba(24,33,30,0.05)"}}>
+    {title&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <span style={{width:7,height:7,borderRadius:"50%",background:P.primary,flexShrink:0}}/>
+        <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>{title}</div>
+      </div>
       {action&&<button onClick={action.fn} style={{fontSize:11,color:P.primary,background:"none",border:"none",cursor:"pointer",fontWeight:600}}>{action.label}</button>}
     </div>}
     {children}
-    {note&&<div style={{marginTop:12,padding:"10px 13px",background:P.lighter,borderRadius:8,fontSize:11,color:P.primary,lineHeight:1.6}}>{note}</div>}
-    {warnNote&&<div style={{marginTop:12,padding:"10px 13px",background:P.accentBg,borderRadius:8,fontSize:11,color:"#1a4a7a",lineHeight:1.6}}>{warnNote}</div>}
+    {note&&<div style={{marginTop:14,padding:"9px 13px",background:P.lighter,borderRadius:10,fontSize:10.5,color:P.primary,lineHeight:1.6,opacity:0.9}}>{note}</div>}
+    {warnNote&&<div style={{marginTop:14,padding:"9px 13px",background:P.accentBg,borderRadius:10,fontSize:10.5,color:"#1a4a7a",lineHeight:1.6,opacity:0.9}}>{warnNote}</div>}
   </div>;
 }
 const Tip=({active,payload,label})=>{
@@ -304,7 +307,7 @@ function LoginView({ onLogin, onAdminLogin }) {
           <div style={{width:48,height:48,borderRadius:12,background:"#1A5C4A",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
             <img src={LOGO_TT} alt="Tu Terapia" style={{width:34,height:34,objectFit:"contain",borderRadius:6}}/>
           </div>
-          <div style={{fontSize:20,fontWeight:700,color:"#18211E",marginBottom:4}}>Panel de bienestar</div>
+          <div style={{fontSize:20,fontWeight:700,color:"#18211E",marginBottom:4}}>Salud Mental y Bienestar Empresarial</div>
           <div style={{fontSize:13,color:"#607870"}}>Tu Terapia — acceso empresarial</div>
         </div>
         {error&&<div style={{padding:"10px 14px",background:"#FAEAEA",color:"#B03030",borderRadius:8,marginBottom:16,fontSize:12,fontWeight:500}}>{error}</div>}
@@ -783,7 +786,7 @@ export default function Dashboard(){
         <img src={LOGO_TT} alt="Tu Terapia" style={{height:44,objectFit:"contain",flexShrink:0}}/>
         <div style={{textAlign:"left"}}>
           <div style={{fontSize:16,fontWeight:600,color:P.primary,letterSpacing:"-0.4px"}}>Tu Terapia</div>
-          <div style={{fontSize:11,color:P.textMuted}}>Dashboard de bienestar</div>
+          <div style={{fontSize:11,color:P.textMuted}}>Salud Mental y Bienestar Empresarial</div>
         </div>
       </button>
       {mod!=="home"&&activeMod&&<div style={{display:"flex",gap:2,overflowX:"auto",flexShrink:1,minWidth:0}}>
@@ -816,7 +819,7 @@ export default function Dashboard(){
       <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,color:P.textMuted,background:P.gray50,border:`1px solid ${P.border}`,borderRadius:7,padding:"5px 12px",margin:"6px 12px 6px 0",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
         ← Inicio
       </button>
-      {activeMod?.subs&&visibleSubs(activeMod.id).map(s=><button key={s} onClick={()=>setSub(s)} style={{fontSize:12,fontWeight:sub===s?600:400,color:sub===s?P.primary:P.textMuted,background:"none",border:"none",borderBottom:sub===s?`2px solid ${P.primary}`:"2px solid transparent",padding:"9px 16px",cursor:"pointer",whiteSpace:"nowrap",letterSpacing:"0.01em"}}>{s}</button>)}
+      {activeMod?.subs&&visibleSubs(activeMod.id).map(s=><button key={s} onClick={()=>setSub(s)} style={{fontSize:12,fontWeight:600,color:sub===s?"#fff":P.textMuted,background:sub===s?P.primary:"transparent",border:`1px solid ${sub===s?P.primary:"transparent"}`,borderRadius:20,padding:"7px 16px",margin:"5px 0",cursor:"pointer",whiteSpace:"nowrap",letterSpacing:"0.01em",transition:"all 0.15s"}}>{s}</button>)}
     </div>}
 
     <div style={{padding:"28px",maxWidth:960,margin:"0 auto"}}>
@@ -832,7 +835,7 @@ export default function Dashboard(){
           Tu equipo se está sintiendo mejor
         </div>
         <div style={{fontSize:15,color:P.primary+"CC",lineHeight:1.7,maxWidth:480,margin:"0 auto"}}>
-          {sub==="Sesiones"?"Cada sesión es un paso hacia el bienestar de tu equipo.":"Más personas eligieron cuidar su salud este mes."}
+          {sub==="Sesiones"?"Cada sesión es un paso en la salud mental de tu equipo.":"Más personas eligieron cuidar su salud mental este mes."}
         </div>
       </div>
 
@@ -990,10 +993,10 @@ export default function Dashboard(){
     </>}
 
     {/* ── INDIVIDUAL ── */}
-    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#e8f5ea,#f2faf3)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#e8f5ea,#f2faf3)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
       <div style={{fontSize:10,fontWeight:700,color:"#4a9356",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,opacity:0.7}}>Colaboradores</div>
       <div style={{fontSize:22,fontWeight:800,color:"#1e4d28",letterSpacing:"-0.5px",marginBottom:4}}>
-        {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud este mes":`${totNuev} personas eligieron cuidar su salud mental`)}
+        {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud mental este mes":`${totNuev} personas eligieron cuidar su salud mental`)}
       </div>
       <div style={{fontSize:13,color:"#4a7a52",opacity:0.85}}>
         {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totSes)} ${sesWord}${planKind==="cuponera_fija"?` · ${compRate}% de utilización del plan`:""}`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:"")}
@@ -1056,7 +1059,7 @@ export default function Dashboard(){
               </div>
               <div style={{textAlign:"center",maxWidth:480}}>
                 <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:6}}>{c.firstTimePct}% del total de pacientes históricos</div>
-                <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>Estos colaboradores nunca habían accedido a psicología antes de este beneficio.</div>
+                <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>Estos colaboradores nunca habían accedido a psicoterapia antes de este beneficio.</div>
               </div>
             </div>
           :<div style={{padding:"20px",background:P.gray50,borderRadius:10,textAlign:"center"}}>
@@ -1092,7 +1095,7 @@ export default function Dashboard(){
     })()}
 
     {/* ── COLECTIVO ── */}
-    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#f0eaf8,#f8f3fc)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#f0eaf8,#f8f3fc)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(74,48,112,0.5)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
       <div style={{fontSize:22,fontWeight:800,color:"#3d2060",letterSpacing:"-0.5px",marginBottom:4}}>
         {getHeaderText("colectivo",sub,"title")||(sub==="Contenido"?"Recursos para llevar el bienestar a cada rincón del equipo":`${c.workshops.length} talleres de bienestar realizados con tu equipo`)}
@@ -1168,13 +1171,13 @@ export default function Dashboard(){
 
 
     {/* ── ESTRATÉGICO ── */}
-    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e8f2fc,#f0f7ff)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e8f2fc,#f0f7ff)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
       <div style={{fontSize:10,fontWeight:700,color:"#2a6aaa",opacity:0.6,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
       <div style={{fontSize:22,fontWeight:800,color:"#1a4a7a",letterSpacing:"-0.5px",marginBottom:4}}>
-        {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"Los datos muestran un equipo que avanza":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
+        {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"El pulso de tu organización, medido":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
       </div>
       <div style={{fontSize:13,color:"#2a6aaa"}}>
-        {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · ${c.recommendations.length} recomendaciones activas`:c.consultoriaActiva?"Una inversión que se traduce en personas más sanas":"Activá la consultoría para ver el análisis de impacto")}
+        {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · ${c.recommendations.length} recomendaciones activas`:c.consultoriaActiva?"Salud mental que se traduce en resultados para tu empresa":"Activá la consultoría para ver el análisis de impacto")}
       </div>
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
@@ -1557,7 +1560,7 @@ export default function Dashboard(){
     })()}
 
     {/* ── GESTIÓN ── */}
-    {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#607870,#8B9E98)",borderRadius:14,padding:"28px 28px 20px",marginBottom:16}}>
+    {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#607870,#8B9E98)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Gestión</div>
       <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
         {sub==="Facturación"?"Tu plan activo, todo en orden":sub==="Plan activo"?"El acuerdo que hace posible el bienestar de tu equipo":"Las personas detrás del beneficio, siempre disponibles"}
