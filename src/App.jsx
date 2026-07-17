@@ -5,14 +5,15 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const LOGO_TT = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAgGBgcGEBAHBwcQEBAQEBAQEBAQEBAQEBAQERATEhEQEBAVGCIbFRYgFxAQHSsdICUlKCgoExstMSwmMCInKCYBCQkJDQwNGA4OGS0dHR8nLycmJictJyYmJiYmJi0mJyYmJiYnJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJv/AABEIAfQB9AMBEQACEQEDEQH/xAAbAAEAAgMBAQAAAAAAAAAAAAAABQYBBAcDAv/EAEUQAQABAgMEBAoGCAYCAwAAAAABAgMEBREGEiExQXGRsRMVMjRRVGFygcEiM1JzktEUFkKCobLC4UNTVWKi8COTJETx/8QAGQEBAAMBAQAAAAAAAAAAAAAAAAEDBAIF/8QAJxEBAAIBAgcAAgMBAQAAAAAAAAECAwQREhMhMTJBUSIzFGFxgVL/2gAMAwEAAhEDEQA/AO/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAxMxHGZBq3M0wFry8XR+KJ7nPFDiclY9vPxzl3rlHaccfUc2n1nxzl3rlHaccfTm0+njjLvXKO044+p5lPrPjfL/XKO04o+nMr9PG2X+uUfig4oOZX6z42y/wBco/FBxQcyv08a4D1yj8UHFH05lfrPjTAeuW/xQcUHMr9PGeB9ct/jg4oOOv1nxlgvW7f46fzTxQnjr9Z8Y4L1u3+On8zig46/TxhgvW7f46fzOKDjr9Z8YYL1u3+On8zig46/TxhgvW7f46fzOKDjr9PGGC9bt/jp/M4oOOv08YYL1u3+On8zig46/X3bxNi9wtXqavdqie43hMWiez1SkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB44rFWsHRVfvVaU0xrKJnaN0WtFY3lzzN9osXmVUxTXNFvopjh8ZlltkmXm5c9rz/SGcKAAAAAAAAAAAAAAAAH3avXLM71q5NM+ydDdMTMdlv2f2pruTGEx9WuvCmvl8Kl9MnqW3DqN/xsuC9sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUzbbHVa0YGmZ0036vbrwp7p7VGa3pi1d+1VQUMQAAAAAAAAAAAAAAAAAByB0zZ3HVY7D0V1zrVT9GeOszpw1nra8dt4erhvxUiUs7WgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOe7YzM4nj/l099TLl8nnarzV9WzAAAAAAAAAAAAAAAAAAALzsPM+DuR/vjuaMPZv0njK0rmsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABzzbDzn9ynvlly+TztV5oBWzAAAAAAAAAAAAAAAAAAALxsP9Xd9+O6WjD2b9J4ytS5rAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAc82w85/cp75Zcvk87VeaAVswAAAADMRM8IgGarddHlUzHXGgPkAAAH1TRXX5NMz1RqDExNPCYBgAAAAAF42H+ru+/HdLRh7N+k8ZWpc1gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPDEYuxheN65Ed/Y5m0R3cWvWveWhO0WCj9mvsj81fOqp/lUUvaXF28bf8LaidN2I48+cqb2i07wx5rxe28IdyqAAAAAbuWxTNU689OCJG7jYp3J3vgiEIV0kAABM4GKNyN349bkamZRRrGnPp+XzTA0UgAAAAC2bJ5nYwNFym9vazVE8IiejrW48kVjq1YM1aRMSsVOf4KrhrVHtmI/NZzqtEaqjesYqziY3rNyJ/76FkWiey6t627S9kugAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGrmGLjBUTdnnyjrlze3DG6vLfgrupt+/cxEzcu1azP8A3gxTMzPV5VrTad5eaHKHzDy/hCYS1UgAAAADMTNPGJ0B9V3blzy65kHwAAAD7ou3LfkVTAPmapq41TqDAAAAAAJPK+VXXCJG+hD1sYi7hp8JarmJTEzE7w6raazvC45fjIxtEXY58pj0S2UtxRu9XFk467tp2sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQG0tUx4OnXhO9/DRnz+mLWT2hXmdhAQ+YeX8ITCWqkAAAAAAAAAAAAAAAAAAASeV8quuESN9CAE/s1cnWu31T8vm0YJ7w26Oe8LC0NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACv7Tf4f739LPn9MOs9K+zsQCHzDy/hCYS1UgAAAAD7tWq707tEA9L2Eu2Y3qojT2IHgkAAAe9nCXb8b1McPaged21XZndrhI+AAAAAASeV8quuESN9CAE5s15dfu/OF+DvLZpO8rI0t4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACv7Tf4f739LPn9MOs9K+zsQCHzDy/hCYS1UgAAAADby+7RaqnfnTWOaJG5jL9uKZp3o1nlCBEOgAABL4K/bmmKNdJj/ALqiRq5heouzFNE66dJA0kgAAAACTyvlV1wiRvoQAnNmvLr935wvwd5bNJ3lZGlvAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAV/ab/D/e/pZ8/ph1npX2diAQ+YeX8ITCWqkAAAAAAAAAAAAAAAAAAASeV8quuESN9CAE5s15dfu/OF+DvLZpO8rI0t4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACv7Tf4f739LPn9MOs9K+zsQCHzDy/hCYS1UgAAAAAAAAAAAAAAAAAACTyvlV1wiRvoQAnNmvLr935wvwd5bNJ3lZGlvAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAV/ab/AA/3v6WfP6YdZ6V9nYgERmMaV/CPmmEtRIAAAAAAAAAAAAAAAAAAAk8r5VdcIkb6EAJzZry6/d+cL8HeWzSd5WRpbwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFf2m/w/3v6WfP6YdZ6V9nYgGjmNiaoi7THLn1JhKLSAAAAAAAAAAAAAAAAAAAJPK+VXXCJG+hACc2a8uv3fnC/B3ls0neVkaW8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABX9pv8P97+lnz+mHWelfZ2IAmInhII3EZfPlWez8k7padVm7RwqolI+dyr7MgblX2ZBjcq+zIG5V9mQNyr7MgbtX2ZA3avsyBu1fZkDdq9AG7V6J7AN2r0T2AbtXonsA0mOcAwAAAACTyvlV1wiRvoQAnNmvLr935wvwd5bNJ3lZGlvAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAV/ab/AA/3v6WfP6YdZ6V9nYgAAAAAAAAAAAAAAAHzct03Y3Ko4SCFxFirDzuzy6JSl4pAAAEnlfKrrhEjfQgBObNeVX7vzhfg7y2aTvKyNLeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAis9wk4i34SiNZonX4Tz+SrLXeGbU04q7x6VRkeaAAAAAAAAAAAAAAAAA871mm/G5VH9gQt6zVZndqj+7pLzAABJ5Xyq64RI30IAWjZ/DVWaJu1R5c8OqGrDXaN3o6Wm1d59phc1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGmvCQQePyCm7M3cNOkz+zPLX2ehRfDv1hky6WJ61RlWR46nh4LXqlVyrM86bJ8amJwt3CzuXqdJni5tWa91V6TXpLxcuAHpYw93ET4O1RMz7ExEz2dVrNp2hteJ8d/kS75dvizkX+HijHf5EnLt8ORf4xOU46P/r1I5dvhyL/GPFWO9Wq7Dl2+HIv8PFWO9Wq7Dl2+HIv8PFWO9Wq7Dl2+HIv8PFWO9Wq7Dl2+HIv8PFWO9Wq7Dl2+HIv8PFWO9Wq7Dl2+HIv8PFWO9Wq7Dl2+HIv8PFWO9Wq7Dl2+HIv8PFWO9Wq7Dl2+HIv8PFWO9Wq7Dl2+HIv8eOJyLGYiNJw1WvROhy7fDkZPiEu5TjLE7l21uz6JRMbd3FqzWdpfHi/EfZjtRu5PF+I+zHabiUyrLMXVFW5ZmeMckxWZ7O647W7Qkacox1XD9Hn4p5dvjqMF/iTwOz80zv4ueX7MfOVtMP8A6aMel262T8RFPCIaG1kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFZ2j+sp935sufu8/V+UIVSyPXD4e5iqotWqdZn+HtlNazM7Q6pSbTtC35fl9vAU7tMfSnyqvT/ZspSKw9TFiikdG47WgAAAAAAAAAAAANDM8upx1PCPpx5M/JXkpxQpzYovH9qhct1WpmiuNJjhMMkxs8uYmJ2l8oQsuzfkV+9Hc04O0vQ0njKbXtYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACs7R/WU+782XP3efq/KEVYsXMTVFq1TrM/94qoiZnaGatZtO0Ldl2X28DTpHGqectlKRWHqYsUUhuu1oAAAAAAAAAAAAAACIznK4xUeHtR9OP8AlCnLj36wzajDxRvHdVpiY4TDK85Zdm/Ir96O5pwdpb9J4ym17WAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAhM6y6/i6qblmNeGk+z2qMtJtPRk1GG15iYbuW5dRgKdOdU85+UO6UisLcWKKR/beWLgAAAAAAAAAAAAAAAAEBnWUzV/wDJw9HH9qI72fLj9wxajBv+VWxkFi5Zoqm5TMb06xq6wxMR1WaWsxXql1zSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAxqDw/TcLFXgf0mjf+zv073ZrqjeHPHXfbd76pdMgAAAAAAAAAAAAAAAAAAAAAAA172Mw+Hncu3qaZ56TOnBzNoju4tkrXpMvSzdt3o37VcTHpjkmJiezqtomN4eiUgAAAAAMSCMx+f4DLa/AYmuqKtIq4UzPCf/AMcWvFZ2lVfNWk7S+cFtFl+YVxh8PXVNUxMxrTMco48SuSJnaCuatp2hLO1oAAAAAAAAAAAAAAAAAAAAAACH2lxd3B4eu5ZmYmZinWOcRM8ZhxknaqnPaa03hzX/AHdPPX2sjzHR9lsZdxmHiq9VMzTM06zzmI5atWKZmvV6WntNqdU2sXgAAAAAAAAAAAAAAAAAAAAAMagq+0f1se5HfLLm8nnavz/4lsi+op66v5pW4vFp0364Sa1oY1BnUAAADUCQc/2z84j7unvqZs3k8/Vef/Hhsl51R7tf8qMXk5037HRmp6TOoAMagxFUTykGdQZAABjUDejkDIGoMTVEc5A1A1A1BkGNQNQNQY3onhEgzqDINfGYS1jqKsPfp1pqjSflMImImNnNqxaNpVOdhq97hjo3NfsfS09HPRRyf7ZP4nXuteBwdnAUU4axTpTT2z6Zn2r4jaNmulYrG0NlLpjUGJqiOcgzqBqBqDIAAAAAAAAAAAAAAAAI3Obt+zb3sPM670co1nTiryzMR0Uai1orvVV8TexF6d7EzOunTGk6Mlpme7zb2tM/k9sPi8fapiixVXu8dNKdY7nUWtEdHdb5IjavZJZTi8dduxTfqr3dJ506R3LMdrTbq0YL5JvtZs57ir+FiibFyadZnXTqh3mtMbbLNTe1YjhfWQ4q9iqa6r1yapiqIjXqMNpmOppb2tE8SXXNQCCz7GYjC1URZuzTrE66dcKMtpiejHqslqzHDLZyPEXsTRNd65NU72nHqdYrTMdVmmvNq7y1trbly1hprt3Jpnfo40zMTz9MJyztVOpnanRzy5duXp3rtyap5a1TMz2yyzO7zpmZ7lFyu1O/brmmfTTMxPbARMx2ev6di/W7n/sq/M4p+p47fXU8JMzbtzM6/Qp/lhtjs9WvaFZzzaybMzhsu0mY4VXJ4xE+imOnrU3y+oZsup26VVLEY7FYudcRiK6uuqdPhHJTMzLHNrW7y8aa6qPpUVzE+mJmEOeqYy/abMcDMRXdm5T001zrOnsq5w7rkmF1M96/2vmXZlh8zoi/h6tY5TE86Z9Ew01tFo3h6FLxeN4eWfVVUYa9XRVMTFE6TE6THVKL+MoyztSXNv07F+t3Px1fmy7y8zjt9S+J2mxU2reEwtyqndopiuv9uqrTjpM9HtdzknbaF1tRbhiIamR113MVZquVzMzXzmZmeUopP5Q4xTM5I3dKv37eGpm9erimmmNZmeUQ1TOz05mIjeVEzXazF4qZt4OqbdHRMeXV7ZnoZ7ZZnswZNRaeleiv3Lty7O9cuVVT6ZmZn+KrdnmZnu9sLj8Xgp3sPiKqfZEzp8Y5Ji0x2TW9q9pTWM2muY/D+Brqmi9FdM71EzTvU8deXLo4LJyb12X2zzam3tCxjsZ63c/9lX5q95URe311e3xiOqO5setHZzbO8XiqMRepoxNyIi5VpEV1REdUast5nil5uW1ovMbtjJs/qy2m7cvV1XKpimKKaqpmNeOszM8oTTJwusWbg336o/G5xj8fMzfxNWn2Yndp7IczeZV2y2t3lpRVNPGKpietyrS+XbS5hgJiKrs3KemmudeHsq5w7rkmF1M9q/2v2XZjYzKiMRYq4TwmOmmfRLTW0WjeHoUvF43h5Z5VVRh71dFUxMUTpMTpMdUl/GUZZ2pLmv6djPW7n46vzZOKXmcdvrpGz9dVeGs111TMzRxmZ1meM85asfjD0sM/hDYzDMLGXUTiMRVpEco6ap9ER6U2tERvLq94pG8qDmO02YY+Z3Ls26OimidJ09tXOWa2SZYL57Wn4h6qpq41VTM+mZcKG5gs3x2AnWxiatPszOtPZLqLzCyuW1e0pHONoK8yptV2a6rdcb0XKaapiNeGkxMc4dXvxbbLMubiiNujWyfGYqvEWaasVcmJuUxMTXVMTGvTGqKTPFDjFa3HHV01reoAAAAAAAAAAAAAAAAxoCr7R/W0+5HfLLm8nnavz/4l8i+op66v5pXYvFp0364SWixoQO0vk2+uruhnz+mPWdoZ2a8m570fypwdpNH4z/qdXtgCt7TeVb92rvhmz94YNZ3ht7OfVz7090O8His0ngkcZg7GOp8Dibe9TrE6ceccuS2Yie7TasWjaXP9qMFh8Bfizhre7TuUzpGvOZn09TNkiIno8/UVittoeWzmEsY3EU2MRb3qZpq1jqjgjHETbaUYKxa+0rt+rOUepR21fm0cuvxt5GP41dqMfOW2Is2J0qr+hTpzimI46T1aR8XOS3DHRzqL8FNoc+piatKaY1meER7ZZnnL1lGyWGtUxcx9G/XMazTr9Gn2cObRXFEd2/HpoiN7JG/s1lN6N39Epp9tOtMw7nHX4tnBSfSj53lFzJ7ng5q3qKuNFXTMdMT7YZ704ZYMuKaTs9dm8xrwF+mne+hcmKK46OPKfhJjttKcF+Gy77Qea3vcloyeMt2bwlzBkeWmsj2du5vrequbluJ0101mqemKfzWUx8S/Dgm/X0tGD2UwWCroxNF25NVE6xrMaa+3gtjFEdWqunrWYlEbZ5lVXVTl9urhTEVV+2Z8mPhHH4uM1uuynVX68MKzhsNdxddOHsUa1VTpEKYjedmWtZtO0L1l+yOBw9MfpVPhK+nWZinX0RDTXFEd2+mmrEder3xeymV340t2fBz0TTM9080zirLq2npKi5nlt/K7k4e9x6aao5VU9Ewz2rNZ2YMlJpO0tOHLiHX7fkx1R3NsdnsQ5hnvnN/7ypkv5S8vN5y07Fi5iqqbFmnWqqdIhzEbuIiZnaF6y7ZHA4emJxdPhK+nWZimJ9ERHzaa4oju3001Yjr1bGJ2Vyq/G7RY8HPppme6eCZxVl1bT0ntCjZpll/Krk4e9x6aao5VU+n+zPavDOzDkxzSdpbmzOY1YC/TRNX0LkxRVHRr+zPb3px22l3gvw3/ANXfPvNr/uS0X8Zbs3hLl7I8p03Z3zWx7nzlrx+MPUweEKbtRmM46/Vbpq+hamaKfRrHlT28PgoyW3li1F+K23xoZZlt/NLkYezHtqqnlTT6Zc1rNp2V48c3ttC84XZTK8PGldnwk9M1TPdDRGKrfXT0jvG7xzDZHA4imZwseDr6NJmaZn0TEotiiezm+mrMdOii4jD3cLVVYvU6VUzpMM8xt0YLRMTtLayXzmx97R3pp5Q7xecf66m2PVAAAAAAAAAAAAAAAAAVbaP62n3I75Zc3k87V+f/ABL5F9RT11fzSuxeLTpv1wkljQgdpvJt9dXdDPn9MWs7Qzs15Nz3o/lTg7SnR+M/6nV7YAre03lW/dq74Zs/eGDWd4bezn1c+9PdDvB4rNJ4Jlc1uf7Z+cx93T31M2byefqvP/jw2S86o92v+VGLyc6b9kOjNT0lG24uTN21a6ItzPxqqmP6YZs3dg1c/lEK7g8ROEuUYiKIqmiqKoieUzHJXE7Tuz1twzErH+vGM9Tt9tS3nT8af5c/D9eMZ6nb7ajnT8P5dviNzfP7ucU027uHpp3at6JpmdeWmn/fQ4vebKsuabxtMIqiZpmKo6Jif4uFLpWdzvYS7Pptfk138XqZf1z/AI5myPLdO2etxbwtmmI/YifjVxnva8cfjD1MMbUhJy7WuXZ5cm5ib1U/bmOzh8mO/lLyss73lL7E2Ka71y7McaKI0/en+zvD3XaSPymV7aW8BVtt8NRVaoxGn0qa93X2VROsdsQpzR03ZdVX8YlRoZ2B1+35MdUdzbHZ7EOYZ75zf+8qZL+UvLzecpfYqxTXdrvVRxoo0j96eP8ACHeGOq7Sx+UyvUNLeyCsba2aa7NF7ppr0jqqjj3QpzR0ZdVH47qJFU0fSieMcY+DOwOm5zVv4S7X6bWvbDXfxepl/XLmTI8t0vIatzB2qvRbme9rp4w9PD+uHNaqprmap5zMzPx4sjzF32Js002rl/TjVXp8KY/u0YY6N+lj8ZlalzUxIKNtth6aLtu/EcaqJifbuzwnslnzR13YdVH5RKGyTzmx97R3q6eUKMXnH+uptj1QAAAAAAAAAAAAAAAAFW2j+tp9yO+WXN5PO1fn/wAS+RfUU9dX80rsXi06b9cJJY0IHabybc/7p7mfP2hj1naDZmqN25T071M9sf2Tg7SjRz0mE8vbQFa2kqia6I9FM/xn+zNn7w8/WT+UNzZz6ufenuh3g8Vuk8EzK5rc/wBs/OY+7p76mbN5PP1Xn/x4bJ+dUe7X/KjF5OdN+yHRmp6SkbcWZi5av9E0TT8aatf6mfNHWGHVx+USr2AsWsTdosXq5ppqqimZjo15fx0VVjedmakRNoiVu/UjC+t19lK/kw2fxK/T9R8L63X2UnJg/iV+vO5sfl9rhczCaevdhHKrHtE6Wsd5Yp2TyzWN3MtZ15a0cfYcqv0/jU+pzPo3cLep9FvTuWX8ZX5vCXMWR5bqORebWPu6e5sp4w9XF4QkJdLHMNoLM2cTepmOde9HVVET82PJ5S8vNG15SOxmKpsX6rNU6eEp0jridY+bvDO0rNLba231foaXoMgqW2+Mpii3g4njVVvz7IpiYjtmf4Kc09NmTV26RVSoZ2H26/b8mOqO5tjs9iHMM985v/eVMl/KXl5vOUnsbi6bN6qxXOnhKdI96njp2au8U7St0ttrbfV+1aXoAKpttiqKbdGFifpVVb0x6KaeGvbKnNPTZk1VukQpdu3VemLVMcapimOuZ0Z4Yojfo6ZnVO5hbtEdFrTsa7+MvTy/rlzFkeW6XkFO/hLNPpt6dsy108Yenh/XDm123VZqqtVRxpmaZ+E6MkvNmNp2XLYnFUzTcwszxiYriPZMaT3R2r8M+mzSW6TC26r2w1BQts8XRevU2KKtfB0/S9lVU66dmnazZp67MGqtvbb4isl85sfe0d7inlCnF5x/rqbY9UAAAAAAAAAAAAAAAABWNo6Ji5TXpwmnTsmfzZc8dXnauPyif6buQ4yzFrwNVyIqpmeEzpwmddVmG0cOy7S5K8G0pam9bq4U3ImfZMLd4auKJaOdYarE2p3I1mmd6Phz/g4y13qp1FOKnT0ruWY79Ar8JPGmeFUez0wzY78MsGHLy7brbZxli/G9buxPx+TXFons9Ot627S+MTjsNho3rl2OrXWZ6oLXiO6L5K1jeZVLHYqvGVzfqp0ieFMeyOhjvbind5mW83txSntnPq596e6GjB4tuk8EzK5qUPbW1VTeou6cKrenxpqnXvhmzR1YNVH5RKGyjMPFl6nFTRvRGsTEc9JjTg4pbhndTjvwW3W/9d8u/wAm7+Gn81/Oq2fyqNrP8B44w8VWadaoiLlEdM8ONPxhN68VXWanHTo5zMTTwnhMdsSyvNW/KtsaLdMWcwoqmYjTfpjXX3o9PtX1y/WzHqto2skMRtnltuP/AAxXXPRG7ux8Zl1OWqy2qpHZSsyzC7mdycTf6eERHKmI5RDPa02neWK95vO8pjZLKqsTdjG10/Qt8Y/3V9EfDn2LMVd53XabHvbin0tu0Hmt73J+S7J4y2ZvCXMGR5TqORebWPu6e5sp4w9XF4QkXSxUdssqquxGYWqdZpjduafZ6KvhxU5a+2PVY9/yhTKK6rcxXRVMTE6xMcJiY5TDOxROy4ZdtrRERRmFmrWP26IideunoX1zfW2mqjb8nvjNtsJTGmEs11VdE1RFNMdfHWUzmj06tqq+lOxmMvY6ucRiK9ap7I9kexRM7zvLFa02neXhCHPt1+35MdUdzbHZ7EOYZ75zf+8qZL+UvLzectCiuq3MV0VaTExMTHOJiecOVcTtO64ZdtrRERRj7M6xHl0RE69dOvBfXN9baar/ANPfF7a4SmNMJZrqq6N6N2mOvpTOaPTq2qr6hTsXi72OrnEYivWqf4R0RHsUTMzO8sVrTad5TeyeV14q7GMrp+hbnWJ9NfREdXPsWYq7zuv02Pe3F8W7PvNr3uSuv4y15vCXL2R5bpuzvmtj3PnLXj8Yepg8IVXa7K6sNd/TbdP0LnPTlFfTr181OWu07smpx7W4o9oLCYq9gq6cRYr0qp5fOJ9iuJ2neFFbTWd4XLCba4SqNMXZqpq6Zpjepnq6YXxmj2211VfcPHMNtLcxNGAs1az+3XERp1U68UWzfHN9VG34qfXcquzNyuqZmZ1mZ5zMqGKZ36t3JfObH3tHe6p5Qsxecf66m2PVAAAAAAAAAAAAAAAAAaePwFvH07lU6THGJ9Di9ItCrLijJG0oG5s7jKeFFVFUdcx/DRROCzFOkv6bWWZRisJdi7dinSInlOvOHWPHaJ3lbhwXpfeU/o0NqEx+Q035m7hqopmeM0z5Mz7PQovh36wyZdLFp3r0RNWTZhTw/R9fbE06d6nlW+Ms6fJHptYbZ7EXJ1xExTHo13qvyd1wzPdZTSWny6NrMsmuXPB28JRG7TTMcZ04zMTr7Xd8Uztwrc2nmdop6bmT4O9gqJt3tNd7XhOvQ7xVmsbSt0+OaV2lJLF6OzjKbOb0eBuTpMcaavRP5OL14oV5ccXjaVIxWyubYedKLHhI6Joqjj8JmJUTitDDbT3j1u1/1ezf/T6/+P5ueC3xzycnx0nC01U0UUVRpMUUxMe2Ihrjs9OvaEHnWy1nMZnEYaqKLk89fJq9sx0T7Vd8e/WGfLp4t1jpKp4jZ/NcNO7Vg6pj00aVRPYonHaPTJbDePTxoyjMrnCjA3J/dmP4ycE/HMY7z6TWW7G4m9pXjqoop+xE61z8eUO64p9r8elmfJdcNhrWEpixZoimmmNIiGiI27N0RERtDVzqzcxGHu2bNE1VVUTERHOZReN4cZYmaTEOf/q/m/8Ap9f/AB/Nl4LfHn8nJ8dCye1csWLVq7RpVTRTExPOJiOTVWOkPRxxMUiJbzp2xVTFXCY1iQU/Ntjpqmb2W1Rx4+Dnh+GflKi2L4x5NN7qrlzJsytTpXgbn4dY7Y1VTS3xmnFeO8PbCbO5pi5imMLNEfar+jEfPsTGO0prgvPpOY/ZecJhvBYW3N29VXRNVUaROka8KdZ4Qstj2r0aLYOGm1esoGNn83/0+v8A4/mr4LfGfk5Pjp1ETERE+iO5repDl+e+c3/vKmO/lLys3nKR2Zy3D5pF6xiKeimaao50zrPGHeOsW3iVuCkXiYl44/ZbMsHM+CteFp6KqOfxp596LYrR2c30969urQpynMap3acDc19yXHDPxXy7/Ezlmx2KxGleOnwdP2YmJrns4Qsrin2vpprT5dF3w2GtYSmLFmjdppjSIhoiNm6IiI2hrZzZuX7F21ZomqqqiYiI5zKLxvEuMsTNJiHPv1fzf/T6/wDj+bNy7fHn8nJ8X/I7F3D4e1ZvUTTVTTpMTzidZaKRtWIehiiYpES28Rh7WJpmxeo3qao0mJdTG7uYiY2lSsy2OxNjWvAz4Sn7MzEVx8pUWxT6YcmmmPHqhKsozGj6NWBufhmVfDb4onFf43sDstmWMn/yWvBU9NVfP4U83Vccyspp72/pI53s3csU2rGXYWqvTemuqNNZqnTjOsur4+kRCzLgmIiKRu0cqyTNLF+zdu4GuKablMzM7ukRE8+bmtLcUdHGPFeLxMw6LDU9EAAAAAAAAAAAAAAAAAAA0AA0A0AA0AAAA0BjQGQANAAY0BkAAAAAADQAGNAZ0ABy3PfOb/3lTHfyl5WbzlO7DeVe6qO+VuH20aTvK6L21kAAADQAADQDQDQDQGNAZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABy3PfOb/AN5Ux38peVm85Tuw3lXuqnvlbh9tGk7yuq9tAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVzGbH4bGXK8TXia4muqapiN3SNfRwVTiiZ3ZraaLTM7tzJ8gs5NNVVq9VVvRETvacNOrrdVpFXePDFOyXdrgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//2Q==";
 
 const P = {
-  primary:"#1A5C4A", light:"#267A62", lighter:"#EAF4F0", bg:"#EDF5F1",
-  accent:"#2a6aaa", accentBg:"#e8f2fc",
-  border:"#DDE8E4", text:"#18211E", textMuted:"#607870", white:"#FFFFFF",
-  green:"#267A62", greenLight:"#A8D4C6", gray50:"#F0F4F2",
-  red:"#B03030", redBg:"#FAEAEA",
-  purple:"#c6b2da", purpleBg:"#F5F0FA",
+  primary:"#1b4633", light:"#75b781", lighter:"#eaf4ec", bg:"#fefaf5",
+  accent:"#007271", accentBg:"#e3f0ef",
+  border:"#e7e1d4", text:"#1b4633", textMuted:"#5f7a6b", white:"#FFFFFF",
+  green:"#75b781", greenLight:"#aed9b6", gray50:"#f6f1e8",
+  red:"#e87967", redBg:"#fdefec",
+  purple:"#ffc969", purpleBg:"#fff4dd",
 };
 const fmt = (n) => new Intl.NumberFormat("es-UY").format(Math.round(n));
+const F_HEAD="'Bricolage Grotesque','DM Sans',sans-serif";
 const semLabel = (s) => String(s||"").replace(/^S1 (\d{4})/,"1er sem $1").replace(/^S2 (\d{4})/,"2do sem $1");
 
 function monthsDiff(startStr){
@@ -52,10 +53,10 @@ const MODULES=[
 const MONTH_ORDER = {Ene:1,Feb:2,Mar:3,Abr:4,May:5,Jun:6,Jul:7,Ago:8,Sep:9,Oct:10,Nov:11,Dic:12};
 const MONTH_LABEL = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",7:"Jul",8:"Ago",9:"Sep",10:"Oct",11:"Nov",12:"Dic"};
 
-const WSHOP_COLORS={Activación:P.primary,"Concientización":"#1A3A8B",Mindfulness:"#5040A0",Liderazgo:P.accent,"8M":"#8B1A3A"};
-const TYPE_COLORS={Campaña:{bg:"#FFF0E6",tx:"#7A3800"},Guía:{bg:P.lighter,tx:P.primary},Protocolo:{bg:"#EEF4FF",tx:"#1A3A8B"},Reporte:{bg:P.gray50,tx:P.textMuted}};
+const WSHOP_COLORS={Activación:P.primary,"Concientización":"#007271",Mindfulness:"#c98a2d",Liderazgo:P.accent,"8M":"#e87967"};
+const TYPE_COLORS={Campaña:{bg:"#fff3dc",tx:"#8a6320"},Guía:{bg:P.lighter,tx:P.primary},Protocolo:{bg:"#e3f0ef",tx:"#007271"},Reporte:{bg:P.gray50,tx:P.textMuted}};
 const URGENCY={alta:{bg:P.redBg,tx:P.red,label:"Urgente"},media:{bg:P.accentBg,tx:P.accent,label:"Media prioridad"},baja:{bg:P.lighter,tx:P.primary,label:"A considerar"}};
-const COUPON_COLORS=["#1A5C4A","#267A62","#4AA888","#2a6aaa","#D9A060"];
+const COUPON_COLORS=["#1b4633","#75b781","#aed9b6","#007271","#ffc969"];
 
 function Avatar({initials,size=36,bg=P.primary}){
   return <div style={{width:size,height:size,borderRadius:"50%",background:bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -71,7 +72,7 @@ function Stars({rating}){
 function Label({text,bg,tx}){ return <span style={{background:bg,color:tx,fontSize:10,fontWeight:600,letterSpacing:"0.04em",padding:"3px 10px",borderRadius:20,whiteSpace:"nowrap"}}>{text}</span>; }
 function KpiCard({label,value,sub,accent,warn}){
   return <div style={{background:accent?P.lighter:warn?P.accentBg:P.white,border:`1px solid ${accent?P.primary+"33":warn?P.accent+"33":P.border}`,borderRadius:16,padding:"18px 20px",display:"flex",flexDirection:"column",gap:5,minWidth:0,boxShadow:"0 1px 4px rgba(24,33,30,0.04)"}}>
-    <div style={{fontSize:26,fontWeight:800,color:accent?P.primary:warn?P.accent:P.text,lineHeight:1.05,letterSpacing:"-1px"}}>{value}</div>
+    <div style={{fontSize:26,fontWeight:800,color:accent?P.primary:warn?P.accent:P.text,lineHeight:1.05,letterSpacing:"-0.5px",fontFamily:F_HEAD}}>{value}</div>
     <div style={{fontSize:11.5,fontWeight:600,color:P.text,letterSpacing:"0.01em"}}>{label}</div>
     {sub&&<div style={{fontSize:10.5,color:P.textMuted,lineHeight:1.5}}>{sub}</div>}
   </div>;
@@ -87,7 +88,7 @@ function Section({title,children,note,warnNote,action}){
     </div>}
     {children}
     {note&&<div style={{marginTop:14,padding:"9px 13px",background:P.lighter,borderRadius:10,fontSize:10.5,color:P.primary,lineHeight:1.6,opacity:0.9}}>{note}</div>}
-    {warnNote&&<div style={{marginTop:14,padding:"9px 13px",background:P.accentBg,borderRadius:10,fontSize:10.5,color:"#1a4a7a",lineHeight:1.6,opacity:0.9}}>{warnNote}</div>}
+    {warnNote&&<div style={{marginTop:14,padding:"9px 13px",background:P.accentBg,borderRadius:10,fontSize:10.5,color:"#00605f",lineHeight:1.6,opacity:0.9}}>{warnNote}</div>}
   </div>;
 }
 const Tip=({active,payload,label})=>{
@@ -116,36 +117,36 @@ function FunnelBar({label,value,pct,i}){
 
 // ── ENCUESTA ÍNDICE TU TERAPIA (pública, anónima, sin login) ───────
 const ENCUESTA_DIMS=[
-  {label:"Bienestar y salud mental",color:"#1A5C4A",qs:[
+  {label:"Bienestar y salud mental",color:"#1b4633",qs:[
     "En las últimas semanas me sentí tranquilo/a y de buen ánimo la mayor parte del tiempo.",
     "Siento que puedo manejar el estrés que me genera mi trabajo.",
     "Logro desconectarme del trabajo al final del día y en mis días libres.",
     "En general, siento un buen equilibrio entre mi vida personal y mi trabajo.",
   ]},
-  {label:"Clima y comunicación",color:"#267A62",qs:[
+  {label:"Clima y comunicación",color:"#75b781",qs:[
     "En mi equipo se puede hablar abiertamente, incluso de temas difíciles.",
     "Cuando surge un conflicto en mi equipo, se resuelve de forma respetuosa.",
     "Siento que puedo pedir ayuda a mis compañeros/as cuando lo necesito.",
     "El ambiente de trabajo en mi equipo es agradable.",
   ]},
-  {label:"Liderazgo",color:"#5040A0",qs:[
+  {label:"Liderazgo",color:"#c98a2d",qs:[
     "Mi líder directo se preocupa genuinamente por mi bienestar.",
     "Me siento cómodo/a hablando con mi líder si algo me está afectando.",
     "Mi líder reconoce mi trabajo y mi esfuerzo.",
     "Mi líder promueve que cuidemos nuestra salud mental (pausas, desconexión, uso del beneficio).",
   ]},
-  {label:"Compromiso",color:"#2a6aaa",qs:[
+  {label:"Compromiso",color:"#007271",qs:[
     "Mi trabajo me motiva y le encuentro sentido.",
     "Me siento orgulloso/a de trabajar en esta empresa.",
     "Me imagino trabajando acá dentro de un año.",
     "Siento que la empresa se preocupa por mí como persona, no solo como trabajador/a.",
   ]},
-  {label:"Energía y presencia",color:"#8B4A8B",qs:[
+  {label:"Energía y presencia",color:"#e8a13c",qs:[
     "Tengo la energía necesaria para encarar mi jornada de trabajo.",
     "En el último mes, mi estado de ánimo no me llevó a faltar (ni a querer faltar) al trabajo.",
     "Me siento presente y conectado/a durante mi jornada, no solo físicamente.",
   ]},
-  {label:"Productividad sostenible",color:"#B03030",qs:[
+  {label:"Productividad sostenible",color:"#e87967",qs:[
     "Logro concentrarme en mis tareas sin que el cansancio o las preocupaciones me lo impidan.",
     "Mi carga de trabajo es manejable de forma sostenida en el tiempo.",
     "Termino la mayoría de los días con la sensación de haber avanzado.",
@@ -153,17 +154,17 @@ const ENCUESTA_DIMS=[
 ];
 // Bloque exclusivo para líderes/mandos medios (q23-q30) — el orden importa: mapea al RPC encuesta_promedios
 const ENCUESTA_LIDER_DIMS=[
-  {label:"Gestión y apoyo",color:"#D97706",qs:[
+  {label:"Gestión y apoyo",color:"#e8a13c",qs:[
     "Cuento con herramientas y apoyo de la empresa para acompañar el bienestar de mi equipo.",
     "Me siento preparado/a para abordar conversaciones difíciles (estrés, ánimo, conflictos) con mi equipo.",
   ]},
-  {label:"Tu equipo",color:"#B45309",qs:[
+  {label:"Tu equipo",color:"#c98a2d",qs:[
     "Mi equipo sostiene una buena productividad sin sobreexigirse.",
     "Las personas de mi equipo se muestran presentes y con energía; el ausentismo no es un problema.",
     "Confío en que las personas clave de mi equipo seguirán en la empresa dentro de un año.",
     "Mi equipo propone ideas nuevas y mejoras con frecuencia.",
   ]},
-  {label:"Vos como líder",color:"#92400E",qs:[
+  {label:"Vos como líder",color:"#8a6320",qs:[
     "Mi propia carga como líder es sostenible; tengo espacio para cuidar mi bienestar.",
     "La empresa me da espacio real (tiempo y respaldo) para priorizar el bienestar de mi equipo.",
   ]},
@@ -206,14 +207,14 @@ function EncuestaView({ companyId, role }) {
     setStep(total+1);
   }
 
-  const shell=(children)=><div style={{minHeight:"100vh",background:"#EDF5F1",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif",padding:"0 16px"}}>
+  const shell=(children)=><div style={{minHeight:"100vh",background:"#fefaf5",display:"flex",flexDirection:"column",alignItems:"center",fontFamily:"'DM Sans',system-ui,sans-serif",padding:"0 16px"}}>
     <div style={{width:"100%",maxWidth:520,paddingTop:20,paddingBottom:40}}>
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:step>=0&&step<total?14:28}}>
         <img src={LOGO_TT} alt="Tu Terapia" style={{height:34,borderRadius:7}}/>
         <div style={{fontSize:13,fontWeight:700,color:P.primary}}>Tu Terapia</div>
         <div style={{fontSize:11,color:P.textMuted}}>· Encuesta de bienestar{role==="lider"?" · Líderes":""}</div>
       </div>
-      {step>=0&&step<total&&<div style={{height:5,background:"#DDE8E4",borderRadius:3,marginBottom:24,overflow:"hidden"}}>
+      {step>=0&&step<total&&<div style={{height:5,background:"#e7e1d4",borderRadius:3,marginBottom:24,overflow:"hidden"}}>
         <div style={{height:"100%",width:`${Math.round(step/total*100)}%`,background:P.primary,borderRadius:3,transition:"width 0.25s"}}/>
       </div>}
       {children}
@@ -230,8 +231,8 @@ function EncuestaView({ companyId, role }) {
   if(gate==="closed") return centerCard("🕐","La encuesta no está abierta","En este momento no hay una encuesta activa para tu empresa. Consultá con tu equipo de RRHH.");
 
   if(step===-1) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"32px 28px",textAlign:"center"}}>
-    {role==="lider"&&<div style={{display:"inline-block",fontSize:10,fontWeight:700,background:"#FEF3E2",color:"#B45309",padding:"4px 12px",borderRadius:20,letterSpacing:"0.05em",textTransform:"uppercase",marginBottom:12}}>Versión para líderes y mandos medios</div>}
-    <div style={{fontSize:22,fontWeight:800,color:P.text,letterSpacing:"-0.4px",marginBottom:10}}>¿Cómo estás en el trabajo?</div>
+    {role==="lider"&&<div style={{display:"inline-block",fontSize:10,fontWeight:700,background:"#fff3dc",color:"#c98a2d",padding:"4px 12px",borderRadius:20,letterSpacing:"0.05em",textTransform:"uppercase",marginBottom:12}}>Versión para líderes y mandos medios</div>}
+    <div style={{fontSize:22,fontWeight:800,color:P.text,letterSpacing:"-0.3px",marginBottom:10,fontFamily:F_HEAD}}>¿Cómo estás en el trabajo?</div>
     <div style={{fontSize:14,color:P.textMuted,lineHeight:1.7,marginBottom:22}}>{role==="lider"?"Tu mirada como líder es doble: cómo estás vos, y cómo ves a tu equipo. Ambas importan para cuidar el bienestar de todos.":"Tu empresa quiere saber cómo está el bienestar del equipo para poder cuidarlo mejor, junto a Tu Terapia."}</div>
     <div style={{textAlign:"left",display:"flex",flexDirection:"column",gap:10,marginBottom:26}}>
       {[["🔒","100% anónima — no te pedimos nombre, mail ni ningún dato personal."],["⏱️",`Son ${total} preguntas, te lleva ${role==="lider"?"unos 12":"menos de 10"} minutos.`],["🎯","Respondé del 1 (para nada de acuerdo) al 10 (totalmente de acuerdo), pensando en las últimas semanas."]].map(([ic,t])=><div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
@@ -261,7 +262,7 @@ function EncuestaView({ companyId, role }) {
       <span style={{fontSize:10,fontWeight:700,color:q.color,background:q.color+"18",padding:"3px 10px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.05em"}}>{q.label}</span>
       <span style={{fontSize:11,color:P.textMuted}}>{step+1} de {total}</span>
     </div>
-    <div style={{fontSize:18,fontWeight:700,color:P.text,lineHeight:1.5,marginBottom:22,minHeight:80}}>{q.text}</div>
+    <div style={{fontSize:18,fontWeight:700,color:P.text,lineHeight:1.5,marginBottom:22,minHeight:80,fontFamily:F_HEAD}}>{q.text}</div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8,marginBottom:10}}>
       {Array.from({length:10},(_,i)=>i+1).map(v=><button key={v} onClick={()=>{setAnswers({...answers,[step]:v}); setTimeout(()=>setStep(s=>s===step?step+1:s),220);}}
         style={{padding:"15px 0",borderRadius:10,border:`1.5px solid ${answers[step]===v?P.primary:P.border}`,background:answers[step]===v?P.primary:"#fff",color:answers[step]===v?"#fff":P.text,fontSize:16,fontWeight:700,cursor:"pointer",transition:"all 0.12s"}}>{v}</button>)}
@@ -301,30 +302,30 @@ function LoginView({ onLogin, onAdminLogin }) {
   }
 
   return (
-    <div style={{minHeight:"100vh",background:"#EDF5F1",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif"}}>
-      <div style={{background:"#FFFFFF",borderRadius:16,border:"1px solid #DDE8E4",padding:"40px",width:360,boxShadow:"0 4px 24px rgba(0,0,0,0.06)"}}>
+    <div style={{minHeight:"100vh",background:"#fefaf5",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',system-ui,sans-serif"}}>
+      <div style={{background:"#FFFFFF",borderRadius:16,border:"1px solid #e7e1d4",padding:"40px",width:360,boxShadow:"0 4px 24px rgba(0,0,0,0.06)"}}>
         <div style={{textAlign:"center",marginBottom:32}}>
-          <div style={{width:48,height:48,borderRadius:12,background:"#1A5C4A",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
+          <div style={{width:48,height:48,borderRadius:12,background:"#1b4633",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
             <img src={LOGO_TT} alt="Tu Terapia" style={{width:34,height:34,objectFit:"contain",borderRadius:6}}/>
           </div>
-          <div style={{fontSize:20,fontWeight:700,color:"#18211E",marginBottom:4}}>Salud Mental y Bienestar Empresarial</div>
-          <div style={{fontSize:13,color:"#607870"}}>Tu Terapia — acceso empresarial</div>
+          <div style={{fontSize:20,fontWeight:700,color:"#1b4633",marginBottom:4,fontFamily:F_HEAD}}>Salud Mental y Bienestar Empresarial</div>
+          <div style={{fontSize:13,color:"#5f7a6b"}}>Tu Terapia — acceso empresarial</div>
         </div>
-        {error&&<div style={{padding:"10px 14px",background:"#FAEAEA",color:"#B03030",borderRadius:8,marginBottom:16,fontSize:12,fontWeight:500}}>{error}</div>}
+        {error&&<div style={{padding:"10px 14px",background:"#fdefec",color:"#e87967",borderRadius:8,marginBottom:16,fontSize:12,fontWeight:500}}>{error}</div>}
         <div style={{marginBottom:14}}>
-          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.06em"}}>Email</label>
+          <label style={{fontSize:11,fontWeight:600,color:"#5f7a6b",display:"block",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.06em"}}>Email</label>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@empresa.com"
             onKeyDown={e=>e.key==="Enter"&&handleLogin()}
-            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #e7e1d4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
         </div>
         <div style={{marginBottom:24}}>
-          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.06em"}}>Contraseña</label>
+          <label style={{fontSize:11,fontWeight:600,color:"#5f7a6b",display:"block",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.06em"}}>Contraseña</label>
           <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••"
             onKeyDown={e=>e.key==="Enter"&&handleLogin()}
-            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #e7e1d4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
         </div>
         <button onClick={handleLogin} disabled={loading}
-          style={{width:"100%",padding:"11px",background:"#1A5C4A",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:600,cursor:loading?"not-allowed":"pointer",opacity:loading?0.7:1}}>
+          style={{width:"100%",padding:"11px",background:"#1b4633",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:600,cursor:loading?"not-allowed":"pointer",opacity:loading?0.7:1}}>
           {loading?"Verificando...":"Ingresar"}
         </button>
       </div>
@@ -337,34 +338,34 @@ function TallerCard({ w, talleristas }) {
   const [expanded, setExpanded] = useState(false);
   const tallerista = talleristas.find(t=>t.name===w.speaker||t.initials===w.initials);
   return (
-    <div style={{background:"#FFFFFF",borderRadius:12,border:"1px solid #DDE8E4",overflow:"hidden"}}>
+    <div style={{background:"#FFFFFF",borderRadius:12,border:"1px solid #e7e1d4",overflow:"hidden"}}>
       <div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpanded(!expanded)}>
         {tallerista?.photo_url
           ? <img src={tallerista.photo_url} alt={w.speaker} style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
-          : <div style={{width:40,height:40,borderRadius:"50%",background:"#1A5C4A",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          : <div style={{width:40,height:40,borderRadius:"50%",background:"#1b4633",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               <span style={{color:"#fff",fontWeight:700,fontSize:12}}>{w.initials||"TT"}</span>
             </div>
         }
         <div style={{flex:1}}>
-          <div style={{fontSize:13,fontWeight:600,color:"#18211E",marginBottom:2}}>{w.title}</div>
-          <div style={{fontSize:11,color:"#607870"}}>{w.date} · {w.speaker}</div>
+          <div style={{fontSize:13,fontWeight:600,color:"#1b4633",marginBottom:2}}>{w.title}</div>
+          <div style={{fontSize:11,color:"#5f7a6b"}}>{w.date} · {w.speaker}</div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-          {w.rating&&<span style={{fontSize:13,fontWeight:700,color:"#2a6aaa"}}>★ {w.rating}</span>}
-          <span style={{fontSize:14,color:"#607870",transform:expanded?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+          {w.rating&&<span style={{fontSize:13,fontWeight:700,color:"#007271"}}>★ {w.rating}</span>}
+          <span style={{fontSize:14,color:"#5f7a6b",transform:expanded?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
         </div>
       </div>
-      {expanded&&<div style={{borderTop:"1px solid #DDE8E4",padding:"14px 16px",background:"#F0F4F2"}}>
+      {expanded&&<div style={{borderTop:"1px solid #e7e1d4",padding:"14px 16px",background:"#f6f1e8"}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12}}>
           {[
-            {label:"Satisfacción general",value:w.rating,color:"#1A5C4A"},
-            {label:"Calificación tallerista",value:w.rating_tallerista,color:"#2a6aaa"},
-            {label:"Relevancia del contenido",value:w.rating_relevancia,color:"#5040A0"},
+            {label:"Satisfacción general",value:w.rating,color:"#1b4633"},
+            {label:"Calificación tallerista",value:w.rating_tallerista,color:"#007271"},
+            {label:"Relevancia del contenido",value:w.rating_relevancia,color:"#c98a2d"},
           ].map(({label,value,color})=>(
             <div key={label} style={{background:"#FFFFFF",borderRadius:8,padding:"12px 14px",textAlign:"center"}}>
-              <div style={{fontSize:11,color:"#607870",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>{label}</div>
+              <div style={{fontSize:11,color:"#5f7a6b",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>{label}</div>
               <div style={{fontSize:22,fontWeight:700,color}}>{value||"—"}</div>
-              <div style={{fontSize:10,color:"#607870"}}>sobre 5</div>
+              <div style={{fontSize:10,color:"#5f7a6b"}}>sobre 5</div>
             </div>
           ))}
         </div>
@@ -521,23 +522,23 @@ export default function Dashboard(){
 
   // Password set screen (from invite or recovery link)
   if(showSetPassword) return (
-    <div style={{minHeight:"100vh",background:"#EDF5F1",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif"}}>
-      <div style={{background:"#FFFFFF",borderRadius:16,border:"1px solid #DDE8E4",padding:"40px",width:380,boxShadow:"0 4px 24px rgba(0,0,0,0.06)"}}>
+    <div style={{minHeight:"100vh",background:"#fefaf5",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',system-ui,sans-serif"}}>
+      <div style={{background:"#FFFFFF",borderRadius:16,border:"1px solid #e7e1d4",padding:"40px",width:380,boxShadow:"0 4px 24px rgba(0,0,0,0.06)"}}>
         <div style={{textAlign:"center",marginBottom:28}}>
           <img src={LOGO_TT} alt="Tu Terapia" style={{height:40,marginBottom:14}}/>
-          <div style={{fontSize:20,fontWeight:700,color:"#18211E"}}>Creá tu contraseña</div>
-          <div style={{fontSize:13,color:"#607870",marginTop:6}}>Elegí una contraseña para acceder al dashboard</div>
+          <div style={{fontSize:20,fontWeight:700,color:"#1b4633"}}>Creá tu contraseña</div>
+          <div style={{fontSize:13,color:"#5f7a6b",marginTop:6}}>Elegí una contraseña para acceder al dashboard</div>
         </div>
-        {passwordMsg&&<div style={{padding:"10px 14px",background:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#FAEAEA":"#E6F4F0",color:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#B03030":"#1A5C4A",borderRadius:8,marginBottom:14,fontSize:12}}>{passwordMsg}</div>}
+        {passwordMsg&&<div style={{padding:"10px 14px",background:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#fdefec":"#eaf4ec",color:passwordMsg.startsWith("Error")||passwordMsg.startsWith("Las")?"#e87967":"#1b4633",borderRadius:8,marginBottom:14,fontSize:12}}>{passwordMsg}</div>}
         <div style={{marginBottom:12}}>
-          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Nueva contraseña</label>
+          <label style={{fontSize:11,fontWeight:600,color:"#5f7a6b",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Nueva contraseña</label>
           <input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres"
-            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #e7e1d4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
         </div>
         <div style={{marginBottom:20}}>
-          <label style={{fontSize:11,fontWeight:600,color:"#607870",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Repetí la contraseña</label>
+          <label style={{fontSize:11,fontWeight:600,color:"#5f7a6b",display:"block",marginBottom:4,textTransform:"uppercase",letterSpacing:"0.06em"}}>Repetí la contraseña</label>
           <input type="password" value={newPassword2} onChange={e=>setNewPassword2(e.target.value)} placeholder="Repetí tu contraseña"
-            style={{width:"100%",padding:"10px 12px",border:"1px solid #DDE8E4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #e7e1d4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
         </div>
         <button disabled={settingPassword} onClick={async()=>{
           if(newPassword.length < 8){ setPasswordMsg("La contraseña debe tener al menos 8 caracteres."); return; }
@@ -547,7 +548,7 @@ export default function Dashboard(){
           if(error){ setPasswordMsg("Error: "+error.message); setSettingPassword(false); return; }
           setPasswordMsg("¡Contraseña creada! Redirigiendo...");
           setTimeout(()=>{ setShowSetPassword(false); window.location.hash=""; setAuthLoading(false); window.location.reload(); }, 1500);
-        }} style={{width:"100%",padding:11,background:"#1A5C4A",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:600,cursor:settingPassword?"not-allowed":"pointer",opacity:settingPassword?0.7:1}}>
+        }} style={{width:"100%",padding:11,background:"#1b4633",color:"#fff",border:"none",borderRadius:8,fontSize:14,fontWeight:600,cursor:settingPassword?"not-allowed":"pointer",opacity:settingPassword?0.7:1}}>
           {settingPassword?"Guardando...":"Crear contraseña"}
         </button>
       </div>
@@ -558,11 +559,11 @@ export default function Dashboard(){
   const encuestaMatch = window.location.hash.match(/^#encuesta\/([0-9a-fA-F-]{36})(\/lider)?/);
   if(encuestaMatch) return <EncuestaView companyId={encuestaMatch[1]} role={encuestaMatch[2]?"lider":"colaborador"}/>;
 
-  if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando...</div>;
+  if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#fefaf5",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#5f7a6b",fontSize:13}}>Cargando...</div>;
   if(!authUser&&!adminViewer) return <LoginView
     onLogin={(ud,pd)=>{ setAuthUser(ud); setUserPerms(pd); }}
     onAdminLogin={(ad,companies)=>{ setAdminViewer(ad); setAdminCompanies(companies); setAdminCompanyId(companies[0].id); }}/>;
-  if(dataLoading||!dbCompany) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#EDF5F1",fontFamily:"system-ui,sans-serif",color:"#607870",fontSize:13}}>Cargando datos...</div>;
+  if(dataLoading||!dbCompany) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#fefaf5",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#5f7a6b",fontSize:13}}>Cargando datos...</div>;
 
   // Datos 100% desde Supabase — sin fallbacks hardcodeados
   const supabaseMonthlyData = dbSessions.map(s=>({
@@ -778,7 +779,7 @@ export default function Dashboard(){
   const moduleVisible = (id) => (companyVisibility[id]||[]).length>0 && hasAccess(id);
   const visibleSubs = (id) => (MODULES.find(m=>m.id===id)?.subs||[]).filter(s=>(companyVisibility[id]||[]).includes(s));
 
-  return <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif",background:P.bg,minHeight:"100vh",color:P.text}}>
+  return <div style={{fontFamily:"'DM Sans',system-ui,sans-serif",background:P.bg,minHeight:"100vh",color:P.text}}>
 
     {/* Header */}
     <div style={{background:P.white,borderBottom:`2px solid ${P.primary}`,padding:"10px 28px",display:"flex",alignItems:"center",justifyContent:"space-between",minHeight:48,flexWrap:"wrap",gap:12,rowGap:8}}>
@@ -803,8 +804,8 @@ export default function Dashboard(){
                 {adminCompanies.map(co=><option key={co.id} value={co.id}>{co.name}</option>)}
               </select>
             </div>
-          : <div style={{background:P.lighter,borderRadius:20,padding:"5px 14px",border:`1px solid #C8E8DF`,display:"flex",alignItems:"center",gap:6}}>
-              <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
+          : <div style={{background:P.lighter,borderRadius:20,padding:"5px 14px",border:`1px solid #cfe8d5`,display:"flex",alignItems:"center",gap:6}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:"#75b781",flexShrink:0}}/>
               <span style={{fontSize:12,fontWeight:500,color:P.primary}}>{c.name}&nbsp;·&nbsp;Plan activo</span>
             </div>}
         <button onClick={async()=>{ await supabase.auth.signOut(); setAuthUser(null); setUserPerms([]); setAdminViewer(null); setAdminCompanies([]); setAdminCompanyId(null); }}
@@ -831,7 +832,7 @@ export default function Dashboard(){
         <div style={{fontSize:11,fontWeight:700,color:P.textMuted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:16}}>
           {c.name}{months>0?` · ${months} meses juntos`:""}
         </div>
-        <div style={{fontSize:36,fontWeight:800,color:P.text,lineHeight:1.15,letterSpacing:"-1.5px",marginBottom:16}}>
+        <div style={{fontSize:36,fontWeight:800,color:P.text,lineHeight:1.15,letterSpacing:"-0.5px",marginBottom:16,fontFamily:F_HEAD}}>
           Tu equipo se está sintiendo mejor
         </div>
         <div style={{fontSize:15,color:P.primary+"CC",lineHeight:1.7,maxWidth:480,margin:"0 auto"}}>
@@ -884,7 +885,7 @@ export default function Dashboard(){
                 return i===lastSix.length-1?<circle key={i} cx={x} cy={y} r="3" fill={P.primary}/>:null;
               })}
             </svg>
-            <div style={{fontSize:32,fontWeight:800,color:P.primary,letterSpacing:"-1px",lineHeight:1}}>{fmt(totSes)}</div>
+            <div style={{fontSize:32,fontWeight:800,color:P.primary,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{fmt(totSes)}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>{sesWord}</div>
             <div style={{fontSize:10,color:P.textMuted}}>desde el inicio</div>
           </div>}
@@ -932,9 +933,9 @@ export default function Dashboard(){
       {/* Pillar cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,marginBottom:20}}>
         {[
-          {id:"individual", label:"Colaboradores",           color:"#4a9356", accent:"#f0f8f1"},
-          {id:"colectivo",  label:"Cultura de Bienestar",    color:"#9070b8", accent:"#F5F0FA"},
-          {id:"estrategico",label:"Estrategia de Bienestar", color:"#2a6aaa", accent:"#e8f2fc"},
+          {id:"individual", label:"Colaboradores",           color:"#75b781", accent:"#ebf6ee"},
+          {id:"colectivo",  label:"Cultura de Bienestar",    color:"#9070b8", accent:"#fff4dd"},
+          {id:"estrategico",label:"Estrategia de Bienestar", color:"#007271", accent:"#e3f0ef"},
           {id:"gestion",    label:"Gestión",                 color:P.textMuted, accent:P.gray50, restricted:true},
         ].filter(p=>moduleVisible(p.id)).map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
           background:P.white,
@@ -986,19 +987,19 @@ export default function Dashboard(){
           <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center",marginTop:4}}>
             <a href={`mailto:${c.accountManager.email}`} style={{display:"flex",alignItems:"center",gap:6,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:`1px solid ${P.border}`}}>✉ Mail</a>
             <a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>
-            {c.accountManager.calendar&&<a href={c.accountManager.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#EEF4FF",color:"#1A3A8B",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C5D5F5"}}>📅 Agendar reunión</a>}
+            {c.accountManager.calendar&&<a href={c.accountManager.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#e3f0ef",color:"#007271",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C5D5F5"}}>📅 Agendar reunión</a>}
           </div>
         </div>
       </div>
     </>}
 
     {/* ── INDIVIDUAL ── */}
-    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#e8f5ea,#f2faf3)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
-      <div style={{fontSize:10,fontWeight:700,color:"#4a9356",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,opacity:0.7}}>Colaboradores</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#1e4d28",letterSpacing:"-0.5px",marginBottom:4}}>
+    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#ebf6ee,#f7fbf6)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
+      <div style={{fontSize:10,fontWeight:700,color:"#75b781",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,opacity:0.7}}>Colaboradores</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#1b4633",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud mental este mes":`${totNuev} personas eligieron cuidar su salud mental`)}
       </div>
-      <div style={{fontSize:13,color:"#4a7a52",opacity:0.85}}>
+      <div style={{fontSize:13,color:"#4c7a5e",opacity:0.85}}>
         {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totSes)} ${sesWord}${planKind==="cuponera_fija"?` · ${compRate}% de utilización del plan`:""}`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:"")}
       </div>
     </div>}
@@ -1030,7 +1031,7 @@ export default function Dashboard(){
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
             <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil(Math.max(dataMax, planRefLine||0)*1.15)||"auto"]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            {planRefLine&&<ReferenceLine y={planRefLine} stroke="#D97706" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#B45309"}}/>}
+            {planRefLine&&<ReferenceLine y={planRefLine} stroke="#e8a13c" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#c98a2d"}}/>}
             <Bar dataKey={usesRealizadas?"realizadas":"canjeadas"} name={usesRealizadas?"realizadas":"Sesiones"} radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
@@ -1095,12 +1096,12 @@ export default function Dashboard(){
     })()}
 
     {/* ── COLECTIVO ── */}
-    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#f0eaf8,#f8f3fc)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(74,48,112,0.5)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#3d2060",letterSpacing:"-0.5px",marginBottom:4}}>
+    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#fff3dc,#fffaf0)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
+      <div style={{fontSize:10,fontWeight:700,color:"rgba(138,99,32,0.55)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#7a5416",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {getHeaderText("colectivo",sub,"title")||(sub==="Contenido"?"Recursos para llevar el bienestar a cada rincón del equipo":`${c.workshops.length} talleres de bienestar realizados con tu equipo`)}
       </div>
-      <div style={{fontSize:13,color:"rgba(74,48,112,0.7)"}}>
+      <div style={{fontSize:13,color:"rgba(138,99,32,0.75)"}}>
         {getHeaderText("colectivo",sub,"subtitle")||(sub==="Talleres"?`${c.workshops.filter(w=>w.rating>=4.5).length} de ${c.workshops.length} talleres con puntuación destacada`:`${c.content.filter(x=>x.downloaded).length} recursos descargados · ${c.content.filter(x=>x.sent).length} enviados al equipo`)}
       </div>
     </div>}
@@ -1159,7 +1160,7 @@ export default function Dashboard(){
                 </div>
                 <div style={{marginTop:12,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                   <span style={{fontSize:11,color:P.textMuted}}>Tu evaluación:</span>
-                  <div style={{display:"flex",gap:3}}>{[1,2,3,4,5].map(star=><button key={star} onClick={()=>setRatings(r=>({...r,[i]:star}))} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:ratings[i]>=star?P.accent:"#DDE8E4",padding:"0 1px",lineHeight:1}}>★</button>)}</div>
+                  <div style={{display:"flex",gap:3}}>{[1,2,3,4,5].map(star=><button key={star} onClick={()=>setRatings(r=>({...r,[i]:star}))} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:ratings[i]>=star?P.accent:"#e7e1d4",padding:"0 1px",lineHeight:1}}>★</button>)}</div>
                   <span style={{fontSize:11,color:ratings[i]?P.textMuted:"#C0C8C4",fontStyle:ratings[i]?"normal":"italic"}}>{ratings[i]?ratingLabel[ratings[i]]:"Sin evaluar aún"}</span>
                 </div>
               </div>;
@@ -1171,12 +1172,12 @@ export default function Dashboard(){
 
 
     {/* ── ESTRATÉGICO ── */}
-    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e8f2fc,#f0f7ff)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
-      <div style={{fontSize:10,fontWeight:700,color:"#2a6aaa",opacity:0.6,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#1a4a7a",letterSpacing:"-0.5px",marginBottom:4}}>
+    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e3f0ef,#f0f8f7)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
+      <div style={{fontSize:10,fontWeight:700,color:"#007271",opacity:0.6,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
+      <div style={{fontSize:22,fontWeight:800,color:"#00605f",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"El pulso de tu organización, medido":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
       </div>
-      <div style={{fontSize:13,color:"#2a6aaa"}}>
+      <div style={{fontSize:13,color:"#007271"}}>
         {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · ${c.recommendations.length} recomendaciones activas`:c.consultoriaActiva?"Salud mental que se traduce en resultados para tu empresa":"Activá la consultoría para ver el análisis de impacto")}
       </div>
     </div>}
@@ -1217,7 +1218,7 @@ export default function Dashboard(){
           ? <div style={{fontSize:12,color:P.textMuted,padding:"20px 0",textAlign:"center"}}>Sin datos cargados aún. Tu referente los actualizará periódicamente.</div>
           : <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {c.consultationReasons.map((r,i)=>{
-                const colors=["#1A5C4A","#267A62","#5040A0","#2a6aaa","#8B4A8B","#B03030","#c49020","#607870"];
+                const colors=["#1b4633","#75b781","#c98a2d","#007271","#e8a13c","#e87967","#c49020","#5f7a6b"];
                 const color=colors[i%colors.length];
                 const pct=r.percentage||0;
                 return <div key={r.reason} style={{display:"flex",alignItems:"center",gap:12}}>
@@ -1320,28 +1321,28 @@ export default function Dashboard(){
             <div style={{position:"absolute",inset:12,borderRadius:"50%",background:"rgba(26,92,74,0.12)",animation:"pulse 2s ease-in-out infinite",animationDelay:"0.3s"}}/>
             <div style={{position:"absolute",inset:24,borderRadius:"50%",background:"rgba(26,92,74,0.18)",animation:"pulse 2s ease-in-out infinite",animationDelay:"0.6s"}}/>
             <div style={{position:"absolute",inset:36,borderRadius:"50%",background:"rgba(26,92,74,0.25)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <div style={{width:14,height:14,borderRadius:"50%",background:"#1A5C4A"}}/>
+              <div style={{width:14,height:14,borderRadius:"50%",background:"#1b4633"}}/>
             </div>
           </div>
           <style>{`@keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.08);opacity:0.7} }`}</style>
           {!solicitado ? <>
-            <div style={{fontSize:22,fontWeight:700,color:"#18211E",marginBottom:8,letterSpacing:"-0.5px"}}>Consultoría Estratégica Tu Terapia</div>
-            <div style={{fontSize:14,color:"#607870",maxWidth:440,lineHeight:1.7,marginBottom:32}}>
+            <div style={{fontSize:22,fontWeight:700,color:"#1b4633",marginBottom:8,letterSpacing:"-0.5px"}}>Consultoría Estratégica Tu Terapia</div>
+            <div style={{fontSize:14,color:"#5f7a6b",maxWidth:440,lineHeight:1.7,marginBottom:32}}>
               Accedé al Índice Tu Terapia, métricas de impacto, análisis de inversión y seguimiento del bienestar organizacional de tu equipo.
             </div>
             {adminViewer
-              ? <div style={{fontSize:12,color:"#607870",fontStyle:"italic"}}>Vista admin — el cliente ve acá el botón para solicitar la activación.</div>
+              ? <div style={{fontSize:12,color:"#5f7a6b",fontStyle:"italic"}}>Vista admin — el cliente ve acá el botón para solicitar la activación.</div>
               : <button onClick={solicitarConsultoria} disabled={solicitando}
-                  style={{background:"#1A5C4A",color:"#fff",border:"none",borderRadius:10,padding:"13px 28px",fontSize:14,fontWeight:600,cursor:solicitando?"not-allowed":"pointer",opacity:solicitando?0.7:1,letterSpacing:"-0.1px"}}>
+                  style={{background:"#1b4633",color:"#fff",border:"none",borderRadius:10,padding:"13px 28px",fontSize:14,fontWeight:600,cursor:solicitando?"not-allowed":"pointer",opacity:solicitando?0.7:1,letterSpacing:"-0.1px"}}>
                   {solicitando?"Enviando solicitud...":"Activar Consultoría Tu Terapia"}
                 </button>}
           </> : <>
-            <div style={{fontSize:18,fontWeight:700,color:"#1A5C4A",marginBottom:8}}>Solicitud enviada</div>
-            <div style={{fontSize:13,color:"#607870",maxWidth:380,lineHeight:1.7,marginBottom:20}}>
+            <div style={{fontSize:18,fontWeight:700,color:"#1b4633",marginBottom:8}}>Solicitud enviada</div>
+            <div style={{fontSize:13,color:"#5f7a6b",maxWidth:380,lineHeight:1.7,marginBottom:20}}>
               Tu referente de Tu Terapia se pondrá en contacto pronto para activar esta sección y comenzar a trabajar juntos.
             </div>
             <button onClick={()=>setConsultoriaActiva(true)}
-              style={{background:"none",border:`1px solid #1A5C4A`,borderRadius:8,padding:"9px 20px",fontSize:13,fontWeight:600,color:"#1A5C4A",cursor:"pointer"}}>
+              style={{background:"none",border:`1px solid #1b4633`,borderRadius:8,padding:"9px 20px",fontSize:13,fontWeight:600,color:"#1b4633",cursor:"pointer"}}>
               Ver panel →
             </button>
           </>}
@@ -1427,7 +1428,7 @@ export default function Dashboard(){
             {bizCards.map(b=><div key={b.k} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"16px 18px"}}>
               <div style={{display:"flex",alignItems:"baseline",gap:8}}>
                 <div style={{fontSize:24,fontWeight:800,color:b.val!=null?P.primary:P.textMuted,letterSpacing:"-0.5px"}}>{b.val!=null?Number(b.val).toFixed(1):"—"}<span style={{fontSize:12,fontWeight:400,color:P.textMuted}}> /10</span></div>
-                {b.delta!=null&&b.delta!==0&&<span style={{fontSize:13,fontWeight:700,color:b.delta>0?"#22C55E":P.red}}>{b.delta>0?"▲ +":"▼ "}{b.delta}</span>}
+                {b.delta!=null&&b.delta!==0&&<span style={{fontSize:13,fontWeight:700,color:b.delta>0?"#75b781":P.red}}>{b.delta>0?"▲ +":"▼ "}{b.delta}</span>}
               </div>
               <div style={{fontSize:12,fontWeight:700,color:P.text,margin:"4px 0 6px"}}>{b.label}</div>
               <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>{b.why}</div>
@@ -1450,12 +1451,12 @@ export default function Dashboard(){
           <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>6 dimensiones medidas por encuesta. Escala 1–10.</div>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             {[
-              {key:"saludMental",label:"Bienestar y salud mental",desc:"Bienestar emocional, estrés y equilibrio vida-trabajo",color:"#1A5C4A"},
-              {key:"clima",label:"Clima y comunicación",desc:"Ambiente de equipo y resolución de conflictos",color:"#267A62"},
-              {key:"liderazgo",label:"Liderazgo efectivo",desc:"Liderazgo empático y promoción del bienestar",color:"#5040A0"},
-              {key:"engagement",label:"Engagement y compromiso",desc:"Motivación, propósito e intención de permanencia",color:"#2a6aaa"},
-              {key:"asistencia",label:"Ausentismo percibido",desc:"Energía, presencia real y afectación a la asistencia",color:"#8B4A8B"},
-              {key:"productividad",label:"Productividad sostenible",desc:"Concentración, carga manejable y desconexión efectiva",color:"#B03030"},
+              {key:"saludMental",label:"Bienestar y salud mental",desc:"Bienestar emocional, estrés y equilibrio vida-trabajo",color:"#1b4633"},
+              {key:"clima",label:"Clima y comunicación",desc:"Ambiente de equipo y resolución de conflictos",color:"#75b781"},
+              {key:"liderazgo",label:"Liderazgo efectivo",desc:"Liderazgo empático y promoción del bienestar",color:"#c98a2d"},
+              {key:"engagement",label:"Engagement y compromiso",desc:"Motivación, propósito e intención de permanencia",color:"#007271"},
+              {key:"asistencia",label:"Ausentismo percibido",desc:"Energía, presencia real y afectación a la asistencia",color:"#e8a13c"},
+              {key:"productividad",label:"Productividad sostenible",desc:"Concentración, carga manejable y desconexión efectiva",color:"#e87967"},
             ].map((dim,i)=>{
               const scores=c.roiByQ.map(q=>q[dim.key]).filter(v=>v!==null);
               const latest=scores.length>0?scores[scores.length-1]:null;
@@ -1472,7 +1473,7 @@ export default function Dashboard(){
                 <div style={{flex:1,minWidth:140}}>
                   <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:1}}>{dim.label}</div>
                   <div style={{fontSize:11,color:P.textMuted}}>{dim.desc}</div>
-                  {gap!=null&&<div style={{fontSize:10,marginTop:4,color:Math.abs(gap)<0.5?P.primary:Math.abs(gap)<1.5?"#B45309":P.red,fontWeight:600}}>
+                  {gap!=null&&<div style={{fontSize:10,marginTop:4,color:Math.abs(gap)<0.5?P.primary:Math.abs(gap)<1.5?"#c98a2d":P.red,fontWeight:600}}>
                     Equipo {eqV} · Líderes {ldV} · {Math.abs(gap)<0.5?"miradas alineadas":Math.abs(gap)<1.5?`brecha leve (${gap>0?"+":""}${gap})`:`brecha importante (${gap>0?"+":""}${gap})`}
                   </div>}
                 </div>
@@ -1483,7 +1484,7 @@ export default function Dashboard(){
                       <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>último sem</div>
                     </div>
                     {trend!=null&&<div style={{textAlign:"center"}}>
-                      <div style={{fontSize:14,fontWeight:700,color:trend>0?"#22C55E":trend<0?P.red:P.textMuted}}>{trend>0?"+":""}{trend}</div>
+                      <div style={{fontSize:14,fontWeight:700,color:trend>0?"#75b781":trend<0?P.red:P.textMuted}}>{trend>0?"+":""}{trend}</div>
                       <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>vs anterior</div>
                     </div>}
                   </>:<span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente</span>}
@@ -1560,9 +1561,9 @@ export default function Dashboard(){
     })()}
 
     {/* ── GESTIÓN ── */}
-    {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#607870,#8B9E98)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
+    {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#5f7a6b,#8ba394)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Gestión</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.5px",marginBottom:4}}>
+      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {sub==="Facturación"?"Tu plan activo, todo en orden":sub==="Plan activo"?"El acuerdo que hace posible el bienestar de tu equipo":"Las personas detrás del beneficio, siempre disponibles"}
       </div>
       <div style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>
@@ -1643,7 +1644,7 @@ export default function Dashboard(){
     </>}
 
     <div style={{textAlign:"center",marginTop:32,paddingBottom:32,fontSize:10,color:P.textMuted,letterSpacing:"0.02em"}}>
-      {lastM?`Datos actualizados a ${lastM.label} · `:""}Tu Terapia — Salud Mental para Empresas
+      {lastM?`Datos actualizados a ${lastM.label} · `:""}Tu Terapia · Una sesión a la vez.
     </div>
     </div>
   </div>;
