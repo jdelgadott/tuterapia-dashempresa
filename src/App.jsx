@@ -13,6 +13,24 @@ const P = {
   purple:"#ffc969", purpleBg:"#fff4dd",
 };
 const fmt = (n) => new Intl.NumberFormat("es-UY").format(Math.round(n));
+// ── Recursos gráficos de marca: subrayado a mano y rama botánica ──
+function Underline({children,color="#75b781"}){
+  return <span style={{position:"relative",display:"inline-block",whiteSpace:"nowrap"}}>
+    {children}
+    <svg viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true" style={{position:"absolute",left:"-2%",bottom:-7,width:"104%",height:11,overflow:"visible"}}>
+      <path d="M3,8 C30,3 60,9.5 87,5 C97,3.4 108,4.6 117,6.4" fill="none" stroke={color} strokeWidth="4" strokeLinecap="round"/>
+    </svg>
+  </span>;
+}
+function Botanica({size=110,color="#75b781",style}){
+  return <svg width={size} height={size} viewBox="0 0 100 100" fill="none" aria-hidden="true" style={style}>
+    <path d="M50 96 C48 70 46 44 56 10" stroke={color} strokeWidth="2.4" strokeLinecap="round"/>
+    <path d="M49 74 C40 70 33 62 31 52" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    <path d="M51 56 C60 52 66 45 68 36" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    {[[46,82,-38],[57,74,36],[44,64,-44],[58,55,42],[45,45,-50],[59,37,46],[48,26,-54],[58,17,50],[31,52,-70],[68,36,60]].map(([x,y,r],i)=>
+      <ellipse key={i} cx={x} cy={y} rx="8.5" ry="4.2" fill={color} opacity={i%2?0.5:0.75} transform={`rotate(${r} ${x} ${y})`}/>)}
+  </svg>;
+}
 const F_HEAD="'Bricolage Grotesque','DM Sans',sans-serif";
 const semLabel = (s) => String(s||"").replace(/^S1 (\d{4})/,"1er sem $1").replace(/^S2 (\d{4})/,"2do sem $1");
 
@@ -232,7 +250,7 @@ function EncuestaView({ companyId, role }) {
 
   if(step===-1) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"32px 28px",textAlign:"center"}}>
     {role==="lider"&&<div style={{display:"inline-block",fontSize:10,fontWeight:700,background:"#fff3dc",color:"#c98a2d",padding:"4px 12px",borderRadius:20,letterSpacing:"0.05em",textTransform:"uppercase",marginBottom:12}}>Versión para líderes y mandos medios</div>}
-    <div style={{fontSize:22,fontWeight:800,color:P.text,letterSpacing:"-0.3px",marginBottom:10,fontFamily:F_HEAD}}>¿Cómo estás en el trabajo?</div>
+    <div style={{fontSize:22,fontWeight:800,color:P.text,letterSpacing:"-0.3px",marginBottom:10,fontFamily:F_HEAD}}>¿Cómo estás en el <Underline color="#ffc969">trabajo</Underline>?</div>
     <div style={{fontSize:14,color:P.textMuted,lineHeight:1.7,marginBottom:22}}>{role==="lider"?"Tu mirada como líder es doble: cómo estás vos, y cómo ves a tu equipo. Ambas importan para cuidar el bienestar de todos.":"Tu empresa quiere saber cómo está el bienestar del equipo para poder cuidarlo mejor, junto a Tu Terapia."}</div>
     <div style={{textAlign:"left",display:"flex",flexDirection:"column",gap:10,marginBottom:26}}>
       {[["🔒","100% anónima — no te pedimos nombre, mail ni ningún dato personal."],["⏱️",`Son ${total} preguntas, te lleva ${role==="lider"?"unos 12":"menos de 10"} minutos.`],["🎯","Respondé del 1 (para nada de acuerdo) al 10 (totalmente de acuerdo), pensando en las últimas semanas."]].map(([ic,t])=><div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
@@ -308,7 +326,7 @@ function LoginView({ onLogin, onAdminLogin }) {
           <div style={{width:48,height:48,borderRadius:12,background:"#1b4633",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
             <img src={LOGO_TT} alt="Tu Terapia" style={{width:34,height:34,objectFit:"contain",borderRadius:6}}/>
           </div>
-          <div style={{fontSize:20,fontWeight:700,color:"#1b4633",marginBottom:4,fontFamily:F_HEAD}}>Salud Mental y Bienestar Empresarial</div>
+          <div style={{fontSize:20,fontWeight:700,color:"#1b4633",marginBottom:4,fontFamily:F_HEAD}}>Salud Mental y <Underline>Bienestar</Underline> Empresarial</div>
           <div style={{fontSize:13,color:"#5f7a6b"}}>Tu Terapia — acceso empresarial</div>
         </div>
         {error&&<div style={{padding:"10px 14px",background:"#fdefec",color:"#e87967",borderRadius:8,marginBottom:16,fontSize:12,fontWeight:500}}>{error}</div>}
@@ -823,17 +841,19 @@ export default function Dashboard(){
       {activeMod?.subs&&visibleSubs(activeMod.id).map(s=><button key={s} onClick={()=>setSub(s)} style={{fontSize:12,fontWeight:600,color:sub===s?"#fff":P.textMuted,background:sub===s?P.primary:"transparent",border:`1px solid ${sub===s?P.primary:"transparent"}`,borderRadius:20,padding:"7px 16px",margin:"5px 0",cursor:"pointer",whiteSpace:"nowrap",letterSpacing:"0.01em",transition:"all 0.15s"}}>{s}</button>)}
     </div>}
 
-    <div style={{padding:"28px",maxWidth:960,margin:"0 auto"}}>
+    <div style={{padding:"28px 32px",maxWidth:1200,margin:"0 auto"}}>
 
     {/* ── HOME ── */}
     {mod==="home"&&<>
       {/* Saludo + frase central */}
-      <div style={{textAlign:"center",padding:"48px 24px 36px",maxWidth:640,margin:"0 auto"}}>
+      <div style={{position:"relative",textAlign:"center",padding:"48px 24px 36px",maxWidth:640,margin:"0 auto"}}>
+        <Botanica size={130} color="#aed9b6" style={{position:"absolute",left:-110,top:20,opacity:0.8,transform:"rotate(-14deg)"}}/>
+        <Botanica size={130} color="#aed9b6" style={{position:"absolute",right:-110,top:26,opacity:0.8,transform:"scaleX(-1) rotate(-14deg)"}}/>
         <div style={{fontSize:11,fontWeight:700,color:P.textMuted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:16}}>
           {c.name}{months>0?` · ${months} meses juntos`:""}
         </div>
         <div style={{fontSize:36,fontWeight:800,color:P.text,lineHeight:1.15,letterSpacing:"-0.5px",marginBottom:16,fontFamily:F_HEAD}}>
-          Tu equipo se está sintiendo mejor
+          Tu equipo se está sintiendo <Underline color="#ffc969">mejor</Underline>
         </div>
         <div style={{fontSize:15,color:P.primary+"CC",lineHeight:1.7,maxWidth:480,margin:"0 auto"}}>
           {sub==="Sesiones"?"Cada sesión es un paso en la salud mental de tu equipo.":"Más personas eligieron cuidar su salud mental este mes."}
@@ -934,7 +954,7 @@ export default function Dashboard(){
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,marginBottom:20}}>
         {[
           {id:"individual", label:"Colaboradores",           color:"#75b781", accent:"#ebf6ee"},
-          {id:"colectivo",  label:"Cultura de Bienestar",    color:"#9070b8", accent:"#fff4dd"},
+          {id:"colectivo",  label:"Cultura de Bienestar",    color:"#c98a2d", accent:"#fff4dd"},
           {id:"estrategico",label:"Estrategia de Bienestar", color:"#007271", accent:"#e3f0ef"},
           {id:"gestion",    label:"Gestión",                 color:P.textMuted, accent:P.gray50, restricted:true},
         ].filter(p=>moduleVisible(p.id)).map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
