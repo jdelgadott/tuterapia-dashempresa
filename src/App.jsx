@@ -250,7 +250,7 @@ function EncuestaView({ companyId, role }) {
 
   if(step===-1) return shell(<div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"32px 28px",textAlign:"center"}}>
     {role==="lider"&&<div style={{display:"inline-block",fontSize:10,fontWeight:700,background:"#fff3dc",color:"#c98a2d",padding:"4px 12px",borderRadius:20,letterSpacing:"0.05em",textTransform:"uppercase",marginBottom:12}}>Versión para líderes y mandos medios</div>}
-    <div style={{fontSize:22,fontWeight:800,color:P.text,letterSpacing:"-0.3px",marginBottom:10,fontFamily:F_HEAD}}>¿Cómo estás en el <Underline color="#ffc969">trabajo</Underline>?</div>
+    <div style={{fontSize:25,fontWeight:800,color:P.text,letterSpacing:"-0.3px",marginBottom:10,fontFamily:F_HEAD}}>¿Cómo estás en el <Underline color="#ffc969">trabajo</Underline>?</div>
     <div style={{fontSize:14,color:P.textMuted,lineHeight:1.7,marginBottom:22}}>{role==="lider"?"Tu mirada como líder es doble: cómo estás vos, y cómo ves a tu equipo. Ambas importan para cuidar el bienestar de todos.":"Tu empresa quiere saber cómo está el bienestar del equipo para poder cuidarlo mejor, junto a Tu Terapia."}</div>
     <div style={{textAlign:"left",display:"flex",flexDirection:"column",gap:10,marginBottom:26}}>
       {[["🔒","100% anónima — no te pedimos nombre, mail ni ningún dato personal."],["⏱️",`Son ${total} preguntas, te lleva ${role==="lider"?"unos 12":"menos de 10"} minutos.`],["🎯","Respondé del 1 (para nada de acuerdo) al 10 (totalmente de acuerdo), pensando en las últimas semanas."]].map(([ic,t])=><div key={t} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
@@ -800,7 +800,7 @@ export default function Dashboard(){
   return <div style={{fontFamily:"'DM Sans',system-ui,sans-serif",background:P.bg,minHeight:"100vh",color:P.text}}>
 
     {/* Header */}
-    <div style={{background:P.white,borderBottom:`2px solid ${P.primary}`,padding:"10px 28px",display:"flex",alignItems:"center",justifyContent:"space-between",minHeight:48,flexWrap:"wrap",gap:12,rowGap:8}}>
+    <div style={{background:P.white,borderBottom:`2px solid ${P.primary}`,padding:"10px 28px",display:"flex",alignItems:"center",justifyContent:"space-between",minHeight:48,flexWrap:"wrap",gap:12,rowGap:8,position:window.innerWidth>700?"sticky":"static",top:0,zIndex:100,boxShadow:"0 2px 10px rgba(27,70,51,0.06)"}}>
       <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:14,background:"none",border:"none",cursor:"pointer",padding:0}}>
         <img src={LOGO_TT} alt="Tu Terapia" style={{height:44,objectFit:"contain",flexShrink:0}}/>
         <div style={{textAlign:"left"}}>
@@ -852,7 +852,7 @@ export default function Dashboard(){
         <div style={{fontSize:11,fontWeight:700,color:P.textMuted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:16}}>
           {c.name}{months>0?` · ${months} meses juntos`:""}
         </div>
-        <div style={{fontSize:36,fontWeight:800,color:P.text,lineHeight:1.15,letterSpacing:"-0.5px",marginBottom:16,fontFamily:F_HEAD}}>
+        <div style={{fontSize:42,fontWeight:800,color:P.text,lineHeight:1.15,letterSpacing:"-0.5px",marginBottom:16,fontFamily:F_HEAD}}>
           Tu equipo se está sintiendo <Underline color="#ffc969">mejor</Underline>
         </div>
         <div style={{fontSize:15,color:P.primary+"CC",lineHeight:1.7,maxWidth:480,margin:"0 auto"}}>
@@ -865,7 +865,7 @@ export default function Dashboard(){
         // Mini sparkline data — sessions trend last 6 months
         const lastSix=c.monthlyData.slice(-6);
         const maxSes=Math.max(...lastSix.map(m=>sesOf(m)),1);
-        const sparkW=80, sparkH=32;
+        const sparkW=110, sparkH=42;
         const pts=lastSix.map((m,i)=>{
           const x=Math.round(i*(sparkW/(lastSix.length-1)));
           const y=Math.round(sparkH-(sesOf(m)/maxSes)*sparkH);
@@ -881,7 +881,7 @@ export default function Dashboard(){
         }).join(' ');
 
         // Progress ring helper
-        const Ring=({pct,color,size=56,stroke=5})=>{
+        const Ring=({pct,color,size=74,stroke=6})=>{
           const r=((size-stroke*2)/2);
           const circ=2*Math.PI*r;
           const dash=circ*(pct/100);
@@ -892,9 +892,9 @@ export default function Dashboard(){
           </svg>;
         };
 
-        return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:1,background:P.border,borderRadius:16,overflow:"hidden",marginBottom:20,border:`1px solid ${P.border}`}}>
+        return <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:1,background:P.border,borderRadius:18,overflow:"hidden",marginBottom:22,border:`1px solid ${P.border}`,boxShadow:"0 1px 5px rgba(24,33,30,0.05)"}}>
           {/* Sesiones — sparkline */}
-          {moduleVisible("individual")&&<div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
+          {moduleVisible("individual")&&<div style={{background:P.white,padding:"28px 24px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:9,minHeight:205}}>
             <svg width={sparkW} height={sparkH+4} style={{overflow:"visible"}}>
               <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.primary} stopOpacity="0.15"/><stop offset="100%" stopColor={P.primary} stopOpacity="0"/></linearGradient></defs>
               <polygon points={`0,${sparkH} ${pts} ${sparkW},${sparkH}`} fill="url(#g1)"/>
@@ -905,13 +905,13 @@ export default function Dashboard(){
                 return i===lastSix.length-1?<circle key={i} cx={x} cy={y} r="3" fill={P.primary}/>:null;
               })}
             </svg>
-            <div style={{fontSize:32,fontWeight:800,color:P.primary,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{fmt(totSes)}</div>
+            <div style={{fontSize:38,fontWeight:800,color:P.primary,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{fmt(totSes)}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>{sesWord}</div>
             <div style={{fontSize:10,color:P.textMuted}}>desde el inicio</div>
           </div>}
 
           {/* Personas — sparkline */}
-          {moduleVisible("individual")&&<div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
+          {moduleVisible("individual")&&<div style={{background:P.white,padding:"28px 24px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:9,minHeight:205}}>
             <svg width={sparkW} height={sparkH+4} style={{overflow:"visible"}}>
               <defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.light} stopOpacity="0.15"/><stop offset="100%" stopColor={P.light} stopOpacity="0"/></linearGradient></defs>
               <polygon points={`0,${sparkH} ${ptsNew} ${sparkW},${sparkH}`} fill="url(#g2)"/>
@@ -922,28 +922,28 @@ export default function Dashboard(){
                 return i===lastSixNew.length-1?<circle key={i} cx={x} cy={y} r="3" fill={P.light}/>:null;
               })}
             </svg>
-            <div style={{fontSize:32,fontWeight:800,color:P.light,letterSpacing:"-1px",lineHeight:1}}>{totNuev}</div>
+            <div style={{fontSize:38,fontWeight:800,color:P.light,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{totNuev}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>personas acompañadas</div>
             <div style={{fontSize:10,color:P.textMuted}}>pacientes únicos</div>
           </div>}
 
           {/* Primera vez en terapia — ring */}
-          {moduleVisible("individual")&&<div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
-            <div style={{position:"relative",width:60,height:60}}>
-              <Ring pct={c.firstTimePct!=null?c.firstTimePct:0} color={P.primary} size={60} stroke={5}/>
-              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:12,fontWeight:700,color:P.primary}}>{c.firstTimePct!=null?`${c.firstTimePct}%`:"—"}</div>
+          {moduleVisible("individual")&&<div style={{background:P.white,padding:"28px 24px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:9,minHeight:205}}>
+            <div style={{position:"relative",width:74,height:74}}>
+              <Ring pct={c.firstTimePct!=null?c.firstTimePct:0} color={P.primary} size={74} stroke={6}/>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:15,fontWeight:800,color:P.primary}}>{c.firstTimePct!=null?`${c.firstTimePct}%`:"—"}</div>
             </div>
             <div style={{fontSize:12,fontWeight:600,color:P.text,textAlign:"center",lineHeight:1.4}}>Primera vez en terapia</div>
             <div style={{fontSize:11,color:P.textMuted}}>{c.firstTimeCount!=null?`${c.firstTimeCount} personas`:"pendiente"}</div>
           </div>}
 
           {/* Talleres — ring */}
-          <div style={{background:P.white,padding:"24px 20px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,minHeight:180}}>
-            <div style={{position:"relative",width:60,height:60}}>
-              <Ring pct={Math.min(100,Math.round((c.workshops.length/(c.workshopTarget||5))*100))} color={P.purple} size={60} stroke={5}/>
-              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:12,fontWeight:700,color:P.purple}}>{c.workshops.length}/{c.workshopTarget||5}</div>
+          <div style={{background:P.white,padding:"28px 24px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:9,minHeight:205}}>
+            <div style={{position:"relative",width:74,height:74}}>
+              <Ring pct={Math.min(100,Math.round((c.workshops.length/(c.workshopTarget||5))*100))} color={P.purple} size={74} stroke={6}/>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:15,fontWeight:800,color:P.purple}}>{c.workshops.length}/{c.workshopTarget||5}</div>
             </div>
-            <div style={{fontSize:32,fontWeight:800,color:P.purple,letterSpacing:"-1px",lineHeight:1}}>{c.workshops.length}</div>
+            <div style={{fontSize:38,fontWeight:800,color:"#c98a2d",letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{c.workshops.length}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>talleres realizados</div>
             <div style={{fontSize:10,color:P.textMuted}}>de {c.workshopTarget||5} anuales</div>
           </div>
@@ -951,34 +951,39 @@ export default function Dashboard(){
       })()}
 
       {/* Pillar cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,marginBottom:20}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14,marginBottom:22}}>
         {[
           {id:"individual", label:"Colaboradores",           color:"#75b781", accent:"#ebf6ee"},
           {id:"colectivo",  label:"Cultura de Bienestar",    color:"#c98a2d", accent:"#fff4dd"},
           {id:"estrategico",label:"Estrategia de Bienestar", color:"#007271", accent:"#e3f0ef"},
           {id:"gestion",    label:"Gestión",                 color:P.textMuted, accent:P.gray50, restricted:true},
-        ].filter(p=>moduleVisible(p.id)).map(p=><button key={p.id} onClick={()=>setModule(p.id)} style={{
+        ].filter(p=>moduleVisible(p.id)).map(p=><button key={p.id} onClick={()=>setModule(p.id)}
+          onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow="0 8px 20px rgba(27,70,51,0.10)";}}
+          onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="0 1px 5px rgba(24,33,30,0.05)";}}
+          style={{
           background:P.white,
           border:`1px solid ${P.border}`,
-          borderTop:`3px solid ${p.color}`,
-          borderRadius:12, padding:"20px",
+          borderTop:`4px solid ${p.color}`,
+          borderRadius:16, padding:"22px 22px 18px",
           textAlign:"left", cursor:"pointer",
-          position:"relative",
+          position:"relative", minHeight:104,
+          display:"flex", flexDirection:"column", justifyContent:"space-between",
+          boxShadow:"0 1px 5px rgba(24,33,30,0.05)",
+          transition:"transform 0.15s ease, box-shadow 0.15s ease",
         }}>
-          {p.restricted&&<span style={{position:"absolute",top:10,right:10,fontSize:9,fontWeight:700,background:P.accentBg,color:P.accent,padding:"2px 6px",borderRadius:4,letterSpacing:"0.04em",textTransform:"uppercase"}}>Restringido</span>}
-          <div style={{fontSize:14,fontWeight:700,color:p.color,letterSpacing:"-0.1px",marginBottom:6}}>{p.label}</div>
-          <div style={{fontSize:11,color:P.textMuted}}>Ver detalle →</div>
+          {p.restricted&&<span style={{position:"absolute",top:12,right:12,fontSize:9,fontWeight:700,background:P.accentBg,color:P.accent,padding:"2px 7px",borderRadius:20,letterSpacing:"0.04em",textTransform:"uppercase"}}>Restringido</span>}
+          <div style={{fontSize:16,fontWeight:700,color:p.color,letterSpacing:"-0.2px",marginBottom:8,fontFamily:F_HEAD}}>{p.label}</div>
+          <div style={{fontSize:12,fontWeight:600,color:P.textMuted}}>Ver detalle <span style={{color:p.color}}>→</span></div>
         </button>)}
       </div>
 
       {/* Hitos — timeline horizontal scrollable */}
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"20px 28px",marginBottom:20}}>
+      <div style={{background:P.white,borderRadius:18,border:`1px solid ${P.border}`,padding:"22px 28px",marginBottom:22,boxShadow:"0 1px 5px rgba(24,33,30,0.05)"}}>
         <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:16}}>Hitos de la alianza</div>
         <div style={{overflowX:"auto",paddingBottom:4}} ref={el=>{if(el){const reached=c.milestones.filter(m=>m.reached);el.scrollLeft=el.scrollWidth;}}}>
           <div style={{display:"flex",alignItems:"flex-start",gap:0,minWidth:"max-content",position:"relative",paddingTop:8,paddingBottom:4}}>
-            {/* Horizontal line */}
-            <div style={{position:"absolute",top:15,left:16,right:16,height:1.5,background:`linear-gradient(to right, ${P.primary}, ${P.border})`}}/>
-            {c.milestones.filter(m=>m.reached).length===0&&<div style={{fontSize:12,color:P.textMuted,padding:"10px 16px"}}>Los hitos de la alianza aparecerán acá a medida que avancen juntos.</div>}
+            {c.milestones.filter(m=>m.reached).length>0&&<div style={{position:"absolute",top:15,left:16,right:16,height:1.5,background:`linear-gradient(to right, ${P.primary}, ${P.border})`}}/>}
+            {c.milestones.filter(m=>m.reached).length===0&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"6px 16px 2px"}}><Botanica size={44} color="#aed9b6" style={{flexShrink:0,transform:"rotate(20deg)"}}/><div style={{fontSize:12.5,color:P.textMuted,lineHeight:1.6}}>Este camino recién empieza — los hitos de la alianza van a ir apareciendo acá a medida que avancen juntos. 🌱</div></div>}
             {c.milestones.filter(m=>m.reached).map((m,i)=><div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,width:120,flexShrink:0,paddingTop:0}}>
               <div style={{width:18,height:18,borderRadius:"50%",background:m.reached?P.primary:P.white,border:`2px solid ${m.reached?P.primary:P.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,zIndex:1,position:"relative"}}>
                 {m.reached&&<span style={{fontSize:9,color:P.white,lineHeight:1}}>★</span>}
@@ -993,7 +998,7 @@ export default function Dashboard(){
       </div>
 
       {/* Referente */}
-      <div style={{background:P.white,borderRadius:14,border:`1px solid ${P.border}`,padding:"24px 28px"}}>
+      <div style={{background:P.white,borderRadius:18,border:`1px solid ${P.border}`,padding:"26px 28px",boxShadow:"0 1px 5px rgba(24,33,30,0.05)"}}>
         <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:16,textAlign:"center"}}>Tu referente en Tu Terapia</div>
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
           {c.accountManager.photo==="flor"?<img src={FLOR_PHOTO} alt={c.accountManager.name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 10%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
@@ -1016,7 +1021,7 @@ export default function Dashboard(){
     {/* ── INDIVIDUAL ── */}
     {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#ebf6ee,#f7fbf6)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
       <div style={{fontSize:10,fontWeight:700,color:"#75b781",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,opacity:0.7}}>Colaboradores</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#1b4633",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
+      <div style={{fontSize:25,fontWeight:800,color:"#1b4633",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud mental este mes":`${totNuev} personas eligieron cuidar su salud mental`)}
       </div>
       <div style={{fontSize:13,color:"#4c7a5e",opacity:0.85}}>
@@ -1032,7 +1037,7 @@ export default function Dashboard(){
       </div>
       {planKind==="cuponera_fija"&&<Section title="Sesiones canjeadas por mes">
         {lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
-        <div style={{height:210}}><ResponsiveContainer width="100%" height="100%">
+        <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
           <BarChart data={c.monthlyData} barSize={13}>
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
@@ -1045,7 +1050,7 @@ export default function Dashboard(){
       </Section>}
       <Section title={`Sesiones${usesRealizadas?" realizadas":""} por mes${planRefLine?` — ${planKind==="a_demanda"?"tope":"plan"} ${planRefLine}/mes`:""}`}>
         {!usesRealizadas&&lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
-        <div style={{height:210}}><ResponsiveContainer width="100%" height="100%">
+        <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
           <BarChart data={c.monthlyData} barSize={13}>
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
@@ -1091,7 +1096,7 @@ export default function Dashboard(){
         
         <Section title="Pacientes activos por mes">
           <div style={{fontSize:11,color:P.textMuted,marginBottom:10,lineHeight:1.6}}>Personas que realizaron al menos una sesión ese mes.</div>
-          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
+          <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={c.monthlyData} barSize={13}>
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
@@ -1102,7 +1107,7 @@ export default function Dashboard(){
           </ResponsiveContainer></div>
         </Section>
         <Section title="Nuevos pacientes por mes">
-          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
+          <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={c.monthlyData} barSize={13}>
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
@@ -1118,7 +1123,7 @@ export default function Dashboard(){
     {/* ── COLECTIVO ── */}
     {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#fff3dc,#fffaf0)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(138,99,32,0.55)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#7a5416",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
+      <div style={{fontSize:25,fontWeight:800,color:"#7a5416",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {getHeaderText("colectivo",sub,"title")||(sub==="Contenido"?"Recursos para llevar el bienestar a cada rincón del equipo":`${c.workshops.length} talleres de bienestar realizados con tu equipo`)}
       </div>
       <div style={{fontSize:13,color:"rgba(138,99,32,0.75)"}}>
@@ -1194,7 +1199,7 @@ export default function Dashboard(){
     {/* ── ESTRATÉGICO ── */}
     {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#e3f0ef,#f0f8f7)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
       <div style={{fontSize:10,fontWeight:700,color:"#007271",opacity:0.6,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#00605f",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
+      <div style={{fontSize:25,fontWeight:800,color:"#00605f",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"El pulso de tu organización, medido":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
       </div>
       <div style={{fontSize:13,color:"#007271"}}>
@@ -1428,7 +1433,7 @@ export default function Dashboard(){
             <KpiCard label="Inversión total" value={`$ ${fmt(invTotal2)}`} sub={planKind==="fee_fijo"&&costoEfectivoFee?`Fee mensual · $ ${fmt(costoEfectivoFee)}/sesión efectivo`:"UYU acumulado"}/>
             <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]??estMonthCost(lastFull2)):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
           </div>
-          <div style={{height:200}}><ResponsiveContainer width="100%" height="100%">
+          <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
             <BarChart data={invTrend2} barSize={13}>
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
@@ -1583,7 +1588,7 @@ export default function Dashboard(){
     {/* ── GESTIÓN ── */}
     {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#5f7a6b,#8ba394)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Gestión</div>
-      <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
+      <div style={{fontSize:25,fontWeight:800,color:"#fff",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {sub==="Facturación"?"Tu plan activo, todo en orden":sub==="Plan activo"?"El acuerdo que hace posible el bienestar de tu equipo":"Las personas detrás del beneficio, siempre disponibles"}
       </div>
       <div style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>
