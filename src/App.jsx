@@ -1173,8 +1173,15 @@ export default function Dashboard(){
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
     {mod==="estrategico"&&sub==="Bienestar del equipo"&&<>
-      <div style={{maxWidth:340,marginBottom:18}}>
-        <KpiCard label="Motivo principal de consulta" value={c.consultationReasons.length>0?c.consultationReasons[0].reason:"Pendiente"} sub={c.consultationReasons.length>0?`${c.consultationReasons[0].percentage}% de los casos`:null}/>
+      <div style={{background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:16,padding:"20px 24px",marginBottom:18,display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,flexWrap:"wrap",boxShadow:"0 1px 5px rgba(24,33,30,0.05)"}}>
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:P.primary,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Motivo principal de consulta</div>
+          <div style={{fontSize:24,fontWeight:800,color:P.text,letterSpacing:"-0.4px",fontFamily:F_HEAD,lineHeight:1.15}}>{c.consultationReasons.length>0?c.consultationReasons[0].reason:"Pendiente"}</div>
+        </div>
+        {c.consultationReasons.length>0&&<div style={{textAlign:"right",flexShrink:0}}>
+          <div style={{fontSize:34,fontWeight:800,color:P.primary,letterSpacing:"-1px",lineHeight:1,fontFamily:F_HEAD}}>{c.consultationReasons[0].percentage}%</div>
+          <div style={{fontSize:11,color:P.textMuted}}>de los casos</div>
+        </div>}
       </div>
 
       <Section title="Seguimiento de personas que usan el beneficio">
