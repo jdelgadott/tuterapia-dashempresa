@@ -388,7 +388,6 @@ export default function Dashboard(){
 
   const [mod,setMod]=useState("home");
   const [sub,setSub]=useState(null);
-  const [npsVal,setNpsVal]=useState(null);
 
   const [consultoriaSolicitado,setConsultoriaSolicitado]=useState(false);
   const [localConsultoriaActiva,setConsultoriaActiva]=useState(false);
@@ -399,9 +398,6 @@ export default function Dashboard(){
   const [contentRatings,setContentRatings]=useState({});
   const [contentSent,setContentSent]=useState({});
   const [contentDownloaded,setContentDownloaded]=useState({});
-  const [editNps,setEditNps]=useState(false);
-  const [npsInput,setNpsInput]=useState("");
-  const [npsDate,setNpsDate]=useState(null);
 
   useEffect(()=>{
     // Check if coming from password recovery link
@@ -884,7 +880,6 @@ export default function Dashboard(){
             </svg>
             <div style={{fontSize:38,fontWeight:800,color:P.primary,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{fmt(totSes)}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>{sesWord}</div>
-            <div style={{fontSize:10,color:P.textMuted}}>desde el inicio</div>
           </div>}
 
           {/* Personas — sparkline */}
@@ -901,7 +896,6 @@ export default function Dashboard(){
             </svg>
             <div style={{fontSize:38,fontWeight:800,color:P.light,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{totNuev}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>personas acompañadas</div>
-            <div style={{fontSize:10,color:P.textMuted}}>pacientes únicos</div>
           </div>}
 
           {/* Primera vez en terapia — ring */}
@@ -911,7 +905,6 @@ export default function Dashboard(){
               <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:15,fontWeight:800,color:P.primary}}>{c.firstTimePct!=null?`${c.firstTimePct}%`:"—"}</div>
             </div>
             <div style={{fontSize:12,fontWeight:600,color:P.text,textAlign:"center",lineHeight:1.4}}>Primera vez en terapia</div>
-            <div style={{fontSize:11,color:P.textMuted}}>{c.firstTimeCount!=null?`${c.firstTimeCount} personas`:"pendiente"}</div>
           </div>}
 
           {/* Talleres — ring */}
@@ -920,9 +913,7 @@ export default function Dashboard(){
               <Ring pct={Math.min(100,Math.round((c.workshops.length/(c.workshopTarget||5))*100))} color={P.purple} size={74} stroke={6}/>
               <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:15,fontWeight:800,color:P.purple}}>{c.workshops.length}/{c.workshopTarget||5}</div>
             </div>
-            <div style={{fontSize:38,fontWeight:800,color:"#c98a2d",letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{c.workshops.length}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>talleres realizados</div>
-            <div style={{fontSize:10,color:P.textMuted}}>de {c.workshopTarget||5} anuales</div>
           </div>
         </div>;
       })()}
@@ -1008,8 +999,8 @@ export default function Dashboard(){
     {mod==="individual"&&sub==="Sesiones"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
         {usesRealizadas&&<KpiCard label="Sesiones Canjeadas" value={fmt(totCanj)}/>}
-        <KpiCard label={usesRealizadas?"Sesiones Realizadas":"Sesiones"} value={fmt(totSes)} sub="Desde inicio"/>
-        {usesRealizadas&&<KpiCard label="Tasa de realización" value={`${compRate}%`} sub="Sesiones realizadas / canjeadas"/>}
+        <KpiCard label={usesRealizadas?"Sesiones Realizadas":"Sesiones"} value={fmt(totSes)}/>
+        {usesRealizadas&&<KpiCard label="Tasa de realización" value={`${compRate}%`}/>}
         <KpiCard label={usesRealizadas?"Sesiones realizadas en el último mes":"Sesiones en el último mes"} value={lastFull?fmt(sesOf(lastFull)):"—"} sub={lastFull?.month}/>
       </div>
       {planKind==="cuponera_fija"&&<Section title="Sesiones canjeadas por mes">
@@ -1046,10 +1037,10 @@ export default function Dashboard(){
       const avgPerMonth=fullM.length>0?Math.round((fullSessions/fullM.length)*10)/10:0;
       return <>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-          <KpiCard label="Total de pacientes" value={totHistorico} sub="Pacientes únicos históricos"/>
-          <KpiCard label="Promedio de sesiones por persona" value={avgPerUser!=null?Math.ceil(avgPerUser):"—"} sub="Histórico acumulado"/>
-          <KpiCard label="Promedio sesiones / persona / mes" value={(()=>{const sa=fullM.reduce((s,m)=>s+(m.activos||0),0);return sa>0?Math.round(fullSessions/sa):"—";})()} sub="por paciente activo por mes"/>
-          <KpiCard label="Promedio sesiones por mes (empresa)" value={avgPerMonth!=null?Math.ceil(avgPerMonth):"—"} sub="Meses completos"/>
+          <KpiCard label="Total de pacientes" value={totHistorico}/>
+          <KpiCard label="Promedio de sesiones por persona" value={avgPerUser!=null?Math.ceil(avgPerUser):"—"}/>
+          <KpiCard label="Promedio sesiones / persona / mes" value={(()=>{const sa=fullM.reduce((s,m)=>s+(m.activos||0),0);return sa>0?Math.round(fullSessions/sa):"—";})()}/>
+          <KpiCard label="Promedio sesiones por mes (empresa)" value={avgPerMonth!=null?Math.ceil(avgPerMonth):"—"}/>
         </div>
         <Section title="Primera vez en terapia">
           {c.firstTimeCount!=null?
@@ -1109,9 +1100,9 @@ export default function Dashboard(){
       const workshops = c.workshops;
       return <>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-          <KpiCard label="Talleres realizados" value={workshops.length} sub={`de ${c.workshopTarget||5} anuales`}/>
-          <KpiCard label="Próximo taller" value={c.workshopsRecommended.length>0?c.workshopsRecommended[0].title:"Por definir"} sub="Recomendado"/>
-          <KpiCard label="Rating promedio" value={workshops.filter(w=>w.rating).length>0?(workshops.filter(w=>w.rating).reduce((s,w)=>s+(w.rating||0),0)/workshops.filter(w=>w.rating).length).toFixed(1):"—"} sub="★ participantes"/>
+          <KpiCard label="Talleres realizados" value={workshops.length}/>
+          <KpiCard label="Próximo taller" value={c.workshopsRecommended.length>0?c.workshopsRecommended[0].title:"Por definir"}/>
+          <KpiCard label="Rating promedio" value={workshops.filter(w=>w.rating).length>0?(workshops.filter(w=>w.rating).reduce((s,w)=>s+(w.rating||0),0)/workshops.filter(w=>w.rating).length).toFixed(1):"—"}/>
         </div>
         <Section title="Talleres realizados">
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -1177,28 +1168,13 @@ export default function Dashboard(){
         {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"El pulso de tu organización, medido":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
       </div>
       <div style={{fontSize:13,color:"#007271"}}>
-        {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?`NPS ${npsVal!=null?npsVal:"pendiente"} · ${c.recommendations.length} recomendaciones activas`:c.consultoriaActiva?"Salud mental que se traduce en resultados para tu empresa":"Activá la consultoría para ver el análisis de impacto")}
+        {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?`${c.recommendations.length} recomendaciones activas`:c.consultoriaActiva?"Salud mental que se traduce en resultados para tu empresa":"Activá la consultoría para ver el análisis de impacto")}
       </div>
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
     {mod==="estrategico"&&sub==="Bienestar del equipo"&&<>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginBottom:18}}>
-        <div style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4}}>
-          {editNps?<>
-            <input type="number" min="-100" max="100" value={npsInput} onChange={e=>setNpsInput(e.target.value)} style={{fontSize:20,fontWeight:700,border:`1px solid ${P.border}`,borderRadius:7,padding:"4px 8px",outline:"none",width:"100%"}} placeholder="ej. 68"/>
-            <div style={{display:"flex",gap:6,marginTop:6}}>
-              <button onClick={()=>{setNpsVal(parseInt(npsInput));setNpsDate(new Date().toLocaleDateString("es-UY",{month:"short",year:"numeric"}));setEditNps(false);}} style={{flex:1,background:P.primary,color:P.white,border:"none",borderRadius:6,padding:"5px",fontSize:11,cursor:"pointer",fontWeight:600}}>Guardar</button>
-              <button onClick={()=>setEditNps(false)} style={{flex:1,background:"none",border:`1px solid ${P.border}`,borderRadius:6,padding:"5px",fontSize:11,cursor:"pointer"}}>Cancelar</button>
-            </div>
-          </>:<>
-            <div style={{fontSize:21,fontWeight:700,color:npsVal!=null?(npsVal>=50?P.primary:P.accent):P.textMuted,lineHeight:1.1,letterSpacing:"-0.5px"}}>{npsVal!=null?npsVal:"Pendiente"}</div>
-            <div style={{fontSize:12,fontWeight:600,color:P.text}}>NPS de Salud Mental y Bienestar</div>
-            <div style={{fontSize:11,color:P.textMuted}}>{npsDate?`Actualizado ${npsDate}`:"Sin datos aún"}</div>
-            <button onClick={()=>{setNpsInput(npsVal||"");setEditNps(true);}} style={{marginTop:4,background:"none",border:`1px solid ${P.border}`,borderRadius:6,padding:"4px 8px",fontSize:10,cursor:"pointer",color:P.textMuted,textAlign:"left"}}>Actualizar</button>
-          </>}
-        </div>
-        
-        <KpiCard label="Motivo principal" value={c.consultationReasons.length>0?c.consultationReasons[0].reason:"Pendiente"} sub={c.consultationReasons.length>0?`${c.consultationReasons[0].percentage}% de los casos`:"Sin datos aún"}/>
+      <div style={{maxWidth:340,marginBottom:18}}>
+        <KpiCard label="Motivo principal de consulta" value={c.consultationReasons.length>0?c.consultationReasons[0].reason:"Pendiente"} sub={c.consultationReasons.length>0?`${c.consultationReasons[0].percentage}% de los casos`:null}/>
       </div>
 
       <Section title="Seguimiento de personas que usan el beneficio">
@@ -1564,9 +1540,9 @@ export default function Dashboard(){
     </div>}
     {mod==="gestion"&&sub==="Facturación"&&<>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
-        <KpiCard label="Total pagado" value={`$ ${fmt(billingPaid)}`} sub="UYU acumulado"/>
-        <KpiCard label="Pendiente de pago" value={`$ ${fmt(billingPending)}`} sub="Período actual" warn={billingPending>0}/>
-        <KpiCard label="Períodos facturados" value={c.billing.length} sub="Desde inicio"/>
+        <KpiCard label="Total pagado" value={`$ ${fmt(billingPaid)}`}/>
+        <KpiCard label="Pendiente de pago" value={`$ ${fmt(billingPending)}`} warn={billingPending>0}/>
+        <KpiCard label="Períodos facturados" value={c.billing.length}/>
       </div>
       <Section title="Historial de facturación">
         <div style={{overflowX:"auto"}}>
