@@ -780,10 +780,9 @@ export default function Dashboard(){
   return <div style={{fontFamily:"'DM Sans',system-ui,sans-serif",background:P.bg,minHeight:"100vh",color:P.text}}>
 
     {/* Header */}
-    <div style={{background:P.white,borderBottom:`2px solid ${P.primary}`,padding:"10px 28px",display:"flex",alignItems:"center",justifyContent:"space-between",minHeight:48,flexWrap:"wrap",gap:12,rowGap:8,position:window.innerWidth>700?"sticky":"static",top:0,zIndex:100,boxShadow:"0 2px 10px rgba(27,70,51,0.06)"}}>
+    <div style={{background:P.white,borderBottom:`2px solid ${P.primary}`,padding:"14px 32px",display:"flex",alignItems:"center",justifyContent:"space-between",minHeight:72,flexWrap:"wrap",gap:12,rowGap:8,position:window.innerWidth>700?"sticky":"static",top:0,zIndex:100,boxShadow:"0 2px 10px rgba(27,70,51,0.06)"}}>
       <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:14,background:"none",border:"none",cursor:"pointer",padding:0}}>
-        <img src={LOGO_EMP} alt="Tu Terapia Empresas" style={{height:44,objectFit:"contain",flexShrink:0}}/>
-        <div style={{textAlign:"left",fontSize:11,color:P.textMuted,lineHeight:1.35}}>Salud Mental y<br/>Bienestar Empresarial</div>
+        <img src={LOGO_EMP} alt="Tu Terapia Empresas" style={{height:58,objectFit:"contain",flexShrink:0}}/>
       </button>
       {mod!=="home"&&activeMod&&<div style={{display:"flex",gap:2,overflowX:"auto",flexShrink:1,minWidth:0}}>
         {MODULES.filter(m=>moduleVisible(m.id)).map(m=><button key={m.id} onClick={()=>setModule(m.id)} style={{fontSize:12,fontWeight:mod===m.id?700:400,color:mod===m.id?P.primary:P.textMuted,background:"none",border:"none",borderBottom:mod===m.id?`2px solid ${P.primary}`:"2px solid transparent",padding:"8px 14px",cursor:"pointer",whiteSpace:"nowrap"}}>
@@ -989,7 +988,7 @@ export default function Dashboard(){
     </>}
 
     {/* ── INDIVIDUAL ── */}
-    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#e6f0ee,#f3f9f8)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
+    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#e6f0ee,#f3f9f8)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
       <div style={{fontSize:10,fontWeight:700,color:"#307070",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,opacity:0.7}}>Colaboradores</div>
       <div style={{fontSize:25,fontWeight:800,color:"#264534",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud mental este mes":`${totNuev} personas eligieron cuidar su salud mental`)}
@@ -1088,7 +1087,7 @@ export default function Dashboard(){
     })()}
 
     {/* ── COLECTIVO ── */}
-    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#e9eefb,#f8fafe)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
+    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#e9eefb,#f8fafe)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(40,61,107,0.55)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
       <div style={{fontSize:25,fontWeight:800,color:"#283d6b",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {getHeaderText("colectivo",sub,"title")||(sub==="Contenido"?"Recursos para llevar el bienestar a cada rincón del equipo":`${c.workshops.length} talleres de bienestar realizados con tu equipo`)}
@@ -1164,7 +1163,7 @@ export default function Dashboard(){
 
 
     {/* ── ESTRATÉGICO ── */}
-    {mod==="estrategico"&&<div style={{background:"#264534",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
+    {mod==="estrategico"&&<div style={{background:"#264534",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
       <div style={{fontSize:10,fontWeight:700,color:"#aed9b6",opacity:0.85,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
       <div style={{fontSize:25,fontWeight:800,color:"#fefaf5",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"El pulso de tu organización, medido":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
@@ -1538,7 +1537,7 @@ export default function Dashboard(){
     })()}
 
     {/* ── GESTIÓN ── */}
-    {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#5a7968,#87a094)",borderRadius:18,padding:"30px 30px 22px",marginBottom:18}}>
+    {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#5a7968,#87a094)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
       <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Gestión</div>
       <div style={{fontSize:25,fontWeight:800,color:"#fff",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
         {sub==="Facturación"?"Tu plan activo, todo en orden":sub==="Plan activo"?"El acuerdo que hace posible el bienestar de tu equipo":"Las personas detrás del beneficio, siempre disponibles"}
