@@ -1006,10 +1006,10 @@ export default function Dashboard(){
       {planKind==="cuponera_fija"&&<Section title="Sesiones canjeadas por mes">
         {lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
         <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={c.monthlyData} barSize={13}>
+          <BarChart data={c.monthlyData} maxBarSize={44} barCategoryGap="22%">
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil(Math.max(dataMax, c.monthlyPlan)*1.15)]}/>
+            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil((c.monthlyPlan&&dataMax>=c.monthlyPlan*0.35?Math.max(dataMax,c.monthlyPlan):dataMax)*1.15)||"auto"]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
             <Bar dataKey="canjeadas" name="canjeadas" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
           </BarChart>
@@ -1018,12 +1018,12 @@ export default function Dashboard(){
       <Section title={`Sesiones${usesRealizadas?" realizadas":""} por mes${planRefLine?` — ${planKind==="a_demanda"?"tope":"plan"} ${planRefLine}/mes`:""}`}>
         {!usesRealizadas&&lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
         <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={c.monthlyData} barSize={13}>
+          <BarChart data={c.monthlyData} maxBarSize={44} barCategoryGap="22%">
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil(Math.max(dataMax, planRefLine||0)*1.15)||"auto"]}/>
+            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil((planRefLine&&dataMax>=planRefLine*0.35?Math.max(dataMax,planRefLine):dataMax)*1.15)||"auto"]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            {planRefLine&&<ReferenceLine y={planRefLine} stroke="#e8a13c" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#c98a2d"}}/>}
+            {planRefLine&&Math.max(0,...c.monthlyData.map(m=>usesRealizadas?m.realizadas:m.canjeadas))>=planRefLine*0.35&&<ReferenceLine y={planRefLine} stroke="#e8a13c" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#c98a2d"}}/>}
             <Bar dataKey={usesRealizadas?"realizadas":"canjeadas"} name={usesRealizadas?"realizadas":"Sesiones"} radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
@@ -1062,7 +1062,7 @@ export default function Dashboard(){
         <Section title="Pacientes activos por mes">
           <div style={{fontSize:11,color:P.textMuted,marginBottom:10,lineHeight:1.6}}>Personas que realizaron al menos una sesión ese mes.</div>
           <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={c.monthlyData} barSize={13}>
+            <BarChart data={c.monthlyData} maxBarSize={44} barCategoryGap="22%">
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
@@ -1073,7 +1073,7 @@ export default function Dashboard(){
         </Section>
         <Section title="Nuevos pacientes por mes">
           <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={c.monthlyData} barSize={13}>
+            <BarChart data={c.monthlyData} maxBarSize={44} barCategoryGap="22%">
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
@@ -1385,7 +1385,7 @@ export default function Dashboard(){
             <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]??estMonthCost(lastFull2)):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
           </div>
           <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={invTrend2} barSize={13}>
+            <BarChart data={invTrend2} maxBarSize={44} barCategoryGap="22%">
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
