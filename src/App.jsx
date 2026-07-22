@@ -18,6 +18,18 @@ const P = {
   purple:"#8da7e6", purpleBg:"#eef3fd",
   dark:"#264534", celeste:"#8da7e6",
 };
+const RECORD_GOLD = "#D9A441";
+// Meses récord: nuevo máximo histórico (excluye parciales y el primer mes con datos)
+const recordMonths = (data, acc) => {
+  const s = new Set(); let prevMax = null;
+  data.forEach(m => {
+    if (m.partial) return;
+    const v = acc(m);
+    if (prevMax !== null && v > prevMax) s.add(m.label||m.month);
+    if (prevMax === null || v > prevMax) prevMax = v;
+  });
+  return s;
+};
 const fmt = (n) => new Intl.NumberFormat("es-UY").format(Math.round(n));
 const F_HEAD="'Bricolage Grotesque','DM Sans',sans-serif";
 const semLabel = (s) => String(s||"").replace(/^S1 (\d{4})/,"1er sem $1").replace(/^S2 (\d{4})/,"2do sem $1");
@@ -726,6 +738,14 @@ export default function Dashboard(){
   const sesOf = (m) => usesRealizadas ? m.realizadas : m.canjeadas;
   const totSes = usesRealizadas ? totReal : totCanj;
   const sesWord = usesRealizadas ? "sesiones realizadas" : "sesiones";
+  // Gráficas: últimos 12 meses + resaltado de meses récord
+  const md12 = c.monthlyData.slice(-12);
+  const mKey = m => m.label||m.month;
+  const recCanj = recordMonths(c.monthlyData, m=>m.canjeadas||0);
+  const recSes = recordMonths(c.monthlyData, m=>usesRealizadas?(m.realizadas||0):(m.canjeadas||0));
+  const recActivos = recordMonths(c.monthlyData, m=>m.activos||0);
+  const recNuevos = recordMonths(c.monthlyData, m=>m.nuevos||0);
+  const goldStroke = (isRec) => ({stroke:isRec?RECORD_GOLD:"none", strokeWidth:isRec?2.5:0});
   // Costo por sesión que asume la empresa, según convenio (cargado desde el admin).
   // A demanda: promedio online/presencial (los datos de sesiones no distinguen modalidad); cuponera: único blended.
   const adCosts=[c.sessionCostOnline,c.sessionCostPresencial].filter(v=>v>0);
@@ -1007,25 +1027,25 @@ export default function Dashboard(){
       {planKind==="cuponera_fija"&&<Section title="Sesiones canjeadas por mes">
         {lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
         <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={c.monthlyData} maxBarSize={44} barCategoryGap="22%">
+          <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
             <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil((c.monthlyPlan&&dataMax>=c.monthlyPlan*0.35?Math.max(dataMax,c.monthlyPlan):dataMax)*1.15)||"auto"]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            <Bar dataKey="canjeadas" name="canjeadas" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
+            <Bar dataKey="canjeadas" name="canjeadas" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recCanj.has(mKey(m)))}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
       </Section>}
       <Section title={`Sesiones${usesRealizadas?" realizadas":""} por mes${planRefLine?` — ${planKind==="a_demanda"?"tope":"plan"} ${planRefLine}/mes`:""}`}>
         {!usesRealizadas&&lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
         <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={c.monthlyData} maxBarSize={44} barCategoryGap="22%">
+          <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
             <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil((planRefLine&&dataMax>=planRefLine*0.35?Math.max(dataMax,planRefLine):dataMax)*1.15)||"auto"]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            {planRefLine&&Math.max(0,...c.monthlyData.map(m=>usesRealizadas?m.realizadas:m.canjeadas))>=planRefLine*0.35&&<ReferenceLine y={planRefLine} stroke="#8da7e6" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#283d6b"}}/>}
-            <Bar dataKey={usesRealizadas?"realizadas":"canjeadas"} name={usesRealizadas?"realizadas":"Sesiones"} radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
+            {planRefLine&&Math.max(0,...md12.map(m=>usesRealizadas?m.realizadas:m.canjeadas))>=planRefLine*0.35&&<ReferenceLine y={planRefLine} stroke="#8da7e6" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#283d6b"}}/>}
+            <Bar dataKey={usesRealizadas?"realizadas":"canjeadas"} name={usesRealizadas?"realizadas":"Sesiones"} radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recSes.has(mKey(m)))}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
       </Section>
@@ -1063,23 +1083,23 @@ export default function Dashboard(){
         <Section title="Pacientes activos por mes">
           <div style={{fontSize:11,color:P.textMuted,marginBottom:10,lineHeight:1.6}}>Personas que realizaron al menos una sesión ese mes.</div>
           <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={c.monthlyData} maxBarSize={44} barCategoryGap="22%">
+            <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="activos" name="Activos" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
+              <Bar dataKey="activos" name="Activos" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recActivos.has(mKey(m)))}/>)}</Bar>
             </BarChart>
           </ResponsiveContainer></div>
         </Section>
         <Section title="Nuevos pacientes por mes">
           <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={c.monthlyData} maxBarSize={44} barCategoryGap="22%">
+            <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="nuevos" name="Nuevos pacientes" radius={[3,3,0,0]}>{c.monthlyData.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light}/>)}</Bar>
+              <Bar dataKey="nuevos" name="Nuevos pacientes" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recNuevos.has(mKey(m)))}/>)}</Bar>
             </BarChart>
           </ResponsiveContainer></div>
         </Section>
@@ -1348,6 +1368,8 @@ export default function Dashboard(){
       const iii=normImp2!=null?Math.round(normImp2*(hasUtil?0.5:0.7)+utilScore2+workshopPts+contentPts):null;
       const invTotal2=invTotal;
       const invTrend2=invTrend; // use same billing-based trend
+      const inv12=invTrend2.slice(-12);
+      const recInv=recordMonths(invTrend2, m=>m.investment||0);
       const totNuev2=c.monthlyData.reduce((s,m)=>s+m.nuevos,0);
       const fullM2=c.monthlyData.filter(m=>!m.partial);
       const fullReal2=fullM2.reduce((s,m)=>s+m.realizadas,0);
@@ -1386,12 +1408,12 @@ export default function Dashboard(){
             <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]??estMonthCost(lastFull2)):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
           </div>
           <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={invTrend2} maxBarSize={44} barCategoryGap="22%">
+            <BarChart data={inv12} maxBarSize={44} barCategoryGap="22%">
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{invTrend2.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary}/>)}</Bar>
+              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{inv12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recInv.has(m.label||m.month))}/>)}</Bar>
             </BarChart>
           </ResponsiveContainer></div>
         </Section>
