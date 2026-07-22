@@ -1387,6 +1387,13 @@ export default function Dashboard(){
       const colabTotal = colabSessionCost ? totCanj*colabSessionCost : 0;
       const costoEfectivoFee = planKind==="fee_fijo"&&lastFull2&&sesOf(lastFull2)>0 ? Math.round((c.monthlyFee||0)/sesOf(lastFull2)) : null;
       const instanciasColectivas = c.workshops.length + c.content.length;
+      // Inversión en talleres (UYU manda; USD facturado = referencia)
+      const talleresCost = c.workshops.reduce((s,w)=>s+(w.cost||0),0);
+      const talleresCostUsd = c.workshops.reduce((s,w)=>s+(Number(w.cost_usd)||0),0);
+      const invSesiones = invTotal2;
+      const invConTalleres = invSesiones + talleresCost;
+      const pctInd = invConTalleres>0 ? Math.round(invSesiones/invConTalleres*100) : 0;
+      const pctCol = 100 - pctInd;
       // Mejoras medidas: delta último período vs anterior por dimensión
       const DIMS_NEG=[["saludMental","Bienestar y salud mental"],["clima","Clima y comunicación"],["liderazgo","Liderazgo"],["engagement","Compromiso y permanencia"],["asistencia","Presencia y energía"],["productividad","Productividad sostenible"]];
       const periodos=c.roiByQ.filter(r=>DIMS_NEG.some(([k])=>r[k]!=null));
@@ -1406,10 +1413,10 @@ export default function Dashboard(){
             <div style={{fontSize:12,color:P.textMuted,marginTop:4}}>Cada $1 en salud mental retorna ~$4 en salud y productividad <span style={{opacity:0.7}}>(OMS)</span>.</div>
           </div>}
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:14}}>
-            <KpiCard label="Personas acompañadas" value={fmt(totHistorico2)} sub={`${fmt(totSes)} ${sesWord}`} accent/>
+            <KpiCard label="Personas acompañadas" value={fmt(totHistorico2)} sub={`${fmt(totSes)} ${sesWord}`}/>
             {c.firstTimeCount>0&&<KpiCard label="Primera vez en terapia" value={c.firstTimePct!=null?`${c.firstTimePct}%`:fmt(c.firstTimeCount)} sub={`${c.firstTimeCount} personas accedieron gracias a tu empresa`}/>}
             <KpiCard label="Instancias colectivas" value={instanciasColectivas} sub={`${c.workshops.length} talleres · ${c.content.length} campañas y contenidos`}/>
-            <KpiCard label="Inversión total" value={`$ ${fmt(invTotal2)}`} sub={planKind==="fee_fijo"&&costoEfectivoFee?`Fee mensual · $ ${fmt(costoEfectivoFee)}/sesión efectivo`:"UYU acumulado"}/>
+            <KpiCard label="Inversión total" value={`$ ${fmt(invConTalleres)}`} sub={talleresCost>0?"Sesiones + talleres":planKind==="fee_fijo"&&costoEfectivoFee?`$ ${fmt(costoEfectivoFee)}/sesión efectivo`:"UYU acumulado"} accent/>
             <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]??estMonthCost(lastFull2)):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
           </div>
           <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
@@ -1422,6 +1429,30 @@ export default function Dashboard(){
             </BarChart>
           </ResponsiveContainer></div>
         </Section>
+
+        {(invSesiones>0||talleresCost>0)&&<Section title="En qué se invierte" note={talleresCostUsd>0?`Los talleres se facturan en USD (≈ USD ${fmt(talleresCostUsd)} en total) y se registran en pesos al tipo de cambio de cada factura.`:null}>
+          <div style={{display:"flex",gap:14,flexWrap:"wrap",marginBottom:16}}>
+            <div style={{flex:1,minWidth:200,background:P.lighter,border:`1px solid ${P.primary}22`,borderRadius:14,padding:"16px 18px"}}>
+              <div style={{fontSize:11,fontWeight:700,color:P.primary,textTransform:"uppercase",letterSpacing:"0.06em"}}>Acompañamiento individual</div>
+              <div style={{fontSize:12,color:P.textMuted,marginBottom:6}}>Sesiones de terapia</div>
+              <div style={{fontSize:26,fontWeight:800,color:P.primary,fontFamily:F_HEAD,letterSpacing:"-0.5px"}}>$ {fmt(invSesiones)}</div>
+              <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>{pctInd}% de la inversión</div>
+            </div>
+            <div style={{flex:1,minWidth:200,background:P.purpleBg,border:`1px solid ${P.celeste}44`,borderRadius:14,padding:"16px 18px"}}>
+              <div style={{fontSize:11,fontWeight:700,color:P.accent,textTransform:"uppercase",letterSpacing:"0.06em"}}>Instancias colectivas</div>
+              <div style={{fontSize:12,color:P.textMuted,marginBottom:6}}>Talleres y ciclos</div>
+              <div style={{fontSize:26,fontWeight:800,color:P.accent,fontFamily:F_HEAD,letterSpacing:"-0.5px"}}>$ {fmt(talleresCost)}</div>
+              <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>{pctCol}% de la inversión{talleresCostUsd>0?` · ≈ USD ${fmt(talleresCostUsd)}`:""}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",height:14,borderRadius:8,overflow:"hidden",background:P.gray50}}>
+            {invSesiones>0&&<div style={{width:`${pctInd}%`,background:P.primary}} title={`Individual ${pctInd}%`}/>}
+            {talleresCost>0&&<div style={{width:`${pctCol}%`,background:P.celeste}} title={`Colectivo ${pctCol}%`}/>}
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:6,fontSize:10,color:P.textMuted}}>
+            <span>Individual</span><span>Colectivo</span>
+          </div>
+        </Section>}
 
         <Section title="Retorno medido" note="Indicadores con impacto directo en resultados de negocio.">
           {mejoras.length>0&&<div style={{padding:"12px 16px",background:P.lighter,borderRadius:10,marginBottom:14}}>
