@@ -745,7 +745,12 @@ export default function Dashboard(){
   const recSes = recordMonths(c.monthlyData, m=>usesRealizadas?(m.realizadas||0):(m.canjeadas||0));
   const recActivos = recordMonths(c.monthlyData, m=>m.activos||0);
   const recNuevos = recordMonths(c.monthlyData, m=>m.nuevos||0);
-  const goldStroke = (isRec) => ({stroke:isRec?RECORD_GOLD:"none", strokeWidth:isRec?2.5:0});
+  const curKey = set => [...set].slice(-1)[0];  // récord vigente = último máximo histórico
+  const [curCanj,curSes,curActivos,curNuevos] = [curKey(recCanj),curKey(recSes),curKey(recActivos),curKey(recNuevos)];
+  // Récord vigente: borde dorado pleno · récord anterior (ya superado): dorado fino y tenue
+  const goldStroke = (isRec,isCurrent) => !isRec ? {stroke:"none",strokeWidth:0}
+    : isCurrent ? {stroke:RECORD_GOLD,strokeWidth:2.5}
+    : {stroke:RECORD_GOLD,strokeWidth:1.5,strokeOpacity:0.4};
   // Costo por sesión que asume la empresa, según convenio (cargado desde el admin).
   // A demanda: promedio online/presencial (los datos de sesiones no distinguen modalidad); cuponera: único blended.
   const adCosts=[c.sessionCostOnline,c.sessionCostPresencial].filter(v=>v>0);
@@ -1032,7 +1037,7 @@ export default function Dashboard(){
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
             <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil((c.monthlyPlan&&dataMax>=c.monthlyPlan*0.35?Math.max(dataMax,c.monthlyPlan):dataMax)*1.15)||"auto"]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            <Bar dataKey="canjeadas" name="canjeadas" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recCanj.has(mKey(m)))}/>)}</Bar>
+            <Bar dataKey="canjeadas" name="canjeadas" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recCanj.has(mKey(m)),curCanj===mKey(m))}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
       </Section>}
@@ -1045,7 +1050,7 @@ export default function Dashboard(){
             <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil((planRefLine&&dataMax>=planRefLine*0.35?Math.max(dataMax,planRefLine):dataMax)*1.15)||"auto"]}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
             {planRefLine&&Math.max(0,...md12.map(m=>usesRealizadas?m.realizadas:m.canjeadas))>=planRefLine*0.35&&<ReferenceLine y={planRefLine} stroke="#8da7e6" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#283d6b"}}/>}
-            <Bar dataKey={usesRealizadas?"realizadas":"canjeadas"} name={usesRealizadas?"realizadas":"Sesiones"} radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recSes.has(mKey(m)))}/>)}</Bar>
+            <Bar dataKey={usesRealizadas?"realizadas":"canjeadas"} name={usesRealizadas?"realizadas":"Sesiones"} radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recSes.has(mKey(m)),curSes===mKey(m))}/>)}</Bar>
           </BarChart>
         </ResponsiveContainer></div>
       </Section>
@@ -1088,7 +1093,7 @@ export default function Dashboard(){
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="activos" name="Activos" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recActivos.has(mKey(m)))}/>)}</Bar>
+              <Bar dataKey="activos" name="Activos" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recActivos.has(mKey(m)),curActivos===mKey(m))}/>)}</Bar>
             </BarChart>
           </ResponsiveContainer></div>
         </Section>
@@ -1099,7 +1104,7 @@ export default function Dashboard(){
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="nuevos" name="Nuevos pacientes" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recNuevos.has(mKey(m)))}/>)}</Bar>
+              <Bar dataKey="nuevos" name="Nuevos pacientes" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recNuevos.has(mKey(m)),curNuevos===mKey(m))}/>)}</Bar>
             </BarChart>
           </ResponsiveContainer></div>
         </Section>
@@ -1369,7 +1374,7 @@ export default function Dashboard(){
       const invTotal2=invTotal;
       const invTrend2=invTrend; // use same billing-based trend
       const inv12=invTrend2.slice(-12);
-      const recInv=recordMonths(invTrend2, m=>m.investment||0);
+      const recInv=recordMonths(invTrend2, m=>m.investment||0); const curInv=[...recInv].slice(-1)[0];
       const totNuev2=c.monthlyData.reduce((s,m)=>s+m.nuevos,0);
       const fullM2=c.monthlyData.filter(m=>!m.partial);
       const fullReal2=fullM2.reduce((s,m)=>s+m.realizadas,0);
@@ -1413,7 +1418,7 @@ export default function Dashboard(){
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{inv12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recInv.has(m.label||m.month))}/>)}</Bar>
+              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{inv12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recInv.has(m.label||m.month),curInv===(m.label||m.month))}/>)}</Bar>
             </BarChart>
           </ResponsiveContainer></div>
         </Section>
