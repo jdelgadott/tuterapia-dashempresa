@@ -303,7 +303,8 @@ function LoginView({ onLogin, onAdminLogin }) {
     setLoading(true); setError("");
     const {data, error:authError} = await supabase.auth.signInWithPassword({ email, password });
     if(authError){ setError("Email o contraseña incorrectos."); setLoading(false); return; }
-    const {data:userData} = await supabase.from("company_users").select("*, companies(*)").eq("email", email).eq("active", true).single();
+    const {data:userRows} = await supabase.from("company_users").select("*, companies(*)").eq("email", email).eq("active", true);
+    const userData = userRows?.[0];
     if(!userData){
       // Admins de Tu Terapia entran con su propia cuenta y ven cualquier empresa
       const {data:adminData} = await supabase.from("admin_users").select("*").eq("email", email).single();
@@ -314,7 +315,7 @@ function LoginView({ onLogin, onAdminLogin }) {
       await supabase.auth.signOut(); setError("No tenés acceso al dashboard."); setLoading(false); return;
     }
     const {data:permsData} = await supabase.from("user_permissions").select("*").eq("user_id", userData.id);
-    onLogin(userData, permsData||[]);
+    onLogin(userData, permsData||[], userRows||[]);
     setLoading(false);
   }
 
@@ -392,6 +393,13 @@ export default function Dashboard(){
   // Auth states MUST be first — React rules of hooks
   const [authUser, setAuthUser] = useState(null);
   const [userPerms, setUserPerms] = useState([]);
+  // Multi-empresa: un mismo mail puede tener acceso a varios dashes (una fila de company_users por empresa)
+  const [userCompanies, setUserCompanies] = useState([]);
+  async function switchUserCompany(rowId){
+    const row=userCompanies.find(r=>r.id===rowId); if(!row) return;
+    const {data:pd}=await supabase.from("user_permissions").select("*").eq("user_id",row.id);
+    setAuthUser(row); setUserPerms(pd||[]); setMod("home"); setSub(null);
+  }
   const [authLoading, setAuthLoading] = useState(true);
   // Vista admin: usuarios de admin_users pueden ver el dash de cualquier empresa
   const [adminViewer, setAdminViewer] = useState(null);
@@ -428,10 +436,11 @@ export default function Dashboard(){
     supabase.auth.getSession().then(async({data:{session}, error:sessionError})=>{
       if(sessionError||!session?.user){ setAuthLoading(false); return; }
       try {
-        const {data:ud, error:udError} = await supabase.from("company_users").select("*, companies(*)").eq("email",session.user.email).eq("active",true).single();
-        if(ud&&!udError){
+        const {data:udRows} = await supabase.from("company_users").select("*, companies(*)").eq("email",session.user.email).eq("active",true);
+        const ud = udRows?.[0];
+        if(ud){
           const {data:pd} = await supabase.from("user_permissions").select("*").eq("user_id",ud.id);
-          setAuthUser(ud); setUserPerms(pd||[]);
+          setAuthUser(ud); setUserPerms(pd||[]); setUserCompanies(udRows||[]);
         } else {
           const {data:adminData} = await supabase.from("admin_users").select("*").eq("email",session.user.email).single();
           const {data:allCompanies} = adminData ? await supabase.from("companies").select("id,name").order("name") : {data:null};
@@ -445,7 +454,7 @@ export default function Dashboard(){
     // Listen for auth changes (token refresh, logout)
     const {data:{subscription}} = supabase.auth.onAuthStateChange(async(event, session)=>{
       if(event==="SIGNED_OUT"||event==="TOKEN_REFRESHED"&&!session){
-        setAuthUser(null); setUserPerms([]);
+        setAuthUser(null); setUserPerms([]); setUserCompanies([]);
         setAdminViewer(null); setAdminCompanies([]); setAdminCompanyId(null);
       }
     });
@@ -571,7 +580,7 @@ export default function Dashboard(){
 
   if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#fefaf5",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#5a7968",fontSize:13}}>Cargando...</div>;
   if(!authUser&&!adminViewer) return <LoginView
-    onLogin={(ud,pd)=>{ setAuthUser(ud); setUserPerms(pd); }}
+    onLogin={(ud,pd,rows)=>{ setAuthUser(ud); setUserPerms(pd); setUserCompanies(rows||[]); }}
     onAdminLogin={(ad,companies)=>{ setAdminViewer(ad); setAdminCompanies(companies); setAdminCompanyId(companies[0].id); }}/>;
   if(dataLoading||!dbCompany) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#fefaf5",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#5a7968",fontSize:13}}>Cargando datos...</div>;
 
@@ -823,11 +832,16 @@ export default function Dashboard(){
                 {adminCompanies.map(co=><option key={co.id} value={co.id}>{co.name}</option>)}
               </select>
             </div>
+          : userCompanies.length>1
+          ? <select value={authUser?.id||""} onChange={e=>switchUserCompany(e.target.value)}
+              style={{padding:"6px 10px",border:`1px solid ${P.border}`,borderRadius:8,fontSize:12,fontWeight:600,color:P.primary,background:P.white,cursor:"pointer",outline:"none"}}>
+              {userCompanies.map(r=><option key={r.id} value={r.id}>{r.companies?.name||"Empresa"}</option>)}
+            </select>
           : <div style={{background:P.lighter,borderRadius:20,padding:"5px 14px",border:`1px solid #cfe0de`,display:"flex",alignItems:"center",gap:6}}>
               <div style={{width:7,height:7,borderRadius:"50%",background:"#307070",flexShrink:0}}/>
               <span style={{fontSize:12,fontWeight:500,color:P.primary}}>{c.name}&nbsp;·&nbsp;Plan activo</span>
             </div>}
-        <button onClick={async()=>{ await supabase.auth.signOut(); setAuthUser(null); setUserPerms([]); setAdminViewer(null); setAdminCompanies([]); setAdminCompanyId(null); }}
+        <button onClick={async()=>{ await supabase.auth.signOut(); setAuthUser(null); setUserPerms([]); setUserCompanies([]); setAdminViewer(null); setAdminCompanies([]); setAdminCompanyId(null); }}
           style={{fontSize:11,color:P.textMuted,background:"none",border:`1px solid ${P.border}`,borderRadius:6,padding:"5px 12px",cursor:"pointer",fontWeight:500}}>
           Cerrar sesión
         </button>
