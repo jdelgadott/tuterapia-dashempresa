@@ -58,7 +58,7 @@ const LIST_PRICE_ONLINE=1600, LIST_PRICE_PRESENCIAL=1850, LIST_PRICE_AVG=Math.ro
 const TT_TEAM=[
   {name:"Nacho",fullName:"Juan Ignacio Delgado",role:"Desarrollo de Negocio",email:"jdelgado@tuterapia.com.uy",phone:"099495218",whatsapp:"598099495218",calendar:null,initials:"JD",area:"Alianzas B2B",photo:"nacho"},
   {name:"Flor",fullName:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:"093399250",whatsapp:"59893399250",calendar:"https://calendar.google.com/calendar/r/eventnew?add=firoldi@tuterapia.com.uy&text=Reunión+con+Tu+Terapia&details=Reunión+de+seguimiento+del+beneficio+de+salud+mental",initials:"FI",area:"Gestión de cuentas",photo:"flor"},
-  {name:"Isma",fullName:"Ismael Mazzilli",role:"Prospección y Cuentas",email:"imazilli@tuterapia.com.uy",phone:"091738836",whatsapp:"598091738836",calendar:null,initials:"IM",area:"Gestión de cuentas",photo:"isma"},
+  {name:"Isma",fullName:"Ismael Mazzilli",role:"Prospección y Cuentas",email:"imazzilli@tuterapia.com.uy",phone:"091738836",whatsapp:"598091738836",calendar:null,initials:"IM",area:"Gestión de cuentas",photo:"isma"},
 ];
 
 const MODULES=[
@@ -610,7 +610,8 @@ export default function Dashboard(){
 
   const planKind = dbCompany?.plan_kind || "cuponera_fija";
   const coveragePct = dbCompany?.coverage_pct!=null ? Number(dbCompany.coverage_pct) : 1;
-  const accountManager = TT_TEAM.find(t=>t.email===dbCompany?.referente_email) || TT_TEAM.find(t=>t.name==="Flor");
+  const refEmail = (dbCompany?.referente_email||"").trim().toLowerCase();
+  const accountManager = TT_TEAM.find(t=>t.email.toLowerCase()===refEmail) || TT_TEAM.find(t=>t.name==="Flor");
 
   // Placeholder de trimestres cuando no hay datos de encuestas
   const emptyQuarters = (()=>{
