@@ -55,6 +55,8 @@ const PLAN_LABELS = {cuponera_fija:"Cuponera Fija", fee_fijo:"Fee Fijo Mensual",
 // Precios de lista Tu Terapia (UYU, IVA 10% incluido) — base del cálculo de valor recibido
 const LIST_PRICE_ONLINE=1600, LIST_PRICE_PRESENCIAL=1850, LIST_PRICE_AVG=Math.round((LIST_PRICE_ONLINE+LIST_PRICE_PRESENCIAL)/2);
 
+// Fotos históricas del equipo (fallback si el miembro aún no subió una desde el admin)
+const FOTO_FALLBACK={"firoldi@tuterapia.com.uy":FLOR_PHOTO,"jdelgado@tuterapia.com.uy":NACHO_PHOTO,"imazzilli@tuterapia.com.uy":ISMA_PHOTO};
 const TT_TEAM=[
   {name:"Nacho",fullName:"Juan Ignacio Delgado",role:"Desarrollo de Negocio",email:"jdelgado@tuterapia.com.uy",phone:"099495218",whatsapp:"598099495218",calendar:null,initials:"JD",area:"Alianzas B2B",photo:"nacho"},
   {name:"Flor",fullName:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:"093399250",whatsapp:"59893399250",calendar:"https://calendar.google.com/calendar/r/eventnew?add=firoldi@tuterapia.com.uy&text=Reunión+con+Tu+Terapia&details=Reunión+de+seguimiento+del+beneficio+de+salud+mental",initials:"FI",area:"Gestión de cuentas",photo:"flor"},
@@ -479,6 +481,7 @@ export default function Dashboard(){
   const [dbRoiByQ, setDbRoiByQ] = useState([]);
   const [dbEncuestaProm, setDbEncuestaProm] = useState([]);
   const [dbEncuestaComments, setDbEncuestaComments] = useState([]);
+  const [dbEquipo, setDbEquipo] = useState([]);
   const [dbSeguimiento, setDbSeguimiento] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
 
@@ -490,7 +493,7 @@ export default function Dashboard(){
       const [
         surveys, content, workshops, workshopsRec, talleristas,
         headerTexts, company, sessions, billing, recommendations,
-        milestones, nps, reasons, roiQ, encProm, encComments, seguimiento
+        milestones, nps, reasons, roiQ, encProm, encComments, seguimiento, equipo
       ] = await Promise.all([
         supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("content").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
@@ -509,6 +512,7 @@ export default function Dashboard(){
         supabase.rpc("encuesta_promedios"),
         supabase.rpc("encuesta_comentarios"),
         supabase.from("seguimiento_beneficio").select("*").eq("company_id",companyId).order("created_at"),
+        supabase.from("admin_users").select("*").eq("active",true).order("name"),
       ]);
       setDbSurveys(surveys.data||[]);
       setDbContent(content.data||[]);
@@ -527,6 +531,7 @@ export default function Dashboard(){
       setDbEncuestaProm((encProm.data||[]).filter(r=>r.company_id===companyId));
       setDbEncuestaComments((encComments.data||[]).filter(r=>r.company_id===companyId));
       setDbSeguimiento(seguimiento.data||[]);
+      setDbEquipo(equipo.data||[]);
       setDataLoading(false);
     }
     loadData();
@@ -611,7 +616,14 @@ export default function Dashboard(){
   const planKind = dbCompany?.plan_kind || "cuponera_fija";
   const coveragePct = dbCompany?.coverage_pct!=null ? Number(dbCompany.coverage_pct) : 1;
   const refEmail = (dbCompany?.referente_email||"").trim().toLowerCase();
-  const accountManager = TT_TEAM.find(t=>t.email.toLowerCase()===refEmail) || TT_TEAM.find(t=>t.name==="Flor");
+  // Equipo TT desde la base (admin → Equipo TT). Normalizado a la forma que usa la UI.
+  const equipo = dbEquipo.map(m=>({
+    name:m.short_name||m.name, fullName:m.name, role:m.role||"", email:m.email,
+    phone:m.phone, whatsapp:m.whatsapp, calendar:m.calendar_url, initials:m.initials||(m.name||"?").slice(0,2).toUpperCase(),
+    area:m.area||"", photoUrl:m.photo_url||FOTO_FALLBACK[(m.email||"").toLowerCase()]||null, isReferente:m.is_referente!==false,
+  }));
+  const equipoUI = equipo.length?equipo:TT_TEAM.map(t=>({...t,photoUrl:FOTO_FALLBACK[t.email]||null}));
+  const accountManager = equipoUI.find(t=>t.email.toLowerCase()===refEmail) || equipoUI.find(t=>t.isReferente!==false) || equipoUI[0];
 
   // Placeholder de trimestres cuando no hay datos de encuestas
   const emptyQuarters = (()=>{
@@ -1010,10 +1022,9 @@ export default function Dashboard(){
       <div style={{background:P.white,borderRadius:18,border:`1px solid ${P.border}`,padding:"26px 28px",boxShadow:"0 1px 5px rgba(24,33,30,0.05)"}}>
         <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:16,textAlign:"center"}}>Tu referente en Tu Terapia</div>
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
-          {c.accountManager.photo==="flor"?<img src={FLOR_PHOTO} alt={c.accountManager.name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 10%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
-          :c.accountManager.photo==="nacho"?<img src={NACHO_PHOTO} alt={c.accountManager.name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 20%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
-          :c.accountManager.photo==="isma"?<img src={ISMA_PHOTO} alt={c.accountManager.name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 15%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
-          :<Avatar initials={c.accountManager.initials} size={64}/>}
+          {c.accountManager?.photoUrl
+            ? <img src={c.accountManager.photoUrl} alt={c.accountManager.name} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",objectPosition:"center 15%",border:`2px solid ${P.lighter}`,display:"block",flexShrink:0}}/>
+            : <Avatar initials={c.accountManager?.initials||"TT"} size={64}/>}
           <div style={{textAlign:"center"}}>
             <div style={{fontSize:16,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{c.accountManager.name}</div>
             <div style={{fontSize:12,color:P.textMuted}}>{c.accountManager.role}</div>
@@ -1676,12 +1687,12 @@ export default function Dashboard(){
     {mod==="gestion"&&sub==="Equipo TT"&&<>
       <div style={{fontSize:12,color:P.textMuted,marginBottom:16,lineHeight:1.6}}>Tu equipo de referencia en Tu Terapia para consultas administrativas, comerciales o de contenido.</div>
       <div style={{display:"flex",flexDirection:"column",gap:12}}>
-        {TT_TEAM.map((p,i)=><div key={i} style={{background:P.white,borderRadius:12,border:`1px solid ${P.border}`,padding:"20px 24px",display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
-          {p.photo==="flor"?<img src={FLOR_PHOTO} alt={p.name} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",objectPosition:"center 10%",flexShrink:0,border:`2px solid ${P.lighter}`}}/>:p.photo==="nacho"?<img src={NACHO_PHOTO} alt={p.name} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",objectPosition:"center 20%",flexShrink:0,border:`2px solid ${P.lighter}`}}/>:p.photo==="isma"?<img src={ISMA_PHOTO} alt={p.name} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",objectPosition:"center 15%",flexShrink:0,border:`2px solid ${P.lighter}`}}/>:<Avatar initials={p.initials} size={48}/>}
+        {equipoUI.map((p,i)=><div key={i} style={{background:P.white,borderRadius:12,border:`1px solid ${P.border}`,padding:"20px 24px",display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
+          {p.photoUrl?<img src={p.photoUrl} alt={p.name} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",objectPosition:"center 15%",flexShrink:0,border:`2px solid ${P.lighter}`}}/>:<Avatar initials={p.initials} size={48}/>}
           <div style={{flex:1,minWidth:150}}>
             <div style={{fontSize:14,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{p.fullName||p.name}</div>
             <div style={{fontSize:12,color:P.textMuted,marginBottom:4}}>{p.role}</div>
-            <Label text={p.area} bg={P.lighter} tx={P.primary}/>
+            {p.area&&<Label text={p.area} bg={P.lighter} tx={P.primary}/>}
           </div>
           <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
             <a href={`mailto:${p.email}`} style={{display:"flex",alignItems:"center",gap:5,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:7,border:`1px solid ${P.border}`}}>✉ Mail</a>
