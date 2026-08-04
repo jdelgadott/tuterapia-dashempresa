@@ -18,6 +18,18 @@ const P = {
   purple:"#8da7e6", purpleBg:"#eef3fd",
   dark:"#264534", celeste:"#8da7e6",
 };
+// Eje vertical para conteos de personas/sesiones: SIEMPRE enteros y con techo mínimo.
+// Si el máximo del período es 1, el eje llega a 5 en vez de mostrar 0,25 / 0,5 / 0,75.
+// `line` = línea de referencia (plan/tope): solo estira el eje si los datos se le acercan.
+const intAxis = (values, {minTop=5, line=null}={}) => {
+  const dataMax = Math.max(0, ...values.map(v=>Number(v)||0));
+  const max = (line && dataMax >= line*0.35) ? Math.max(dataMax, line) : dataMax;
+  let top = Math.max(minTop, Math.ceil(max*1.15));
+  const step = top<=6?1 : top<=12?2 : top<=25?5 : top<=60?10 : top<=120?20 : top<=300?50 : Math.ceil(top/500)*100;
+  top = Math.ceil(top/step)*step;
+  const ticks=[]; for(let v=0; v<=top; v+=step) ticks.push(v);
+  return {domain:[0,top], ticks, allowDecimals:false};
+};
 const RECORD_GOLD = "#D9A441";
 // Meses récord: nuevo máximo histórico (excluye parciales y el primer mes con datos)
 const recordMonths = (data, acc) => {
@@ -1061,7 +1073,7 @@ export default function Dashboard(){
           <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil((c.monthlyPlan&&dataMax>=c.monthlyPlan*0.35?Math.max(dataMax,c.monthlyPlan):dataMax)*1.15)||"auto"]}/>
+            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(md12.map(m=>m.canjeadas), {line:c.monthlyPlan})}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
             <Bar dataKey="canjeadas" name="canjeadas" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recCanj.has(mKey(m)),curCanj===mKey(m))}/>)}</Bar>
           </BarChart>
@@ -1073,7 +1085,7 @@ export default function Dashboard(){
           <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
             <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
             <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} domain={[0, dataMax => Math.ceil((planRefLine&&dataMax>=planRefLine*0.35?Math.max(dataMax,planRefLine):dataMax)*1.15)||"auto"]}/>
+            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(md12.map(m=>usesRealizadas?m.realizadas:m.canjeadas), {line:planRefLine})}/>
             <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
             {planRefLine&&Math.max(0,...md12.map(m=>usesRealizadas?m.realizadas:m.canjeadas))>=planRefLine*0.35&&<ReferenceLine y={planRefLine} stroke="#8da7e6" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#283d6b"}}/>}
             <Bar dataKey={usesRealizadas?"realizadas":"canjeadas"} name={usesRealizadas?"realizadas":"Sesiones"} radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recSes.has(mKey(m)),curSes===mKey(m))}/>)}</Bar>
@@ -1117,7 +1129,7 @@ export default function Dashboard(){
             <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(md12.map(m=>m.activos))}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
               <Bar dataKey="activos" name="Activos" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recActivos.has(mKey(m)),curActivos===mKey(m))}/>)}</Bar>
             </BarChart>
@@ -1128,7 +1140,7 @@ export default function Dashboard(){
             <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(md12.map(m=>m.nuevos))}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
               <Bar dataKey="nuevos" name="Nuevos pacientes" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recNuevos.has(mKey(m)),curNuevos===mKey(m))}/>)}</Bar>
             </BarChart>
@@ -1449,7 +1461,7 @@ export default function Dashboard(){
             <BarChart data={inv12} maxBarSize={44} barCategoryGap="22%">
               <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
               <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} allowDecimals={false} tickFormatter={v=>v>=1000?`$${Math.round(v/1000)}k`:`$${v}`}/>
               <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
               <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{inv12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recInv.has(m.label||m.month),curInv===(m.label||m.month))}/>)}</Bar>
             </BarChart>
