@@ -959,7 +959,7 @@ export default function Dashboard(){
                 return i===lastSixNew.length-1?<circle key={i} cx={x} cy={y} r="3" fill={P.light}/>:null;
               })}
             </svg>
-            <div style={{fontSize:38,fontWeight:800,color:P.light,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{totNuev}</div>
+            <div style={{fontSize:38,fontWeight:800,color:P.light,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{fmt(totHistorico)}</div>
             <div style={{fontSize:12,fontWeight:600,color:P.text}}>personas acompañadas</div>
           </div>}
 
@@ -1054,10 +1054,10 @@ export default function Dashboard(){
     {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#e6f0ee,#f3f9f8)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
       <div style={{fontSize:10,fontWeight:700,color:"#307070",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,opacity:0.7}}>Colaboradores</div>
       <div style={{fontSize:25,fontWeight:800,color:"#264534",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
-        {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud mental este mes":`${totNuev} personas eligieron cuidar su salud mental`)}
+        {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud mental este mes":`${fmt(totHistorico)} personas eligieron cuidar su salud mental`)}
       </div>
       <div style={{fontSize:13,color:"#45695f",opacity:0.85}}>
-        {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totSes)} ${sesWord}${planKind==="cuponera_fija"?` · ${compRate}% de utilización del plan`:""}`:sub==="Adherencia"?`${totNuev} pacientes únicos desde el inicio`:"")}
+        {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totSes)} ${sesWord}${planKind==="cuponera_fija"?` · ${compRate}% de utilización del plan`:""}`:sub==="Adherencia"?`${fmt(totHistorico)} pacientes únicos desde el inicio`:"")}
       </div>
     </div>}
     {mod==="individual"&&sub==="Sesiones"&&<>
