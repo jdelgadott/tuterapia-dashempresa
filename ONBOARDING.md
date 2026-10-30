@@ -19,16 +19,18 @@ Los dos comparten la misma base de datos (Supabase) y los dos están hechos de l
 
 ---
 
-## Antes de empezar: los 4 accesos
+## Antes de empezar: los accesos
 
-Pedíselos a Juan. Son cuatro cosas distintas y no se dan juntas:
+**Para arrancar necesitás uno solo: GitHub.** Pedile a Juan que te agregue a los dos repos (te va a llegar la invitación a tu mail de Tu Terapia).
 
-1. **GitHub** — donde vive el código. Te va a llegar una invitación por mail a los dos repos.
-2. **Supabase** — la base de datos. Solo si vas a mirar datos reales.
-3. **Vercel** — donde se publica. Solo si vas a necesitar ver por qué algo no subió.
-4. **Las claves** (`.env`) — Juan te las pasa por un canal privado. **Nunca las mandes por mail ni WhatsApp, ni las pegues en un chat.**
+No hace falta configurar claves ni variables de entorno: la clave que usa el proyecto es pública por diseño y ya está en el código. Clonás y funciona. Lo que protege los datos de los clientes no es esconder esa clave, sino las reglas de la base (RLS), que te dejan ver solo lo que tu usuario tiene permitido.
 
-Para empezar a mirar y proponer cambios alcanza con la 1.
+Tu usuario de los paneles es tu mail de Tu Terapia, el mismo de siempre.
+
+Hay otros dos accesos que **no te hacen falta todavía** y conviene pedir recién cuando una tarea los necesite:
+
+- **Supabase** (la consola de la base): para crear o cambiar tablas, leer logs, o reactivar el proyecto si se pausó. Es el único lugar donde se puede romper algo sin vuelta atrás, y no hay ambiente de prueba.
+- **Vercel** (donde se publica): para ver por qué algo no subió.
 
 ---
 
