@@ -315,13 +315,16 @@ function LoginView({ onLogin, onAdminLogin }) {
   async function handleLogin() {
     if(!email||!password){ setError("Completá email y contraseña."); return; }
     setLoading(true); setError("");
-    const {data, error:authError} = await supabase.auth.signInWithPassword({ email, password });
+    // El mail se normaliza: el teclado del celular capitaliza la primera letra y Auth
+    // guarda todo en minúscula, pero las tablas se consultaban con match exacto.
+    const em = email.trim().toLowerCase();
+    const {data, error:authError} = await supabase.auth.signInWithPassword({ email: em, password });
     if(authError){ setError("Email o contraseña incorrectos."); setLoading(false); return; }
-    const {data:userRows} = await supabase.from("company_users").select("*, companies(*)").eq("email", email).eq("active", true);
+    const {data:userRows} = await supabase.from("company_users").select("*, companies(*)").eq("email", em).eq("active", true);
     const userData = userRows?.[0];
     if(!userData){
       // Admins de Tu Terapia entran con su propia cuenta y ven cualquier empresa
-      const {data:adminData} = await supabase.from("admin_users").select("*").eq("email", email).single();
+      const {data:adminData} = await supabase.from("admin_users").select("*").eq("email", em).maybeSingle();
       if(adminData){
         const {data:allCompanies} = await supabase.from("companies").select("id,name").order("name");
         if(allCompanies?.length){ onAdminLogin(adminData, allCompanies); setLoading(false); return; }
@@ -344,6 +347,7 @@ function LoginView({ onLogin, onAdminLogin }) {
         <div style={{marginBottom:14}}>
           <label style={{fontSize:11,fontWeight:600,color:"#5a7968",display:"block",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.06em"}}>Email</label>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@empresa.com"
+            autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="email"
             onKeyDown={e=>e.key==="Enter"&&handleLogin()}
             style={{width:"100%",padding:"10px 12px",border:"1px solid #e7e1d4",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
         </div>
@@ -450,13 +454,14 @@ export default function Dashboard(){
     supabase.auth.getSession().then(async({data:{session}, error:sessionError})=>{
       if(sessionError||!session?.user){ setAuthLoading(false); return; }
       try {
-        const {data:udRows} = await supabase.from("company_users").select("*, companies(*)").eq("email",session.user.email).eq("active",true);
+        const sem = (session.user.email||"").trim().toLowerCase();
+        const {data:udRows} = await supabase.from("company_users").select("*, companies(*)").eq("email",sem).eq("active",true);
         const ud = udRows?.[0];
         if(ud){
           const {data:pd} = await supabase.from("user_permissions").select("*").eq("user_id",ud.id);
           setAuthUser(ud); setUserPerms(pd||[]); setUserCompanies(udRows||[]);
         } else {
-          const {data:adminData} = await supabase.from("admin_users").select("*").eq("email",session.user.email).single();
+          const {data:adminData} = await supabase.from("admin_users").select("*").eq("email",sem).maybeSingle();
           const {data:allCompanies} = adminData ? await supabase.from("companies").select("id,name").order("name") : {data:null};
           if(adminData&&allCompanies?.length){
             setAdminViewer(adminData); setAdminCompanies(allCompanies); setAdminCompanyId(allCompanies[0].id);
