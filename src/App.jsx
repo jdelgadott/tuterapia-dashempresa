@@ -319,16 +319,28 @@ function LoginView({ onLogin, onAdminLogin }) {
     // guarda todo en minúscula, pero las tablas se consultaban con match exacto.
     const em = email.trim().toLowerCase();
     const {data, error:authError} = await supabase.auth.signInWithPassword({ email: em, password });
-    if(authError){ setError("Email o contraseña incorrectos."); setLoading(false); return; }
-    const {data:userRows} = await supabase.from("company_users").select("*, companies(*)").eq("email", em).eq("active", true);
+    if(authError){
+      // Un 400/422 es credencial equivocada; cualquier otra cosa (red caída, base pausada)
+      // no lo es, y decir "contraseña incorrecta" manda a la gente a buscar donde no es.
+      const esCredencial = authError.status===400 || authError.status===422;
+      setError(esCredencial ? "Email o contraseña incorrectos."
+                            : "No pudimos conectar con el servidor. Probá de nuevo en un momento.");
+      setLoading(false); return;
+    }
+    const fallo = ()=>{ setError("No pudimos verificar tu acceso. Probá de nuevo en un momento."); setLoading(false); };
+    const {data:userRows, error:udErr} = await supabase.from("company_users").select("*, companies(*)").eq("email", em).eq("active", true);
+    if(udErr){ return fallo(); }
     const userData = userRows?.[0];
     if(!userData){
       // Admins de Tu Terapia entran con su propia cuenta y ven cualquier empresa
-      const {data:adminData} = await supabase.from("admin_users").select("*").eq("email", em).maybeSingle();
+      const {data:adminData, error:adErr} = await supabase.from("admin_users").select("*").eq("email", em).maybeSingle();
+      if(adErr){ return fallo(); }
       if(adminData){
-        const {data:allCompanies} = await supabase.from("companies").select("id,name").order("name");
-        if(allCompanies?.length){ onAdminLogin(adminData, allCompanies); setLoading(false); return; }
+        const {data:allCompanies, error:cErr} = await supabase.from("companies").select("id,name").order("name");
+        if(cErr||!allCompanies?.length){ return fallo(); }
+        onAdminLogin(adminData, allCompanies); setLoading(false); return;
       }
+      // Acá sí es definitivo: las consultas anduvieron y el mail no tiene acceso.
       await supabase.auth.signOut(); setError("No tenés acceso al dashboard."); setLoading(false); return;
     }
     const {data:permsData} = await supabase.from("user_permissions").select("*").eq("user_id", userData.id);
@@ -424,6 +436,7 @@ export default function Dashboard(){
   const [adminCompanies, setAdminCompanies] = useState([]);
   const [adminCompanyId, setAdminCompanyId] = useState(null);
   const [showSetPassword, setShowSetPassword] = useState(false);
+  const [connError, setConnError] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
   const [passwordMsg, setPasswordMsg] = useState("");
@@ -455,19 +468,30 @@ export default function Dashboard(){
       if(sessionError||!session?.user){ setAuthLoading(false); return; }
       try {
         const sem = (session.user.email||"").trim().toLowerCase();
-        const {data:udRows} = await supabase.from("company_users").select("*, companies(*)").eq("email",sem).eq("active",true);
+        const {data:udRows, error:udErr} = await supabase.from("company_users").select("*, companies(*)").eq("email",sem).eq("active",true);
+        if(udErr) throw udErr;
         const ud = udRows?.[0];
         if(ud){
           const {data:pd} = await supabase.from("user_permissions").select("*").eq("user_id",ud.id);
           setAuthUser(ud); setUserPerms(pd||[]); setUserCompanies(udRows||[]);
         } else {
-          const {data:adminData} = await supabase.from("admin_users").select("*").eq("email",sem).maybeSingle();
-          const {data:allCompanies} = adminData ? await supabase.from("companies").select("id,name").order("name") : {data:null};
-          if(adminData&&allCompanies?.length){
+          const {data:adminData, error:adErr} = await supabase.from("admin_users").select("*").eq("email",sem).maybeSingle();
+          if(adErr) throw adErr;
+          if(!adminData){
+            // Única salida definitiva: la consulta anduvo y el mail no tiene acceso.
+            await supabase.auth.signOut();
+          } else {
+            const {data:allCompanies, error:cErr} = await supabase.from("companies").select("id,name").order("name");
+            if(cErr) throw cErr;
+            if(!allCompanies?.length) throw new Error("No se pudieron cargar las empresas");
             setAdminViewer(adminData); setAdminCompanies(allCompanies); setAdminCompanyId(allCompanies[0].id);
-          } else { await supabase.auth.signOut(); }
+          }
         }
-      } catch(e) { await supabase.auth.signOut(); }
+      } catch(e) {
+        // Falla de red o base pausada: la sesión sigue siendo válida, NO deslogueamos.
+        // Antes esto sacaba a todo el mundo cada vez que Supabase se pausaba.
+        setConnError(true);
+      }
       setAuthLoading(false);
     });
     // Listen for auth changes (token refresh, logout)
@@ -601,6 +625,22 @@ export default function Dashboard(){
   if(encuestaMatch) return <EncuestaView companyId={encuestaMatch[1]} role={encuestaMatch[2]?"lider":"colaborador"}/>;
 
   if(authLoading) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#fefaf5",fontFamily:"'DM Sans',system-ui,sans-serif",color:"#5a7968",fontSize:13}}>Cargando...</div>;
+  if(connError) return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:P.bg,fontFamily:"'DM Sans',system-ui,sans-serif",padding:24}}>
+      <div style={{background:"#fff",borderRadius:16,border:`1px solid ${P.border}`,padding:"36px 32px",maxWidth:420,textAlign:"center"}}>
+        <div style={{fontSize:32,marginBottom:12}}>🔌</div>
+        <div style={{fontSize:17,fontWeight:700,color:P.text,fontFamily:F_HEAD,marginBottom:8}}>No pudimos conectar</div>
+        <div style={{fontSize:13,color:P.textMuted,lineHeight:1.6,marginBottom:22}}>
+          Tu sesión sigue abierta — es el servidor el que no está respondiendo.
+          Probá de nuevo en un momento; si sigue igual, escribinos.
+        </div>
+        <button onClick={()=>window.location.reload()}
+          style={{padding:"10px 22px",background:P.primary,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer"}}>
+          Reintentar
+        </button>
+      </div>
+    </div>
+  );
   if(!authUser&&!adminViewer) return <LoginView
     onLogin={(ud,pd,rows)=>{ setAuthUser(ud); setUserPerms(pd); setUserCompanies(rows||[]); }}
     onAdminLogin={(ad,companies)=>{ setAdminViewer(ad); setAdminCompanies(companies); setAdminCompanyId(companies[0].id); }}/>;
