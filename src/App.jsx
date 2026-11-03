@@ -1495,8 +1495,9 @@ export default function Dashboard(){
           content_id:item.id, company_id:fbCompanyId,
           stars:st.stars, comment:(st.comment||"").trim()||null,
         });
-        // Si falla no decimos "¡Gracias!": sería mentirle a RRHH sobre un voto que no quedó.
-        if(error){ console.log("feedback error",error); setFb(f=>({...f,[k]:{...st,saving:false,error:true}})); return; }
+        // 23505 = ya habia votado este contenido (restriccion unique). No es un fallo:
+        // el voto que vale es el primero, así que se muestra como enviado y listo.
+        if(error&&error.code!=="23505"){ console.log("feedback error",error); setFb(f=>({...f,[k]:{...st,saving:false,error:true}})); return; }
         setFb(f=>({...f,[k]:{...st,saving:false,sent:true,open:false}}));
       }
 
