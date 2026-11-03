@@ -552,7 +552,7 @@ export default function Dashboard(){
       const [
         surveys, content, workshops, workshopsRec, talleristas,
         headerTexts, company, sessions, billing, recommendations,
-        milestones, nps, reasons, roiQ, encProm, encComments, seguimiento, equipo, coupons, popup, reuniones
+        milestones, nps, reasons, roiQ, encProm, encComments, seguimiento, equipo, coupons, popup, reuniones, feedback
       ] = await Promise.all([
         supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("content").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
@@ -575,6 +575,7 @@ export default function Dashboard(){
         supabase.from("sessions_by_coupon").select("*").eq("company_id",companyId),
         supabase.from("encuesta_popup").select("*").eq("company_id",companyId).order("period",{ascending:false}),
         supabase.from("reuniones_semestrales").select("*").eq("company_id",companyId),
+        supabase.from("content_feedback").select("content_id,stars,comment,user_email").eq("company_id",companyId),
       ]);
       setDbSurveys(surveys.data||[]);
       setDbContent(content.data||[]);
@@ -597,6 +598,13 @@ export default function Dashboard(){
       setDbCoupons(coupons.data||[]);
       setDbPopup(popup.data||[]);
       setDbReuniones(reuniones.data||[]);
+      // Los votos propios ya guardados vuelven como "enviado", así la misma persona no
+      // vuelve a votar el mismo contenido cada vez que recarga. La política de RLS deja
+      // ver todo el feedback de la empresa, por eso se filtra por el mail propio.
+      const miMail=(authUser?.email||"").toLowerCase();
+      setContentRatings(miMail?Object.fromEntries((feedback.data||[])
+        .filter(r=>(r.user_email||"").toLowerCase()===miMail)
+        .map(r=>[r.content_id,{stars:r.stars,comment:r.comment||"",sent:true}])):{});
       setDataLoading(false);
     }
     loadData();
@@ -1476,6 +1484,22 @@ export default function Dashboard(){
       const otros=c.content.filter(x=>!GROUPS.some(g=>g.id===(x.category||"otros")));
       const MES_ACTUAL=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][new Date().getMonth()];
       const fb=contentRatings; const setFb=setContentRatings;
+      const fbCompanyId=authUser?.company_id||adminCompanyId;
+
+      // El voto se guarda recién al tocar "Enviar". Un admin mirando el dash de una empresa
+      // NO vota: ensuciaría el feedback de RRHH con opiniones del equipo de Tu Terapia.
+      async function enviarFeedback(k,item,st){
+        if(adminViewer){ setFb(f=>({...f,[k]:{...st,sent:true,open:false}})); return; }
+        setFb(f=>({...f,[k]:{...st,saving:true,error:false}}));
+        const {error}=await supabase.from("content_feedback").insert({
+          content_id:item.id, company_id:fbCompanyId,
+          stars:st.stars, comment:(st.comment||"").trim()||null,
+        });
+        // Si falla no decimos "¡Gracias!": sería mentirle a RRHH sobre un voto que no quedó.
+        if(error){ console.log("feedback error",error); setFb(f=>({...f,[k]:{...st,saving:false,error:true}})); return; }
+        setFb(f=>({...f,[k]:{...st,saving:false,sent:true,open:false}}));
+      }
+
       const Card=({item,monthly})=>{
         const k=item.id||item.title; const st=fb[k]||{};
         const isNow=monthly&&item.format===MES_ACTUAL;
@@ -1493,7 +1517,9 @@ export default function Dashboard(){
             <div style={{display:"flex",gap:2}}>{[1,2,3,4,5].map(n=><button key={n} aria-label={`${n} estrellas`} onClick={()=>setFb(f=>({...f,[k]:{...st,stars:n}}))} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,lineHeight:1,padding:"0 1px",color:(st.stars||0)>=n?"#D9A441":"#d8d1c3"}}>★</button>)}</div>
             <textarea id={`fb-${k}`} rows={2} placeholder="¿Qué cambiarías? (opcional)" value={st.comment||""} onChange={e=>{const v=e.target.value;setFb(f=>({...f,[k]:{...(f[k]||{}),comment:v}}));}}
               style={{fontFamily:"inherit",fontSize:12,border:`1px solid ${P.border}`,borderRadius:8,padding:"7px 9px",resize:"vertical",background:P.white}}/>
-            <button disabled={!st.stars} onClick={()=>setFb(f=>({...f,[k]:{...st,sent:true,open:false}}))} style={{alignSelf:"flex-start",background:st.stars?P.primary:"#c9c2b4",color:"#fff",border:"none",borderRadius:8,padding:"7px 16px",fontSize:12,fontWeight:600,cursor:st.stars?"pointer":"default"}}>Enviar</button>
+            {adminViewer&&<div style={{fontSize:11,color:"#5a7968",fontStyle:"italic"}}>Vista admin: el voto no se guarda.</div>}
+            {st.error&&<div style={{fontSize:11,color:P.red}}>No pudimos guardar tu voto. Probá de nuevo en un momento.</div>}
+            <button disabled={!st.stars||st.saving} onClick={()=>enviarFeedback(k,item,st)} style={{alignSelf:"flex-start",background:st.stars&&!st.saving?P.primary:"#c9c2b4",color:"#fff",border:"none",borderRadius:8,padding:"7px 16px",fontSize:12,fontWeight:600,cursor:st.stars&&!st.saving?"pointer":"default"}}>{st.saving?"Enviando…":"Enviar"}</button>
           </div>}
         </div>;
       };
