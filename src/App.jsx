@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabase.js";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine, ComposedChart, Line } from "recharts";
 
 const LOGO_TT = "data:image/jpeg;base64,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";
 
@@ -44,6 +44,20 @@ const recordMonths = (data, acc) => {
 };
 const fmt = (n) => new Intl.NumberFormat("es-UY").format(Math.round(n));
 const F_HEAD="'Bricolage Grotesque','DM Sans',sans-serif";
+// Solo en la vista previa (build de prueba con datos de ejemplo): el botón de Consultoría desbloquea la sección
+const IS_PREVIEW = typeof __PREVIEW__!=="undefined" && __PREVIEW__;
+// Fechas en texto libre: "2026-08-12", "12 Ago 2026", "Agosto 2026", "Ago 2026"
+const MES_IDX={ene:1,feb:2,mar:3,abr:4,may:5,jun:6,jul:7,ago:8,sep:9,set:9,oct:10,nov:11,dic:12};
+const MES_ABBR=["","Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const parseEsDate=(d)=>{
+  if(!d) return null; const str=String(d).trim();
+  let m=str.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return {y:+m[1],m:+m[2],d:+m[3],t:new Date(+m[1],+m[2]-1,+m[3]).getTime()};
+  m=str.match(/^(?:(\d{1,2})\s+(?:de\s+)?)?([A-Za-zé]+)\.?\s+(?:de\s+)?(\d{4})$/);
+  if(m){const mo=MES_IDX[m[2].slice(0,3).toLowerCase()]; if(mo){const day=m[1]?+m[1]:1; return {y:+m[3],m:mo,d:m[1]?day:null,t:new Date(+m[3],mo-1,day).getTime()};}}
+  const t=new Date(str).getTime(); if(!isNaN(t)){const x=new Date(t); return {y:x.getFullYear(),m:x.getMonth()+1,d:x.getDate(),t};}
+  return null;
+};
+const fmtEsDate=(d)=>{const p=parseEsDate(d); if(!p) return d||""; return `${p.d?p.d+" ":""}${MES_ABBR[p.m]} ${p.y}`;};
 const semLabel = (s) => String(s||"").replace(/^S1 (\d{4})/,"1er sem $1").replace(/^S2 (\d{4})/,"2do sem $1");
 
 function monthsDiff(startStr){
@@ -76,10 +90,10 @@ const TT_TEAM=[
 ];
 
 const MODULES=[
-  {id:"individual", label:"Colaboradores",  subs:["Sesiones","Adherencia"]},
+  {id:"individual", label:"Colaboradores",  subs:["Sesiones","Adherencia","Motivos de consulta"]},
   {id:"colectivo",  label:"Cultura de Bienestar",   subs:["Talleres","Contenido"]},
   {id:"estrategico",label:"Estrategia de Bienestar", subs:["Bienestar del equipo","Consultoría Tu Terapia"]},
-  {id:"gestion",    label:"Gestión",            subs:["Facturación","Plan activo","Equipo TT"],restricted:true},
+  {id:"gestion",    label:"Gestión",            subs:["Resumen"],restricted:true},
 ];
 
 const MONTH_ORDER = {Ene:1,Feb:2,Mar:3,Abr:4,May:5,Jun:6,Jul:7,Ago:8,Sep:9,Oct:10,Nov:11,Dic:12};
@@ -449,6 +463,7 @@ export default function Dashboard(){
   const [localConsultoriaActiva,setConsultoriaActiva]=useState(false);
   const [expandedSurvey,setExpandedSurvey]=useState(null);
   const [linkCopied,setLinkCopied]=useState(null);
+  const [showAllBills,setShowAllBills]=useState(false);
 
   const [solicitando,setSolicitando]=useState(false);
   const [contentRatings,setContentRatings]=useState({});
@@ -524,6 +539,9 @@ export default function Dashboard(){
   const [dbEncuestaComments, setDbEncuestaComments] = useState([]);
   const [dbEquipo, setDbEquipo] = useState([]);
   const [dbSeguimiento, setDbSeguimiento] = useState([]);
+  const [dbCoupons, setDbCoupons] = useState([]);
+  const [dbPopup, setDbPopup] = useState([]);
+  const [dbReuniones, setDbReuniones] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
 
   useEffect(()=>{
@@ -534,7 +552,7 @@ export default function Dashboard(){
       const [
         surveys, content, workshops, workshopsRec, talleristas,
         headerTexts, company, sessions, billing, recommendations,
-        milestones, nps, reasons, roiQ, encProm, encComments, seguimiento, equipo
+        milestones, nps, reasons, roiQ, encProm, encComments, seguimiento, equipo, coupons, popup, reuniones
       ] = await Promise.all([
         supabase.from("encuestas_archivos").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
         supabase.from("content").select("*").eq("company_id",companyId).order("created_at",{ascending:false}),
@@ -554,6 +572,9 @@ export default function Dashboard(){
         supabase.rpc("encuesta_comentarios"),
         supabase.from("seguimiento_beneficio").select("*").eq("company_id",companyId).order("created_at"),
         supabase.from("admin_users").select("*").eq("active",true).order("name"),
+        supabase.from("sessions_by_coupon").select("*").eq("company_id",companyId),
+        supabase.from("encuesta_popup").select("*").eq("company_id",companyId).order("period",{ascending:false}),
+        supabase.from("reuniones_semestrales").select("*").eq("company_id",companyId),
       ]);
       setDbSurveys(surveys.data||[]);
       setDbContent(content.data||[]);
@@ -573,6 +594,9 @@ export default function Dashboard(){
       setDbEncuestaComments((encComments.data||[]).filter(r=>r.company_id===companyId));
       setDbSeguimiento(seguimiento.data||[]);
       setDbEquipo(equipo.data||[]);
+      setDbCoupons(coupons.data||[]);
+      setDbPopup(popup.data||[]);
+      setDbReuniones(reuniones.data||[]);
       setDataLoading(false);
     }
     loadData();
@@ -660,6 +684,7 @@ export default function Dashboard(){
     primera_vez: s.primera_vez||0,
     c1: s.c1||0, c2: s.c2||0, c3: s.c3||0, c4: s.c4||0, c5: s.c5||0,
     partial: s.partial||false,
+    coupons: Object.fromEntries(dbCoupons.filter(k=>k.month===s.month&&k.year===s.year).map(k=>[k.coupon_code,k.sessions||0])),
   })).sort((a,b)=> a.year!==b.year ? a.year-b.year : a.monthOrder-b.monthOrder);
 
   const supabaseBilling = dbBilling.map(b=>({
@@ -817,6 +842,18 @@ export default function Dashboard(){
   const sesOf = (m) => usesRealizadas ? m.realizadas : m.canjeadas;
   const totSes = usesRealizadas ? totReal : totCanj;
   const sesWord = usesRealizadas ? "sesiones realizadas" : "sesiones";
+  // Motivos de consulta: período más reciente vs. el anterior (si hay más de uno cargado)
+  const reasonsInfo=(()=>{
+    const periods=[...new Set(c.consultationReasons.map(r=>r.period||""))];
+    const pNum=(p)=>{const m=(p||"").match(/([A-Za-zé]+)\s+(\d{4})/);return m?parseInt(m[2])*100+(MONTH_ORDER[m[1].slice(0,3)]||0):0;};
+    periods.sort((a,b)=>pNum(b)-pNum(a));
+    const cur=c.consultationReasons.filter(r=>(r.period||"")===periods[0]);
+    const prev=periods[1]!=null?c.consultationReasons.filter(r=>(r.period||"")===periods[1]):[];
+    const personas=totHistorico||0;
+    const pctOf=(r)=>personas?Math.round((r.count||0)/personas*100):(r.percentage||0);
+    const top=[...cur].sort((a,b)=>(b.count||0)-(a.count||0))[0]||null;
+    return {periods,cur,prev,personas,pctOf,top,MIN_N:3};
+  })();
   // Gráficas: últimos 12 meses + resaltado de meses récord
   const md12 = c.monthlyData.slice(-12);
   const mKey = m => m.label||m.month;
@@ -923,7 +960,7 @@ export default function Dashboard(){
       <button onClick={goHome} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,color:P.textMuted,background:P.gray50,border:`1px solid ${P.border}`,borderRadius:7,padding:"5px 12px",margin:"6px 12px 6px 0",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
         ← Inicio
       </button>
-      {activeMod?.subs&&visibleSubs(activeMod.id).map(s=><button key={s} onClick={()=>setSub(s)} style={{fontSize:12,fontWeight:600,color:sub===s?"#fff":P.textMuted,background:sub===s?P.primary:"transparent",border:`1px solid ${sub===s?P.primary:"transparent"}`,borderRadius:20,padding:"7px 16px",margin:"5px 0",cursor:"pointer",whiteSpace:"nowrap",letterSpacing:"0.01em",transition:"all 0.15s"}}>{s}</button>)}
+      {activeMod?.subs&&visibleSubs(activeMod.id).length>1&&visibleSubs(activeMod.id).map(s=><button key={s} onClick={()=>setSub(s)} style={{fontSize:12,fontWeight:600,color:sub===s?"#fff":P.textMuted,background:sub===s?P.primary:"transparent",border:`1px solid ${sub===s?P.primary:"transparent"}`,borderRadius:20,padding:"7px 16px",margin:"5px 0",cursor:"pointer",whiteSpace:"nowrap",letterSpacing:"0.01em",transition:"all 0.15s"}}>{s}</button>)}
     </div>}
 
     <div style={{padding:"28px 32px",maxWidth:1200,margin:"0 auto"}}>
@@ -931,15 +968,18 @@ export default function Dashboard(){
     {/* ── HOME ── */}
     {mod==="home"&&<>
       {/* Saludo + frase central */}
-      <div style={{textAlign:"center",padding:"48px 24px 36px",maxWidth:640,margin:"0 auto"}}>
-        <div style={{fontSize:11,fontWeight:700,color:P.textMuted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:16}}>
+      <div style={{textAlign:"center",padding:"52px 24px 44px",margin:"8px 0 22px",borderRadius:24,
+        background:"linear-gradient(120deg,#7fb3a8 0%,#b5d6cf 45%,#e9f3f1 100%)",border:"none"}}>
+        <div style={{maxWidth:640,margin:"0 auto"}}>
+        <div style={{fontSize:11,fontWeight:700,color:"rgba(38,69,52,0.7)",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:16}}>
           {c.name}{months>0?` · ${months} meses juntos`:""}
         </div>
-        <div style={{fontSize:42,fontWeight:800,color:P.text,lineHeight:1.15,letterSpacing:"-0.5px",marginBottom:16,fontFamily:F_HEAD}}>
+        <div style={{fontSize:42,fontWeight:800,color:"#264534",lineHeight:1.15,letterSpacing:"-0.5px",marginBottom:16,fontFamily:F_HEAD}}>
           Tu equipo se está sintiendo mejor
         </div>
-        <div style={{fontSize:15,color:P.primary+"CC",lineHeight:1.7,maxWidth:480,margin:"0 auto"}}>
+        <div style={{fontSize:15,color:"#2d5a4a",lineHeight:1.7,maxWidth:480,margin:"0 auto"}}>
           {sub==="Sesiones"?"Cada sesión es un paso en la salud mental de tu equipo.":"Más personas eligieron cuidar su salud mental este mes."}
+        </div>
         </div>
       </div>
 
@@ -956,13 +996,19 @@ export default function Dashboard(){
         }).join(' ');
 
         const lastSixNew=c.monthlyData.slice(-6);
-        const maxNew=Math.max(...lastSixNew.map(m=>m.nuevos),1);
+        // Personas acompañadas: curva del acumulado (total_historico), escalada entre su mínimo y su máximo
+        const histVals=lastSixNew.map(m=>m.total_historico||0);
+        const minH=Math.min(...histVals), maxH=Math.max(...histVals,minH+1);
+        const yH=(v)=>Math.round(sparkH-6-((v-minH)/(maxH-minH))*(sparkH-10));
         const ptsNew=lastSixNew.map((m,i)=>{
           const x=Math.round(i*(sparkW/(lastSixNew.length-1)));
-          const y=Math.round(sparkH-(m.nuevos/maxNew)*sparkH);
+          const y=yH(m.total_historico||0);
           return `${x},${y}`;
         }).join(' ');
 
+        // Talleres del año contra el objetivo (talleres temáticos y de contención)
+        const anioTalleres=lastFull?.year||new Date().getFullYear();
+        const talleresAnio=c.workshops.filter(w=>["taller","contencion"].includes(w.initiative_type||"taller")&&parseEsDate(w.date)?.y===anioTalleres).length;
         // Progress ring helper
         const Ring=({pct,color,size=74,stroke=6})=>{
           const r=((size-stroke*2)/2);
@@ -988,8 +1034,8 @@ export default function Dashboard(){
                 return i===lastSix.length-1?<circle key={i} cx={x} cy={y} r="3" fill={P.primary}/>:null;
               })}
             </svg>
-            <div style={{fontSize:38,fontWeight:800,color:P.primary,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{fmt(totSes)}</div>
-            <div style={{fontSize:12,fontWeight:600,color:P.text}}>{sesWord}</div>
+            <div style={{fontSize:38,fontWeight:800,color:P.primary,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{lastFull?fmt(sesOf(lastFull)):"—"}</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>{usesRealizadas?"sesiones realizadas":"sesiones"} en {lastFull?({Ene:"enero",Feb:"febrero",Mar:"marzo",Abr:"abril",May:"mayo",Jun:"junio",Jul:"julio",Ago:"agosto",Sep:"septiembre",Oct:"octubre",Nov:"noviembre",Dic:"diciembre"}[lastFull.month]||lastFull.month):"el mes"}</div>
           </div>}
 
           {/* Personas — sparkline */}
@@ -1000,12 +1046,12 @@ export default function Dashboard(){
               <polyline points={ptsNew} fill="none" stroke={P.light} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               {lastSixNew.map((m,i)=>{
                 const x=Math.round(i*(sparkW/(lastSixNew.length-1)));
-                const y=Math.round(sparkH-(m.nuevos/maxNew)*sparkH);
+                const y=yH(m.total_historico||0);
                 return i===lastSixNew.length-1?<circle key={i} cx={x} cy={y} r="3" fill={P.light}/>:null;
               })}
             </svg>
             <div style={{fontSize:38,fontWeight:800,color:P.light,letterSpacing:"-0.5px",lineHeight:1,fontFamily:F_HEAD}}>{fmt(totHistorico)}</div>
-            <div style={{fontSize:12,fontWeight:600,color:P.text}}>personas acompañadas</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>personas acompañadas desde el inicio</div>
           </div>}
 
           {/* Primera vez en terapia — ring */}
@@ -1014,16 +1060,16 @@ export default function Dashboard(){
               <Ring pct={c.firstTimePct!=null?c.firstTimePct:0} color={P.primary} size={74} stroke={6}/>
               <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:15,fontWeight:800,color:P.primary}}>{c.firstTimePct!=null?`${c.firstTimePct}%`:"—"}</div>
             </div>
-            <div style={{fontSize:12,fontWeight:600,color:P.text,textAlign:"center",lineHeight:1.4}}>Primera vez en terapia</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text,textAlign:"center",lineHeight:1.4}}>van a terapia por primera vez</div>
           </div>}
 
           {/* Talleres — ring */}
           <div style={{background:P.white,padding:"28px 24px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:9,minHeight:205}}>
             <div style={{position:"relative",width:74,height:74}}>
-              <Ring pct={Math.min(100,Math.round((c.workshops.length/(c.workshopTarget||5))*100))} color={P.purple} size={74} stroke={6}/>
-              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:15,fontWeight:800,color:P.purple}}>{c.workshops.length}/{c.workshopTarget||5}</div>
+              <Ring pct={Math.min(100,Math.round((talleresAnio/(c.workshopTarget||4))*100))} color={P.purple} size={74} stroke={6}/>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:15,fontWeight:800,color:P.purple}}>{talleresAnio}/{c.workshopTarget||4}</div>
             </div>
-            <div style={{fontSize:12,fontWeight:600,color:P.text}}>talleres realizados</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>talleres en {anioTalleres}</div>
           </div>
         </div>;
       })()}
@@ -1031,10 +1077,10 @@ export default function Dashboard(){
       {/* Pillar cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14,marginBottom:22}}>
         {[
-          {id:"individual", label:"Colaboradores",           color:"#307070", accent:"#e6f0ee"},
-          {id:"colectivo",  label:"Cultura de Bienestar",    color:"#8da7e6", accent:"#eef3fd"},
-          {id:"estrategico",label:"Estrategia de Bienestar", color:"#283d6b", accent:"#e9eefb"},
-          {id:"gestion",    label:"Gestión",                 color:P.textMuted, accent:P.gray50, restricted:true},
+          {id:"individual", label:"Colaboradores",           color:"#7fb3a8", accent:"#e6f0ee"},
+          {id:"colectivo",  label:"Cultura de Bienestar",    color:"#4f8f86", accent:"#e1eeeb"},
+          {id:"estrategico",label:"Estrategia de Bienestar", color:"#307070", accent:"#e6efee"},
+          {id:"gestion",    label:"Gestión",                 color:"#264534", accent:P.gray50, restricted:true},
         ].filter(p=>moduleVisible(p.id)).map(p=><button key={p.id} onClick={()=>setModule(p.id)}
           onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow="0 8px 20px rgba(27,70,51,0.10)";}}
           onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="0 1px 5px rgba(24,33,30,0.05)";}}
@@ -1050,7 +1096,7 @@ export default function Dashboard(){
           transition:"transform 0.15s ease, box-shadow 0.15s ease",
         }}>
           {p.restricted&&<span style={{position:"absolute",top:12,right:12,fontSize:9,fontWeight:700,background:P.accentBg,color:P.accent,padding:"2px 7px",borderRadius:20,letterSpacing:"0.04em",textTransform:"uppercase"}}>Restringido</span>}
-          <div style={{fontSize:16,fontWeight:700,color:p.color,letterSpacing:"-0.2px",marginBottom:8,fontFamily:F_HEAD}}>{p.label}</div>
+          <div style={{fontSize:16,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:8,fontFamily:F_HEAD}}>{p.label}</div>
           <div style={{fontSize:12,fontWeight:600,color:P.textMuted}}>Ver detalle <span style={{color:p.color}}>→</span></div>
         </button>)}
       </div>
@@ -1096,171 +1142,320 @@ export default function Dashboard(){
     </>}
 
     {/* ── INDIVIDUAL ── */}
-    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#e6f0ee,#f3f9f8)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
+    {mod==="individual"&&<div style={{background:"linear-gradient(135deg,#d6e8e4 0%,#eef6f4 100%)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
       <div style={{fontSize:10,fontWeight:700,color:"#307070",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,opacity:0.7}}>Colaboradores</div>
       <div style={{fontSize:25,fontWeight:800,color:"#264534",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
-        {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud mental este mes":`${fmt(totHistorico)} personas eligieron cuidar su salud mental`)}
+        {getHeaderText("individual",sub,"title")||(sub==="Adherencia"?"Más personas eligieron cuidar su salud mental este mes":sub==="Motivos de consulta"?(reasonsInfo.top?`${reasonsInfo.top.reason.split(" / ")[0]} es el motivo más elegido, con el ${reasonsInfo.pctOf(reasonsInfo.top)}%`:"Motivos de consulta"):`${fmt(totHistorico)} personas eligieron cuidar su salud mental`)}
       </div>
       <div style={{fontSize:13,color:"#45695f",opacity:0.85}}>
-        {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totSes)} ${sesWord}${planKind==="cuponera_fija"?` · ${compRate}% de utilización del plan`:""}`:sub==="Adherencia"?`${fmt(totHistorico)} pacientes únicos desde el inicio`:"")}
+        {getHeaderText("individual",sub,"subtitle")||(sub==="Sesiones"?`${fmt(totSes)} ${sesWord} desde el inicio${planKind==="cuponera_fija"?` · ${compRate}% de utilización del plan`:""}`:sub==="Adherencia"?`${fmt(totHistorico)} pacientes únicos desde el inicio`:sub==="Motivos de consulta"?`${c.startDate?`Acumulado desde ${c.startDate}`:"Acumulado"} · una persona puede elegir más de un motivo`:"")}
       </div>
     </div>}
-    {mod==="individual"&&sub==="Sesiones"&&<>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-        {usesRealizadas&&<KpiCard label="Sesiones Canjeadas" value={fmt(totCanj)}/>}
-        <KpiCard label={usesRealizadas?"Sesiones Realizadas":"Sesiones"} value={fmt(totSes)}/>
-        {usesRealizadas&&<KpiCard label="Tasa de realización" value={`${compRate}%`}/>}
-        <KpiCard label={usesRealizadas?"Sesiones realizadas en el último mes":"Sesiones en el último mes"} value={lastFull?fmt(sesOf(lastFull)):"—"} sub={lastFull?.month}/>
-      </div>
-      {planKind==="cuponera_fija"&&<Section title="Sesiones canjeadas por mes">
-        {lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
-        <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
-            <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-            <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(md12.map(m=>m.canjeadas), {line:c.monthlyPlan})}/>
-            <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            <Bar dataKey="canjeadas" name="canjeadas" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recCanj.has(mKey(m)),curCanj===mKey(m))}/>)}</Bar>
-          </BarChart>
-        </ResponsiveContainer></div>
-      </Section>}
-      <Section title={`Sesiones${usesRealizadas?" realizadas":""} por mes${planRefLine?` — ${planKind==="a_demanda"?"tope":"plan"} ${planRefLine}/mes`:""}`}>
-        {!usesRealizadas&&lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
-        <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-          <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
-            <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-            <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-            <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(md12.map(m=>usesRealizadas?m.realizadas:m.canjeadas), {line:planRefLine})}/>
-            <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-            {planRefLine&&Math.max(0,...md12.map(m=>usesRealizadas?m.realizadas:m.canjeadas))>=planRefLine*0.35&&<ReferenceLine y={planRefLine} stroke="#8da7e6" strokeWidth={1.8} strokeDasharray="6 4" label={{value:`${planKind==="a_demanda"?"Tope":"Plan"}: ${planRefLine} sesiones`,position:"insideTopRight",fontSize:10,fontWeight:700,fill:"#283d6b"}}/>}
-            <Bar dataKey={usesRealizadas?"realizadas":"canjeadas"} name={usesRealizadas?"realizadas":"Sesiones"} radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recSes.has(mKey(m)),curSes===mKey(m))}/>)}</Bar>
-          </BarChart>
-        </ResponsiveContainer></div>
-      </Section>
-
-    </>}
+    {mod==="individual"&&sub==="Sesiones"&&(()=>{
+      // Cupones: cada código con su color dentro de la misma barra (el general primero = el de más sesiones)
+      const couponTotals={};
+      md12.forEach(m=>Object.entries(m.coupons||{}).forEach(([k,v])=>{couponTotals[k]=(couponTotals[k]||0)+v;}));
+      const codes=Object.keys(couponTotals).sort((a,b)=>couponTotals[b]-couponTotals[a]);
+      const CUP_COLORS=["#307070","#aed9b6","#8da7e6","#5a7968","#283d6b"];
+      const sesData=md12.map(m=>{
+        const row={label:m.label,month:m.month,year:m.year,partial:m.partial,total:sesOf(m)};
+        if(codes.length){
+          const sum=codes.reduce((s,k)=>s+(m.coupons?.[k]||0),0);
+          codes.forEach((k,ci)=>{row[`cup${ci}`]=m.coupons?.[k]||0;});
+          if(sum<row.total) row.cupOtros=row.total-sum;
+        }
+        return row;
+      });
+      // claves internas cup0, cup1… (los códigos llevan "#" y no sirven como dataKey)
+      const series=codes.length?[...codes.map((_,ci)=>`cup${ci}`),...(sesData.some(r=>r.cupOtros)?["cupOtros"]:[])]:["total"];
+      const sName=(k)=>k==="cupOtros"?"Otros":k==="total"?"Sesiones":codes[Number(k.slice(3))];
+      const sColor=(k)=>k==="cupOtros"?"#c9c2b4":CUP_COLORS[Number(k.slice(3))%CUP_COLORS.length];
+      const prevFull=fullM[fullM.length-2];
+      const delta=lastFull&&prevFull&&sesOf(prevFull)>0?Math.round((sesOf(lastFull)-sesOf(prevFull))/sesOf(prevFull)*100):null;
+      const MONTH_FULL={Ene:"Enero",Feb:"Febrero",Mar:"Marzo",Abr:"Abril",May:"Mayo",Jun:"Junio",Jul:"Julio",Ago:"Agosto",Sep:"Septiembre",Oct:"Octubre",Nov:"Noviembre",Dic:"Diciembre"};
+      const SesTip=({active,payload})=>{
+        if(!active||!payload?.length)return null;
+        const r=payload[0].payload;
+        return <div style={{background:P.text,color:"#fff",borderRadius:10,padding:"10px 14px",fontSize:12,boxShadow:"0 4px 14px rgba(0,0,0,0.18)",minWidth:170}}>
+          <div style={{fontWeight:700,marginBottom:6}}>{MONTH_FULL[r.month]||r.month} {r.year} · {fmt(r.total)} sesiones{r.partial?" (parcial)":""}</div>
+          {codes.length>0&&[...series].reverse().filter(k=>r[k]>0).map(k=><div key={k} style={{display:"flex",alignItems:"center",gap:8,marginTop:3}}>
+            <span style={{width:9,height:9,borderRadius:2,background:sColor(k)}}/>
+            <span style={{fontWeight:600}}>{fmt(r[k])}</span><span style={{opacity:0.85}}>· {sName(k)}</span>
+          </div>)}
+        </div>;
+      };
+      return <>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,marginBottom:18}}>
+          <div style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:16,padding:"20px 22px",display:"flex",flexDirection:"column",gap:6,boxShadow:"0 1px 4px rgba(24,33,30,0.04)"}}>
+            <div style={{fontSize:46,fontWeight:800,color:P.text,lineHeight:1,letterSpacing:"-1.5px",fontFamily:F_HEAD}}>{lastFull?fmt(sesOf(lastFull)):"—"}</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>{usesRealizadas?"Sesiones realizadas":"Sesiones"} en {lastFull?`${MONTH_FULL[lastFull.month]||lastFull.month} ${lastFull.year}`:"el último mes"}</div>
+          </div>
+          <div style={{background:delta>0?P.lighter:delta<0?P.redBg:P.white,border:`1px solid ${delta>0?P.primary+"33":delta<0?P.red+"33":P.border}`,borderRadius:16,padding:"20px 22px",display:"flex",flexDirection:"column",gap:6,boxShadow:"0 1px 4px rgba(24,33,30,0.04)"}}>
+            <div style={{fontSize:46,fontWeight:800,color:delta>0?P.primary:delta<0?P.red:P.text,lineHeight:1,letterSpacing:"-1.5px",fontFamily:F_HEAD}}>{delta==null?"—":`${delta>0?"+":""}${delta}%`}</div>
+            <div style={{fontSize:12,fontWeight:600,color:P.text}}>{delta==null?"Variación vs. el mes anterior":delta>=0?`Crecimiento vs. ${MONTH_FULL[prevFull.month]||prevFull.month}`:`Baja vs. ${MONTH_FULL[prevFull.month]||prevFull.month}`}</div>
+          </div>
+          {usesRealizadas&&<KpiCard label="Tasa de realización" value={`${compRate}%`} sub={`${fmt(totCanj)} canjeadas · ${fmt(totReal)} realizadas`}/>}
+        </div>
+        <Section title={`Sesiones${usesRealizadas?" realizadas":""} por mes${planRefLine?` — ${planKind==="a_demanda"?"tope":"plan"} ${planRefLine}/mes`:""}`}
+          note={codes.length>1?"Cada cupón tiene su propio color dentro de la misma barra. El total sigue siendo la altura completa.":null}>
+          {lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
+          {codes.length>1&&<div style={{display:"flex",gap:14,flexWrap:"wrap",marginBottom:10}}>
+            {series.map(k=><span key={k} style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:P.textMuted}}>
+              <span style={{width:10,height:10,borderRadius:2,background:sColor(k)}}/>{sName(k)}</span>)}
+          </div>}
+          <div style={{height:260}}><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={sesData} maxBarSize={44} barCategoryGap="22%">
+              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
+              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(sesData.map(m=>m.total), {line:planRefLine})}/>
+              <Tooltip content={<SesTip/>} cursor={{fill:P.lighter}}/>
+              {planRefLine&&Math.max(0,...sesData.map(m=>m.total))>=planRefLine*0.35&&<ReferenceLine y={planRefLine} stroke="#8da7e6" strokeWidth={1.8} strokeDasharray="6 4"/>}
+              {series.map((k,si)=><Bar key={k} dataKey={k} stackId="ses" name={sName(k)} radius={si===series.length-1?[3,3,0,0]:[0,0,0,0]}>
+                {sesData.map((m,i)=><Cell key={i} fill={k==="total"?(m.partial?P.greenLight:P.primary):sColor(k)} fillOpacity={m.partial?0.55:1}
+                  {...(series.length===1?goldStroke(recSes.has(mKey(m)),curSes===mKey(m)):{})}/>)}
+              </Bar>)}
+            </BarChart>
+          </ResponsiveContainer></div>
+        </Section>
+      </>;
+    })()}
 
     {mod==="individual"&&sub==="Adherencia"&&(()=>{
-      const fullSessions=fullM.reduce((s,m)=>s+sesOf(m),0);
-      const avgPerUser=totHistorico>0?Math.round((fullSessions/totHistorico)*10)/10:0;
-      const avgPerMonth=fullM.length>0?Math.round((fullSessions/fullM.length)*10)/10:0;
+      const NUEVO_COLOR="#8da7e6";
+      const m12full=fullM.slice(-12);
+      const ses12=m12full.reduce((s,m)=>s+sesOf(m),0);
+      const avgAct12=m12full.length?m12full.reduce((s,m)=>s+(m.activos||0),0)/m12full.length:0;
+      const actNow=lastFull?.activos||0;
+      const nomina=dbCompany?.headcount_total||null;
+      const cobertura=nomina&&actNow?Math.round(actNow/nomina*1000)/10:null;
+      const perPersonMonth=actNow?Math.round(sesOf(lastFull)/actNow*10)/10:null;
+      const perPersonYear=avgAct12?Math.round(ses12/avgAct12*10)/10:null;
+      const fmt1=(v)=>v==null?"—":String(v).replace(".",",");
+      const MONTH_FULL={Ene:"Enero",Feb:"Febrero",Mar:"Marzo",Abr:"Abril",May:"Mayo",Jun:"Junio",Jul:"Julio",Ago:"Agosto",Sep:"Septiembre",Oct:"Octubre",Nov:"Noviembre",Dic:"Diciembre"};
+      const actData=md12.map((m,i,arr)=>{
+        const win=arr.slice(Math.max(0,i-2),i+1);
+        const nuevos=Math.min(m.nuevos||0,m.activos||0);
+        return {label:m.label,month:m.month,year:m.year,partial:m.partial,activos:m.activos||0,nuevos,siguen:Math.max(0,(m.activos||0)-nuevos),
+          prom3:i>=2?Math.round(win.reduce((s,x)=>s+(x.activos||0),0)/win.length*10)/10:null};
+      });
+      const ActTip=({active,payload})=>{
+        if(!active||!payload?.length)return null;
+        const r=payload[0].payload;
+        return <div style={{background:P.text,color:"#fff",borderRadius:10,padding:"10px 14px",fontSize:12,boxShadow:"0 4px 14px rgba(0,0,0,0.18)",minWidth:170}}>
+          <div style={{fontWeight:700,marginBottom:6}}>{MONTH_FULL[r.month]||r.month} {r.year} · {r.activos} personas</div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginTop:3}}><span style={{width:9,height:9,borderRadius:2,background:P.primary}}/>{r.siguen} ya venían</div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginTop:3}}><span style={{width:9,height:9,borderRadius:2,background:NUEVO_COLOR}}/>{r.nuevos} nuevos</div>
+          {r.prom3!=null&&<div style={{marginTop:6,opacity:0.75,fontSize:11}}>Promedio 3 meses: {fmt1(r.prom3)}</div>}
+        </div>;
+      };
       return <>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-          <KpiCard label="Total de pacientes" value={totHistorico}/>
-          <KpiCard label="Promedio de sesiones por persona" value={avgPerUser!=null?Math.ceil(avgPerUser):"—"}/>
-          <KpiCard label="Promedio sesiones / persona / mes" value={(()=>{const sa=fullM.reduce((s,m)=>s+(m.activos||0),0);return sa>0?Math.round(fullSessions/sa):"—";})()}/>
-          <KpiCard label="Promedio sesiones por mes (empresa)" value={avgPerMonth!=null?Math.ceil(avgPerMonth):"—"}/>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginBottom:18}}>
+          <KpiCard label="Pacientes activos en el mes" value={lastFull?actNow:"—"} sub={lastFull?`${MONTH_FULL[lastFull.month]} ${lastFull.year}`:null}/>
+          <KpiCard label="Cobertura (activos / nómina)" value={cobertura!=null?`${fmt1(cobertura)}%`:"—"} sub={nomina?`${actNow} de ${fmt(nomina)} colaboradores`:"Falta cargar la nómina en el admin"} warn={!nomina}/>
+          <KpiCard label="Sesiones promedio por persona en el mes" value={fmt1(perPersonMonth)} sub={lastFull?`${fmt(sesOf(lastFull))} sesiones ÷ ${actNow} activos`:null}/>
+          <KpiCard label="Sesiones promedio por persona en el año" value={fmt1(perPersonYear)} sub="Últimos 12 meses"/>
         </div>
+        <Section title="Personas activas por mes">
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,flexWrap:"wrap",marginBottom:10}}>
+            <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>Personas que realizaron al menos una sesión ese mes.</div>
+            <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
+              <span style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:P.textMuted}}><span style={{width:10,height:10,borderRadius:2,background:P.primary}}/>Ya venían</span>
+              <span style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:P.textMuted}}><span style={{width:10,height:10,borderRadius:2,background:NUEVO_COLOR}}/>Nuevos</span>
+              <span style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:P.textMuted}}><span style={{width:14,height:0,borderTop:`2px dashed ${P.textMuted}`}}/>Promedio 3 meses</span>
+            </div>
+          </div>
+          <div style={{height:270}}><ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={actData} maxBarSize={44} barCategoryGap="22%">
+              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
+              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(actData.map(m=>m.activos))}/>
+              <Tooltip content={<ActTip/>} cursor={{fill:P.lighter}}/>
+              <Bar dataKey="siguen" stackId="a" name="Ya venían">{actData.map((m,i)=><Cell key={i} fill={P.primary} fillOpacity={m.partial?0.55:1}/>)}</Bar>
+              <Bar dataKey="nuevos" stackId="a" name="Nuevos" radius={[3,3,0,0]}>{actData.map((m,i)=><Cell key={i} fill={NUEVO_COLOR} fillOpacity={m.partial?0.55:1}/>)}</Bar>
+              <Line dataKey="prom3" type="monotone" stroke={P.textMuted} strokeWidth={1.5} strokeDasharray="5 4" dot={false} connectNulls/>
+            </ComposedChart>
+          </ResponsiveContainer></div>
+        </Section>
         <Section title="Primera vez en terapia">
           {c.firstTimeCount!=null?
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14,padding:"6px 0 4px"}}>
-              <div style={{textAlign:"center",padding:"20px 34px",background:P.lighter,borderRadius:14,border:`1px solid ${P.primary+"44"}`}}>
-                <div style={{fontSize:42,fontWeight:700,color:P.primary,lineHeight:1,letterSpacing:"-2px"}}>{c.firstTimeCount}</div>
-                <div style={{fontSize:12,color:P.primary,marginTop:4,fontWeight:500}}>personas</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,flexWrap:"wrap",padding:"6px 0 4px"}}>
+              <div style={{textAlign:"center",padding:"18px 30px",background:P.lighter,borderRadius:14,border:`1px solid ${P.primary+"44"}`}}>
+                <div style={{fontSize:42,fontWeight:700,color:P.primary,lineHeight:1,letterSpacing:"-2px"}}>{c.firstTimePct}%</div>
+                <div style={{fontSize:12,color:P.primary,marginTop:4,fontWeight:500}}>va a terapia por primera vez</div>
               </div>
-              <div style={{textAlign:"center",maxWidth:480}}>
-                <div style={{fontSize:13,fontWeight:600,color:P.text}}>{c.firstTimePct}% del total de pacientes históricos</div>
-              </div>
+              <div style={{fontSize:13,color:P.text,maxWidth:340,lineHeight:1.6}}><b>{c.firstTimeCount} de {fmt(totHistorico)}</b> personas que usaron el beneficio nunca antes habían ido a terapia.</div>
             </div>
           :<div style={{padding:"20px",background:P.gray50,borderRadius:10,textAlign:"center"}}>
             <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:4}}>Dato pendiente</div>
             <div style={{fontSize:12,color:P.textMuted}}>Se cargará desde el panel admin.</div>
           </div>}
         </Section>
-        
-        <Section title="Pacientes activos por mes">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:10,lineHeight:1.6}}>Personas que realizaron al menos una sesión ese mes.</div>
-          <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
-              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(md12.map(m=>m.activos))}/>
-              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="activos" name="Activos" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recActivos.has(mKey(m)),curActivos===mKey(m))}/>)}</Bar>
-            </BarChart>
-          </ResponsiveContainer></div>
-        </Section>
-        <Section title="Nuevos pacientes por mes">
-          <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={md12} maxBarSize={44} barCategoryGap="22%">
-              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(md12.map(m=>m.nuevos))}/>
-              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="nuevos" name="Nuevos pacientes" radius={[3,3,0,0]}>{md12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.light} {...goldStroke(recNuevos.has(mKey(m)),curNuevos===mKey(m))}/>)}</Bar>
-            </BarChart>
-          </ResponsiveContainer></div>
+      </>;
+    })()}
+
+    {mod==="individual"&&sub==="Motivos de consulta"&&(()=>{
+      const {periods,cur,prev,personas,pctOf,MIN_N}=reasonsInfo;
+      const visibles=cur.filter(r=>(r.count||0)>=MIN_N).sort((a,b)=>(b.count||0)-(a.count||0));
+      const otros=cur.filter(r=>(r.count||0)<MIN_N).reduce((s,r)=>s+(r.count||0),0);
+      const prevPct=(reason)=>{const r=prev.find(x=>x.reason===reason);return r?pctOf(r):null;};
+      const withDelta=visibles.map(r=>({r,d:prevPct(r.reason)!=null?pctOf(r)-prevPct(r.reason):null}));
+      const topUp=[...withDelta].filter(x=>x.d!=null).sort((a,b)=>b.d-a.d)[0];
+      const maxCount=Math.max(1,...visibles.map(r=>r.count||0),otros);
+      const oneIn=(pct)=>pct>0?Math.max(1,Math.round(100/pct)):null;
+      // Lecturas que le importan a la empresa
+      const laboral=[...visibles].filter(r=>/laboral|burnout|trabajo/i.test(r.reason)).sort((a,b)=>b.count-a.count)[0];
+      const animo=[...visibles].filter(r=>/ansiedad|depresi|tristeza|p[aá]nico/i.test(r.reason)).sort((a,b)=>b.count-a.count)[0];
+      const shortName=(r)=>r.reason.split(/\s*[\/(]/)[0].trim();
+      const prevLabel=periods[1]?(()=>{const m=periods[1].match(/([A-Za-z]+)/);return m?({Ene:"enero",Feb:"febrero",Mar:"marzo",Abr:"abril",May:"mayo",Jun:"junio",Jul:"julio",Ago:"agosto",Sep:"septiembre",Oct:"octubre",Nov:"noviembre",Dic:"diciembre"}[m[1].slice(0,3)]||periods[1]):periods[1];})():null;
+      const Insight=({big,label,sub,tone})=>{
+        const t=tone==="alert"?{bg:P.redBg,bd:P.red+"33",fg:P.red}:tone==="accent"?{bg:P.accentBg,bd:P.accent+"22",fg:P.accent}:{bg:P.lighter,bd:P.primary+"33",fg:P.primary};
+        return <div style={{background:t.bg,border:`1px solid ${t.bd}`,borderRadius:16,padding:"20px 22px",display:"flex",flexDirection:"column",gap:6,minWidth:0}}>
+          <div style={{fontSize:34,fontWeight:800,color:t.fg,lineHeight:1.05,letterSpacing:"-1px",fontFamily:F_HEAD}}>{big}</div>
+          <div style={{fontSize:13,fontWeight:700,color:P.text,lineHeight:1.35}}>{label}</div>
+          {sub&&<div style={{fontSize:11,color:P.textMuted,lineHeight:1.5}}>{sub}</div>}
+        </div>;
+      };
+      if(cur.length===0) return <Section title="Motivos de consulta"><div style={{fontSize:12,color:P.textMuted,padding:"20px 0",textAlign:"center"}}>Sin datos cargados aún. Tu referente los actualizará periódicamente.</div></Section>;
+      return <>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12,marginBottom:14}}>
+          {laboral&&<Insight big={`1 de cada ${oneIn(pctOf(laboral))}`} label={`consulta por ${shortName(laboral).toLowerCase()}`} sub="Es el motivo más ligado al trabajo: la empresa puede actuar sobre él." tone="accent"/>}
+          {topUp&&topUp.d>0&&<Insight big={`+${topUp.d} pts`} label={`${shortName(topUp.r)} es el motivo que más creció`} sub={`Pasó de ${prevPct(topUp.r.reason)}% a ${pctOf(topUp.r)}% desde ${prevLabel}.`} tone="alert"/>}
+          {animo&&<Insight big={`${pctOf(animo)}%`} label={`llega por ${shortName(animo).toLowerCase()}`} sub="El motivo de salud emocional más frecuente en tu equipo."/>}
+        </div>
+        {topUp&&topUp.d>0&&<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",background:P.white,border:`1px solid ${P.border}`,borderRadius:14,padding:"14px 18px",marginBottom:18}}>
+          <div style={{fontSize:12.5,color:P.text,lineHeight:1.55,minWidth:0,flex:1}}><b>Qué hacemos con esto:</b> con {shortName(topUp.r).toLowerCase()} en alza, te proponemos acciones colectivas pensadas para ese tema.</div>
+          {moduleVisible("colectivo")&&<button onClick={()=>{setMod("colectivo");setSub("Talleres");}} style={{background:P.primary,color:"#fff",border:"none",borderRadius:8,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}}>Ver recomendaciones →</button>}
+        </div>}
+        <Section title={`Todos los motivos${periods[0]?` — ${periods[0]}`:""}`} note={`Fuente: reporte de plataforma Tu Terapia. Una persona puede elegir más de un motivo. Por privacidad, los motivos con menos de ${MIN_N} personas se agrupan en "Otros motivos".`}>
+          <div style={{overflowX:"auto"}}>
+          <div style={{display:"grid",gridTemplateColumns:"minmax(150px,1.4fr) minmax(120px,2fr) 70px 70px",gap:"10px 14px",alignItems:"center",fontSize:12,minWidth:440}}>
+            <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.06em"}}>Motivo</div>
+            <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.06em"}}>Personas</div>
+            <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.06em",textAlign:"right"}}>N · %</div>
+            <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.06em",textAlign:"right"}}>{prevLabel?`vs. ${prevLabel}`:"Var."}</div>
+            {withDelta.map(({r,d},i)=>{const hot=topUp&&topUp.r.reason===r.reason&&topUp.d>0;
+              return [
+              <div key={r.reason+"n"} style={{fontWeight:600,color:hot?P.red:P.text}}>{r.reason}</div>,
+              <div key={r.reason+"b"} style={{height:12,background:P.gray50,borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${(r.count||0)/maxCount*100}%`,background:hot?P.red:i<3?P.text:P.primary,borderRadius:3}}/></div>,
+              <div key={r.reason+"c"} style={{textAlign:"right",color:P.text,fontWeight:600}}>{r.count} <span style={{color:P.textMuted,fontWeight:400}}>· {pctOf(r)}%</span></div>,
+              <div key={r.reason+"d"} style={{textAlign:"right",fontWeight:600,color:d>0?P.red:d<0?P.primary:P.textMuted}}>{d==null?"—":d===0?"=":`${d>0?"+":""}${d} pts`}</div>,
+            ];})}
+            {otros>0&&[
+              <div key="on" style={{color:P.textMuted}}>Otros motivos</div>,
+              <div key="ob" style={{height:12,background:P.gray50,borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:`${otros/maxCount*100}%`,background:"#c9c2b4",borderRadius:3}}/></div>,
+              <div key="oc" style={{textAlign:"right",color:P.textMuted}}>{otros}</div>,
+              <div key="od" style={{textAlign:"right",color:P.textMuted}}>—</div>,
+            ]}
+          </div>
+          </div>
         </Section>
       </>;
     })()}
 
     {/* ── COLECTIVO ── */}
-    {mod==="colectivo"&&<div style={{background:"linear-gradient(135deg,#e9eefb,#f8fafe)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(40,61,107,0.55)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
-      <div style={{fontSize:25,fontWeight:800,color:"#283d6b",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
-        {getHeaderText("colectivo",sub,"title")||(sub==="Contenido"?"Recursos para llevar el bienestar a cada rincón del equipo":`${c.workshops.length} talleres de bienestar realizados con tu equipo`)}
-      </div>
-      <div style={{fontSize:13,color:"rgba(40,61,107,0.75)"}}>
-        {getHeaderText("colectivo",sub,"subtitle")||(sub==="Talleres"?`${c.workshops.filter(w=>w.rating>=4.5).length} de ${c.workshops.length} talleres con puntuación destacada`:`${c.content.filter(x=>x.downloaded).length} recursos descargados · ${c.content.filter(x=>x.sent).length} enviados al equipo`)}
-      </div>
-    </div>}
-    {mod==="colectivo"&&sub==="Talleres"&&(()=>{
-      // Use Supabase workshops if available, fallback to hardcoded
-      const workshops = c.workshops;
-      return <>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:18}}>
-          <KpiCard label="Talleres realizados" value={workshops.length}/>
-          <KpiCard label="Próximo taller" value={c.workshopsRecommended.length>0?c.workshopsRecommended[0].title:"Por definir"}/>
-          <KpiCard label="Rating promedio" value={workshops.filter(w=>w.rating).length>0?(workshops.filter(w=>w.rating).reduce((s,w)=>s+(w.rating||0),0)/workshops.filter(w=>w.rating).length).toFixed(1):"—"}/>
+    {mod==="colectivo"&&(()=>{
+      const now=new Date(); const yearNow=lastFull?.year||now.getFullYear();
+      const inits=c.workshops.map(w=>({...w,_d:parseEsDate(w.date)})).sort((a,b)=>(b._d?.t||0)-(a._d?.t||0));
+      const cutoff=(()=>{const d=new Date(now);d.setFullYear(d.getFullYear()-1);return d.getTime();})();
+      const last12=inits.filter(w=>(w._d?.t||0)>=cutoff);
+      const isTaller=(w)=>["taller","contencion"].includes(w.initiative_type||"taller");
+      const talleresYear=inits.filter(w=>isTaller(w)&&w._d?.y===yearNow).length;
+      const rated=last12.filter(w=>w.rating!=null);
+      const respTot=rated.reduce((s,w)=>s+(w.responses||0),0);
+      const satAvg=rated.length?(respTot?rated.reduce((s,w)=>s+w.rating*(w.responses||0),0)/respTot:rated.reduce((s,w)=>s+w.rating,0)/rated.length):null;
+      const partTot=last12.reduce((s,w)=>s+(w.participants||0),0);
+      const n1=(v)=>v==null?"—":String(Math.round(v*10)/10).replace(".",",");
+      const NUM=["Cero","Una","Dos","Tres","Cuatro","Cinco","Seis","Siete","Ocho","Nueve","Diez"];
+      const contCount=c.content.length;
+      return <div style={{background:"linear-gradient(135deg,#a9cdc5 0%,#cfe4df 100%)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
+        <div style={{fontSize:10,fontWeight:700,color:"rgba(38,69,52,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Cultura de Bienestar</div>
+        <div style={{fontSize:25,fontWeight:800,color:"#264534",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
+          {getHeaderText("colectivo",sub,"title")||(sub==="Contenido"?"Contenidos para compartir con tu equipo":`${last12.length<=10?NUM[last12.length]:last12.length} ${last12.length===1?"iniciativa":"iniciativas"} en el último año`)}
         </div>
-        <Section title="Talleres realizados">
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {workshops.length===0&&<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px"}}>Sin talleres realizados aún.</div>}
-            {workshops.map((w,i)=><TallerCard key={w.id||i} w={w} talleristas={dbTalleristas}/>)}
-          </div>
-        </Section>
-        <Section title="Próximos talleres recomendados">
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {c.workshopsRecommended.length===0
-              ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px"}}>Sin recomendaciones aún.</div>
-              : c.workshopsRecommended.map((w,i)=><div key={i} style={{padding:"12px 16px",background:P.lighter,borderRadius:10,border:`1px solid ${P.border}`}}>
-                  <div style={{fontSize:13,fontWeight:600,color:P.primary,marginBottom:3}}>{w.title}</div>
-                  {w.descripcion&&<div style={{fontSize:11,color:P.textMuted,marginBottom:4}}>{w.descripcion}</div>}
-                  {w.month&&<span style={{background:P.lighter,color:P.primary,fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20}}>{w.month}</span>}
-                </div>)
-            }
-          </div>
-        </Section>
-      </>;
+        <div style={{fontSize:13,color:"rgba(38,69,52,0.8)"}}>
+          {getHeaderText("colectivo",sub,"subtitle")||(sub==="Talleres"?`${fmt(partTot)} participaciones${satAvg!=null?` · ${n1(satAvg)} de satisfacción promedio`:""}`:`${contCount} piezas disponibles · descargalas, compartilas y contanos qué te sirvió`)}
+        </div>
+      </div>;
     })()}
 
-    {mod==="colectivo"&&sub==="Contenido"&&(()=>{
-      const ratings=contentRatings; const setRatings=setContentRatings;
-      const sent=contentSent; const setSent=setContentSent;
-      const downloaded=contentDownloaded; const setDownloaded=setContentDownloaded;
-      const ratingLabel={5:"Muy adecuado",4:"Adecuado",3:"Neutral",2:"Poco adecuado",1:"No adecuado"};
+    {mod==="colectivo"&&sub==="Talleres"&&(()=>{
+      const now=new Date(); const yearNow=lastFull?.year||now.getFullYear();
+      const inits=c.workshops.map(w=>({...w,_d:parseEsDate(w.date)})).sort((a,b)=>(b._d?.t||0)-(a._d?.t||0));
+      const cutoff=(()=>{const d=new Date(now);d.setFullYear(d.getFullYear()-1);return d.getTime();})();
+      const last12=inits.filter(w=>(w._d?.t||0)>=cutoff);
+      const isTaller=(w)=>["taller","contencion"].includes(w.initiative_type||"taller");
+      const talleresYear=inits.filter(w=>isTaller(w)&&w._d?.y===yearNow).length;
+      const rated=last12.filter(w=>w.rating!=null);
+      const respTot=rated.reduce((s,w)=>s+(w.responses||0),0);
+      const satAvg=rated.length?(respTot?rated.reduce((s,w)=>s+w.rating*(w.responses||0),0)/respTot:rated.reduce((s,w)=>s+w.rating,0)/rated.length):null;
+      const partTot=last12.reduce((s,w)=>s+(w.participants||0),0);
+      const n1=(v)=>v==null?"—":String(Math.round(v*10)/10).replace(".",",");
+      const TYPES={taller:{label:"Taller temático",bg:P.lighter,tx:P.primary},contencion:{label:"Taller de contención grupal",bg:P.accentBg,tx:P.accent},
+        evento:{label:"Participación en evento",bg:"#e9eefb",tx:"#283d6b"},stand:{label:"Activación con stand",bg:"#e9eefb",tx:"#283d6b"},activacion:{label:"Activación",bg:"#e9eefb",tx:"#283d6b"}};
+      const AUD={lideres:"Para líderes",colaboradores:"Para colaboradores"};
+      const recs=c.workshopsRecommended;
+      const linkSt={fontSize:12,fontWeight:600,color:P.primary,textDecoration:"none"};
       return <>
-        <Section title="Recursos y material">
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Descargá el material, evalualo y marcalo como enviado cuando lo compartas con tu equipo.</div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {c.content.map((item,i)=>{
-              const col=TYPE_COLORS[item.type]||{bg:P.lighter,tx:P.primary};
-              return <div key={i} style={{padding:"14px 16px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:12,flexWrap:"wrap"}}>
-                  <div style={{background:col.bg,color:col.tx,fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:20,flexShrink:0}}>{item.type}</div>
-                  <div style={{flex:1,minWidth:160}}>
-                    <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:2}}>{item.title}</div>
-                    <div style={{fontSize:11,color:P.textMuted}}>{item.date}</div>
+        {/* 1. Recomendaciones: arriba de todo, con otro fondo para no confundirlas con lo realizado */}
+        <div style={{background:"#eef3fd",border:"1px solid #c5d5f5",borderRadius:18,padding:"22px 24px",marginBottom:18}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+            <span style={{width:7,height:7,borderRadius:"50%",background:"#8da7e6"}}/>
+            <div style={{fontSize:11,fontWeight:700,color:"#283d6b",textTransform:"uppercase",letterSpacing:"0.08em"}}>Lo que proponemos para el próximo semestre</div>
+          </div>
+          <div style={{fontSize:11.5,color:P.textMuted,marginBottom:14}}>Cada propuesta sale de un dato de los motivos de consulta de tu equipo.</div>
+          {recs.length===0
+            ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"14px"}}>Sin recomendaciones aún.</div>
+            : <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
+              {recs.map((r,i)=><div key={r.id||i} style={{background:P.white,border:"1px solid #c5d5f5",borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:6}}>
+                {r.audience&&<span style={{alignSelf:"flex-start",fontSize:9.5,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:"#283d6b",background:"#e9eefb",padding:"3px 9px",borderRadius:20}}>{AUD[r.audience]||r.audience}</span>}
+                <div style={{fontSize:15,fontWeight:700,color:P.text,fontFamily:F_HEAD}}>{r.title}</div>
+                {(r.format||r.descripcion)&&<div style={{fontSize:11.5,color:P.textMuted}}>{r.format||r.descripcion}</div>}
+                {r.reason&&<div style={{fontSize:12,color:P.text,lineHeight:1.55,marginTop:4}}><b>Por qué:</b> {r.reason}</div>}
+              </div>)}
+            </div>}
+        </div>
+
+        {/* 2. Los cuatro números */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
+          <KpiCard label="Iniciativas en 12 meses" value={last12.length}/>
+          <KpiCard label={`Talleres de ${yearNow}`} value={<span>{talleresYear} <span style={{fontSize:15,color:P.textMuted,fontWeight:600}}>de {c.workshopTarget}</span></span>} sub="Contra el objetivo del año"/>
+          <KpiCard label="Satisfacción promedio" value={satAvg!=null?n1(satAvg):"—"} sub={satAvg!=null?`Sobre 10 · ${respTot} respuestas`:null}/>
+          <KpiCard label="Participaciones en total" value={fmt(partTot)}/>
+        </div>
+
+        {/* 3. Cada iniciativa realizada */}
+        <Section title="Iniciativas realizadas">
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {inits.length===0&&<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px"}}>Sin iniciativas realizadas aún.</div>}
+            {inits.map((w,i)=>{
+              const t=TYPES[w.initiative_type||"taller"]||TYPES.taller;
+              const tallerista=isTaller(w)?dbTalleristas.find(x=>x.name===w.speaker||x.initials===w.initials):null;
+              return <div key={w.id||i} style={{border:`1px solid ${P.border}`,borderRadius:14,padding:"16px 18px",background:P.white}}>
+                <div style={{display:"flex",justifyContent:"space-between",gap:16,alignItems:"flex-start"}}>
+                  <div style={{minWidth:0,flex:1}}>
+                    <span style={{fontSize:9.5,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:t.tx,background:t.bg,padding:"3px 9px",borderRadius:20}}>{t.label}</span>
+                    <div style={{fontSize:16,fontWeight:700,color:P.text,fontFamily:F_HEAD,margin:"8px 0 6px"}}>{w.title}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:P.textMuted,flexWrap:"wrap"}}>
+                      {isTaller(w)&&w.speaker&&(tallerista?.photo_url
+                        ? <img src={tallerista.photo_url} alt={w.speaker} style={{width:26,height:26,borderRadius:"50%",objectFit:"cover"}}/>
+                        : <Avatar initials={w.initials||(w.speaker||"TT").split(" ").map(x=>x[0]).join("").slice(0,2)} size={26}/>)}
+                      {isTaller(w)&&w.speaker&&<span style={{color:P.text,fontWeight:600}}>{w.speaker}</span>}
+                      <span>{fmtEsDate(w.date)}</span>
+                      {w.participants!=null&&<span>· {w.participants} {isTaller(w)?"participantes":"personas pasaron por el stand"}</span>}
+                    </div>
                   </div>
-                  <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0,flexWrap:"wrap"}}>
-                    <button onClick={()=>{setDownloaded(d=>({...d,[i]:true}));if(item.file_url||item.fileUrl){window.open(item.file_url||item.fileUrl,"_blank");}}} style={{background:downloaded[i]?P.lighter:P.white,color:downloaded[i]?P.primary:P.textMuted,border:`1px solid ${downloaded[i]?P.primary+"44":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>{downloaded[i]?"✓ Descargado":"Descargar"}</button>
-                    <button onClick={()=>setSent(s=>({...s,[i]:!s[i]}))} style={{background:sent[i]?"#E8F5E9":P.white,color:sent[i]?"#2E7D32":P.textMuted,border:`1px solid ${sent[i]?"#2E7D3244":P.border}`,borderRadius:7,padding:"5px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>{sent[i]?"✓ Enviado":"Marcar enviado"}</button>
-                  </div>
+                  {isTaller(w)&&<div style={{textAlign:"right",flexShrink:0}}>
+                    {w.rating!=null?<>
+                      <div style={{fontSize:34,fontWeight:800,color:P.primary,lineHeight:1,letterSpacing:"-1px",fontFamily:F_HEAD}}>{n1(w.rating)}</div>
+                      <div style={{fontSize:10.5,color:P.textMuted,marginTop:3}}>satisfacción · {w.responses||0} respuestas</div>
+                    </>:<div style={{fontSize:11,color:P.textMuted}}>Encuesta en curso</div>}
+                  </div>}
+                  {!isTaller(w)&&<div style={{fontSize:10.5,color:P.textMuted,flexShrink:0,textAlign:"right"}}>Sin encuesta de<br/>satisfacción</div>}
                 </div>
-                <div style={{marginTop:12,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                  <span style={{fontSize:11,color:P.textMuted}}>Tu evaluación:</span>
-                  <div style={{display:"flex",gap:3}}>{[1,2,3,4,5].map(star=><button key={star} onClick={()=>setRatings(r=>({...r,[i]:star}))} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:ratings[i]>=star?P.accent:"#e7e1d4",padding:"0 1px",lineHeight:1}}>★</button>)}</div>
-                  <span style={{fontSize:11,color:ratings[i]?P.textMuted:"#C0C8C4",fontStyle:ratings[i]?"normal":"italic"}}>{ratings[i]?ratingLabel[ratings[i]]:"Sin evaluar aún"}</span>
+                <div style={{display:"flex",gap:18,flexWrap:"wrap",borderTop:`1px solid ${P.border}`,marginTop:14,paddingTop:12}}>
+                  {w.material_url&&<a href={w.material_url} target="_blank" rel="noreferrer" style={linkSt}>{isTaller(w)?"Contenido post-taller →":"Material de la activación →"}</a>}
+                  {isTaller(w)&&w.report_url&&<a href={w.report_url} target="_blank" rel="noreferrer" style={linkSt}>Descargar informe de resultados →</a>}
+                  {isTaller(w)&&w.survey_url&&<a href={w.survey_url} target="_blank" rel="noreferrer" style={{...linkSt,color:P.accent}}>Encuesta de feedback →</a>}
                 </div>
               </div>;
             })}
@@ -1269,126 +1464,150 @@ export default function Dashboard(){
       </>;
     })()}
 
+    {mod==="colectivo"&&sub==="Contenido"&&(()=>{
+      const GROUPS=[
+        {id:"protocolo",title:"Protocolos · acceso rápido",tone:"alert"},
+        {id:"lideres",title:"Para líderes"},
+        {id:"colaboradores",title:"Para colaboradores"},
+        {id:"mensual",title:"Qué compartir cada mes",sub:"Un tema por mes, con el dossier listo para que RRHH lo comparta con el equipo."},
+        {id:"beneficio",title:"Comunicar el beneficio",sub:"Todo lo que RRHH necesita para que el equipo sepa que el beneficio existe y cómo usarlo."},
+      ];
+      const byCat=(id)=>c.content.filter(x=>(x.category||"otros")===id);
+      const otros=c.content.filter(x=>!GROUPS.some(g=>g.id===(x.category||"otros")));
+      const MES_ACTUAL=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][new Date().getMonth()];
+      const fb=contentRatings; const setFb=setContentRatings;
+      const Card=({item,monthly})=>{
+        const k=item.id||item.title; const st=fb[k]||{};
+        const isNow=monthly&&item.format===MES_ACTUAL;
+        return <div style={{border:`1px solid ${isNow?P.primary+"66":P.border}`,borderRadius:12,padding:"14px 16px",background:P.white,display:"flex",flexDirection:"column",gap:6,minWidth:0}}>
+          <span style={{alignSelf:"flex-start",fontSize:9.5,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:isNow?"#fff":P.textMuted,background:isNow?P.primary:P.gray50,padding:"3px 9px",borderRadius:20}}>{item.format||item.type}{isNow?" · este mes":""}</span>
+          <div style={{fontSize:13.5,fontWeight:700,color:P.text,lineHeight:1.35}}>{item.title}</div>
+          {item.description&&<div style={{fontSize:11.5,color:P.textMuted,lineHeight:1.5}}>{item.description}</div>}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"auto",paddingTop:8,gap:8,flexWrap:"wrap"}}>
+            <a href={item.file_url||"#"} target="_blank" rel="noreferrer" style={{fontSize:12,fontWeight:600,color:P.primary,textDecoration:"none"}}>{monthly?"Descargar el dossier →":/video/i.test(item.format||"")?"Ver →":"Descargar →"}</a>
+            {!st.open&&!st.sent&&<button onClick={()=>setFb(f=>({...f,[k]:{...st,open:true}}))} style={{fontSize:11,color:P.textMuted,background:"none",border:`1px solid ${P.border}`,borderRadius:7,padding:"4px 10px",cursor:"pointer"}}>¿Te sirvió? ★</button>}
+            {st.sent&&<span style={{fontSize:11,color:P.primary,fontWeight:600}}>{"★".repeat(st.stars||0)} ¡Gracias!</span>}
+          </div>
+          {st.open&&!st.sent&&<div style={{background:P.lighter,borderRadius:10,padding:"10px 12px",marginTop:6,display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{fontSize:11.5,fontWeight:600,color:P.text}}>¿Te sirvió este contenido?</div>
+            <div style={{display:"flex",gap:2}}>{[1,2,3,4,5].map(n=><button key={n} aria-label={`${n} estrellas`} onClick={()=>setFb(f=>({...f,[k]:{...st,stars:n}}))} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,lineHeight:1,padding:"0 1px",color:(st.stars||0)>=n?"#D9A441":"#d8d1c3"}}>★</button>)}</div>
+            <textarea id={`fb-${k}`} rows={2} placeholder="¿Qué cambiarías? (opcional)" value={st.comment||""} onChange={e=>{const v=e.target.value;setFb(f=>({...f,[k]:{...(f[k]||{}),comment:v}}));}}
+              style={{fontFamily:"inherit",fontSize:12,border:`1px solid ${P.border}`,borderRadius:8,padding:"7px 9px",resize:"vertical",background:P.white}}/>
+            <button disabled={!st.stars} onClick={()=>setFb(f=>({...f,[k]:{...st,sent:true,open:false}}))} style={{alignSelf:"flex-start",background:st.stars?P.primary:"#c9c2b4",color:"#fff",border:"none",borderRadius:8,padding:"7px 16px",fontSize:12,fontWeight:600,cursor:st.stars?"pointer":"default"}}>Enviar</button>
+          </div>}
+        </div>;
+      };
+      return <>
+        {GROUPS.map(g=>{const items=byCat(g.id); if(!items.length) return null;
+          const alert=g.tone==="alert";
+          return <div key={g.id} style={{background:alert?P.redBg:P.white,border:`1px solid ${alert?P.red+"33":P.border}`,borderRadius:18,padding:"20px 22px",marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:g.sub?4:14}}>
+              <span style={{width:7,height:7,borderRadius:"50%",background:alert?P.red:P.primary}}/>
+              <div style={{fontSize:11,fontWeight:700,color:alert?P.red:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>{alert?"⚠ ":""}{g.title}</div>
+            </div>
+            {g.sub&&<div style={{fontSize:11.5,color:P.textMuted,marginBottom:14}}>{g.sub}</div>}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:12}}>
+              {items.map((it,i)=><div key={it.id||i} style={{display:"contents"}}>{Card({item:it,monthly:g.id==="mensual"})}</div>)}
+            </div>
+          </div>;})}
+        {otros.length>0&&<Section title="Otros recursos"><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:12}}>{otros.map((it,i)=><div key={it.id||i} style={{display:"contents"}}>{Card({item:it})}</div>)}</div></Section>}
+        {c.content.length===0&&<Section title="Contenidos"><div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px"}}>Sin contenidos cargados aún.</div></Section>}
+      </>;
+    })()}
+
 
     {/* ── ESTRATÉGICO ── */}
-    {mod==="estrategico"&&<div style={{background:"#264534",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
-      <div style={{fontSize:10,fontWeight:700,color:"#aed9b6",opacity:0.85,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
+    {mod==="estrategico"&&<div style={{background:"linear-gradient(135deg,#307070 0%,#3f8580 100%)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
+      <div style={{fontSize:10,fontWeight:700,color:"#d6e8e4",opacity:0.85,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Estrategia de Bienestar</div>
       <div style={{fontSize:25,fontWeight:800,color:"#fefaf5",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
-        {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"El pulso de tu organización, medido":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
+        {getHeaderText("estrategico",sub,"title")||(sub==="Bienestar del equipo"?"Impacto de acciones colectivas":sub==="Consultoría Tu Terapia"?"Consultoría Estratégica Tu Terapia":"Herramientas para tomar mejores decisiones")}
       </div>
-      <div style={{fontSize:13,color:"#aed9b6"}}>
-        {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?`${c.recommendations.length} recomendaciones activas`:c.consultoriaActiva?"Salud mental que se traduce en resultados para tu empresa":"Activá la consultoría para ver el análisis de impacto")}
+      <div style={{fontSize:13,color:"#d6e8e4"}}>
+        {getHeaderText("estrategico",sub,"subtitle")||(sub==="Bienestar del equipo"?"Qué pasó con el uso del beneficio después de cada taller, campaña y activación":(c.consultoriaActiva||localConsultoriaActiva)?"Salud mental que se traduce en resultados para tu empresa":"Se activa cuando tu empresa se suma a la encuesta semestral")}
       </div>
     </div>}
     {/* ── ESTRATÉGICO - Bienestar del equipo ── */}
-    {mod==="estrategico"&&sub==="Bienestar del equipo"&&<>
-      <div style={{background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:16,padding:"20px 24px",marginBottom:18,display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,flexWrap:"wrap",boxShadow:"0 1px 5px rgba(24,33,30,0.05)"}}>
-        <div>
-          <div style={{fontSize:11,fontWeight:700,color:P.primary,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Motivo principal de consulta</div>
-          <div style={{fontSize:24,fontWeight:800,color:P.text,letterSpacing:"-0.4px",fontFamily:F_HEAD,lineHeight:1.15}}>{c.consultationReasons.length>0?c.consultationReasons[0].reason:"Pendiente"}</div>
-        </div>
-        {c.consultationReasons.length>0&&<div style={{textAlign:"right",flexShrink:0}}>
-          <div style={{fontSize:34,fontWeight:800,color:P.primary,letterSpacing:"-1px",lineHeight:1,fontFamily:F_HEAD}}>{c.consultationReasons[0].percentage}%</div>
-          <div style={{fontSize:11,color:P.textMuted}}>de los casos</div>
-        </div>}
-      </div>
-
-      <Section title="Seguimiento de personas que usan el beneficio">
-        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Encuesta trimestral que Tu Terapia realiza dentro de la plataforma a las personas que usan el beneficio · escala 1–10.</div>
-        <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-          {c.wellbeingByQ.map((q,i)=><div key={i} style={{flex:1,minWidth:110,padding:"16px",background:q.score!=null?P.lighter:P.gray50,border:`1px solid ${q.score!=null?P.primary+"44":P.border}`,borderRadius:10,textAlign:"center"}}>
-            <div style={{fontSize:10,fontWeight:600,color:P.textMuted,marginBottom:8,letterSpacing:"0.04em",textTransform:"uppercase"}}>{semLabel(q.q)}</div>
-            {q.score!=null?<><div style={{fontSize:26,fontWeight:700,color:P.primary,letterSpacing:"-1px"}}>{q.score}</div><div style={{fontSize:10,color:P.textMuted}}>/10</div></>
-            :<div style={{fontSize:12,color:P.textMuted,padding:"6px 0"}}>Pendiente</div>}
-          </div>)}
-        </div>
-      </Section>
-
-      <Section title="Motivos de consulta" note="Fuente: reporte de plataforma Tu Terapia.">
-        {c.consultationReasons.length===0
-          ? <div style={{fontSize:12,color:P.textMuted,padding:"20px 0",textAlign:"center"}}>Sin datos cargados aún. Tu referente los actualizará periódicamente.</div>
-          : <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {c.consultationReasons.map((r,i)=>{
-                const colors=["#264534","#307070","#283d6b","#307070","#8da7e6","#e87967","#c49020","#5a7968"];
-                const color=colors[i%colors.length];
-                const pct=r.percentage||0;
-                return <div key={r.reason} style={{display:"flex",alignItems:"center",gap:12}}>
-                  <div style={{width:20,height:20,borderRadius:"50%",background:color,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{color:"#fff",fontSize:9,fontWeight:700}}>#{i+1}</span>
-                  </div>
-                  <div style={{flex:1}}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                      <span style={{fontSize:12,fontWeight:600,color:P.text}}>{r.reason}</span>
-                      <span style={{fontSize:12,fontWeight:700,color:color}}>{pct}%</span>
-                    </div>
-                    <div style={{height:6,background:P.gray50,borderRadius:3,overflow:"hidden"}}>
-                      <div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:3,transition:"width 0.4s ease"}}/>
-                    </div>
-                    {r.count&&<div style={{fontSize:10,color:P.textMuted,marginTop:3}}>{r.count} casos — {r.period||"—"}</div>}
-                  </div>
-                </div>;
-              })}
-            </div>
-        }
-      </Section>
-
-      <Section title="Recomendaciones de Tu Terapia">
-        <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>Hallazgos sobre la salud mental y bienestar del equipo, elaborados por nuestros profesionales.</div>
-        <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          {c.recommendations.length===0&&<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"14px 0"}}>Sin recomendaciones activas por el momento.</div>}
-          {c.recommendations.map((r,i)=>{
-            const u=URGENCY[r.urgency];
-            return <div key={i} style={{padding:"16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,borderLeft:`3px solid ${u.tx}`}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                <Label text={u.label} bg={u.bg} tx={u.tx}/>
-                <span style={{fontSize:10,color:P.textMuted}}>{r.date}</span>
-              </div>
-              <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:5,letterSpacing:"-0.1px"}}>{r.action}</div>
-              <div style={{fontSize:12,color:P.textMuted,lineHeight:1.7}}>{r.reason}</div>
-            </div>;
-          })}
-        </div>
-      </Section>
-
-      <Section title="Impacto de acciones colectivas" note="Talleres y contenidos enviados, junto a la actividad de sesiones de ese mes.">
-        {(()=>{
-          const ABBR={Enero:"Ene",Febrero:"Feb",Marzo:"Mar",Abril:"Abr",Mayo:"May",Junio:"Jun",Julio:"Jul",Agosto:"Ago",Septiembre:"Sep",Setiembre:"Sep",Octubre:"Oct",Noviembre:"Nov",Diciembre:"Dic"};
-          const evKey=(d)=>{if(!d)return null;const p=String(d).trim().split(/\s+/);if(p.length<2)return null;const ab=ABBR[p[0]]||p[0];return `${ab}-${p[1]}`;};
-          const mdIdx={}; c.monthlyData.forEach((m,i)=>{mdIdx[`${m.month}-${m.year}`]=i;});
-          const events=[
-            ...c.workshops.map(w=>({date:w.date,event:w.title,type:"Taller"})),
-            ...c.content.filter(x=>x.sent).map(x=>({date:x.date,event:x.title,type:"Contenido"})),
-          ];
-          const impact=events.map(ev=>{
-            const k=evKey(ev.date); const i=k!=null?mdIdx[k]:undefined;
-            if(i===undefined)return null;
-            const m=c.monthlyData[i]; const prev=i>0?c.monthlyData[i-1]:null;
-            const delta=prev?sesOf(m)-sesOf(prev):null;
-            return {...ev,_i:i,newPatients:m.nuevos,date:m.label,
-              note:`${sesOf(m)} ${sesWord} ese mes${delta!=null?` (${delta>=0?"+":""}${delta} vs mes anterior)`:""} · ${m.nuevos} nuevos pacientes.`};
-          }).filter(Boolean).sort((a,b)=>a._i-b._i);
-          return <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {impact.length===0
-            ? <div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"20px 0"}}>Sin datos cargados aún.</div>
-            : impact.map((item,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 16px",background:P.bg,borderRadius:10,border:`1px solid ${P.border}`,alignItems:"flex-start"}}>
-                <div style={{flexShrink:0,textAlign:"center",minWidth:44}}>
-                  <div style={{fontSize:18,fontWeight:700,color:P.primary,lineHeight:1}}>+{item.newPatients}</div>
-                  <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>nuevos</div>
-                </div>
-                <div style={{flex:1}}>
-                  <div style={{display:"flex",gap:6,marginBottom:5,flexWrap:"wrap",alignItems:"center"}}>
-                    <Label text={item.type} bg={P.lighter} tx={P.primary}/>
-                    <span style={{fontSize:11,color:P.textMuted}}>{item.date}</span>
-                  </div>
-                  <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:3}}>{item.event}</div>
-                  <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>{item.note}</div>
-                </div>
-              </div>)
-          }
+    {mod==="estrategico"&&sub==="Bienestar del equipo"&&(()=>{
+      const ACT_COLOR="#8da7e6";
+      // Acciones colectivas = iniciativas realizadas (talleres, contención, stands, activaciones)
+      const TYPE_LABEL={taller:"Taller temático",contencion:"Taller de contención",evento:"Participación en evento",stand:"Activación con stand",activacion:"Activación"};
+      const acts=c.workshops.map(w=>({...w,_d:parseEsDate(w.date)})).filter(w=>w._d)
+        .sort((a,b)=>a._d.t-b._d.t);
+      const keyOf=(y,m)=>`${y}-${m}`;
+      const actByMonth={}; acts.forEach(a=>{(actByMonth[keyOf(a._d.y,a._d.m)]=actByMonth[keyOf(a._d.y,a._d.m)]||[]).push(a);});
+      const data=md12.map(m=>{const k=keyOf(m.year,MONTH_ORDER[m.month]);return {...m,acts:actByMonth[k]||[]};});
+      const fullData=data.filter(m=>!m.partial);
+      const withA=fullData.filter(m=>m.acts.length), without=fullData.filter(m=>!m.acts.length);
+      const avg=(arr)=>arr.length?arr.reduce((s,m)=>s+(m.nuevos||0),0)/arr.length:null;
+      const avgWith=avg(withA), avgWithout=avg(without);
+      const ratio=avgWith!=null&&avgWithout>0?avgWith/avgWithout:null;
+      const n1=(v)=>v==null?"—":String(Math.round(v*10)/10).replace(".",",");
+      const ratioWord=(r)=>r>=3.3?`${Math.round(r)} veces más`:r>=2.85?"el triple":r>=2.3?"casi el triple":r>=1.85?"el doble":r>=1.6?"casi el doble":`un ${Math.round((r-1)*100)}% más`;
+      // Numeración de acciones en el gráfico (orden cronológico dentro de los 12 meses)
+      let num=0; const numbered=[]; data.forEach(m=>m.acts.forEach(a=>{num++;numbered.push({...a,num,month:m});}));
+      const popup=dbPopup[0]||null;
+      const ActTip=({active,payload})=>{
+        if(!active||!payload?.length)return null; const r=payload[0].payload;
+        return <div style={{background:P.text,color:"#fff",borderRadius:10,padding:"10px 14px",fontSize:12,maxWidth:240,boxShadow:"0 4px 14px rgba(0,0,0,0.18)"}}>
+          <div style={{fontWeight:700}}>{r.label} · {r.nuevos} pacientes nuevos</div>
+          {r.acts.map(a=><div key={a.id} style={{marginTop:4,opacity:0.9}}>● {TYPE_LABEL[a.initiative_type]||"Acción"}: {a.title}</div>)}
+          {!r.acts.length&&<div style={{marginTop:4,opacity:0.7}}>Sin acciones colectivas</div>}
         </div>;
-        })()}
-      </Section>
-    </>}
+      };
+      const Marker=(props)=>{const {x,y,width,index}=props; const m=data[index]; if(!m?.acts.length) return null;
+        const first=numbered.find(n=>n.month===m);
+        return <g><circle cx={x+width/2} cy={y-12} r={9} fill={ACT_COLOR}/><text x={x+width/2} y={y-8.5} textAnchor="middle" fontSize={10} fontWeight={700} fill="#fff">{first.num}</text></g>;};
+      return <>
+        <Section title="Qué dicen quienes usan el beneficio">
+          <div style={{fontSize:11,color:P.textMuted,marginTop:-8,marginBottom:14}}>Encuesta dentro de la plataforma, anónima, por cupón{popup?` · ${popup.period} · ${popup.n} respuestas`:""}.</div>
+          {popup?<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:12}}>
+            {[[popup.mejoro_trabajo,"dice que mejoró cómo se siente en el trabajo"],[popup.recomendaria,"recomendaría el beneficio a un compañero"],[popup.no_habria_consultado,"no habría consultado sin el beneficio"]].map(([v,l])=>
+              <div key={l} style={{border:`1px solid ${P.border}`,borderRadius:12,padding:"14px 16px"}}>
+                <div style={{fontSize:26,fontWeight:800,color:P.text,fontFamily:F_HEAD}}>{v}%</div>
+                <div style={{fontSize:11.5,color:P.textMuted,marginTop:4,lineHeight:1.45}}>{l}</div>
+              </div>)}
+          </div>:<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"16px"}}>Sin respuestas aún.</div>}
+        </Section>
+
+        <Section title="Pacientes nuevos por mes, con las acciones marcadas">
+          <div style={{fontSize:11,color:P.textMuted,marginTop:-8,marginBottom:12}}>Cada marca es un taller, una campaña de contenido o una activación.</div>
+          <div style={{height:260}}><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} maxBarSize={44} barCategoryGap="22%" margin={{top:22,right:8,left:0,bottom:0}}>
+              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
+              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
+              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} {...intAxis(data.map(m=>m.nuevos))}/>
+              <Tooltip content={<ActTip/>} cursor={{fill:P.lighter}}/>
+              {avgWithout!=null&&<ReferenceLine y={avgWithout} stroke={ACT_COLOR} strokeDasharray="5 4" strokeWidth={1.4} label={{value:"Promedio sin acción",position:"insideTopRight",fontSize:10,fill:ACT_COLOR}}/>}
+              <Bar dataKey="nuevos" radius={[3,3,0,0]} label={<Marker/>}>
+                {data.map((m,i)=><Cell key={i} fill={m.acts.length?P.text:"#7fa596"} fillOpacity={m.partial?0.5:1}/>)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer></div>
+          {numbered.length>0&&<div style={{overflowX:"auto",marginTop:14}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:460}}>
+              <thead><tr style={{color:P.textMuted,fontSize:10,textTransform:"uppercase",letterSpacing:"0.06em"}}>
+                <th style={{textAlign:"left",padding:"8px 6px",fontWeight:700}}>Acción</th>
+                <th style={{textAlign:"left",padding:"8px 6px",fontWeight:700}}>Fecha</th>
+                <th style={{textAlign:"right",padding:"8px 6px",fontWeight:700}}>Nuevos ese mes</th>
+                <th style={{textAlign:"right",padding:"8px 6px",fontWeight:700}}>Contra el promedio</th>
+              </tr></thead>
+              <tbody>{[...numbered].reverse().map(a=>{const vs=avgWithout>0?Math.round((a.month.nuevos-avgWithout)/avgWithout*100):null;
+                return <tr key={a.id} style={{borderTop:`1px solid ${P.border}`}}>
+                  <td style={{padding:"9px 6px",color:P.text}}><span style={{display:"inline-flex",width:18,height:18,borderRadius:"50%",background:ACT_COLOR,color:"#fff",fontSize:10,fontWeight:700,alignItems:"center",justifyContent:"center",marginRight:8}}>{a.num}</span><b>{TYPE_LABEL[a.initiative_type]||"Acción"}</b> · {a.title}</td>
+                  <td style={{padding:"9px 6px",color:P.textMuted,whiteSpace:"nowrap"}}>{fmtEsDate(a.date)}</td>
+                  <td style={{padding:"9px 6px",textAlign:"right",fontWeight:700,color:P.text,fontVariantNumeric:"tabular-nums"}}>{a.month.nuevos}</td>
+                  <td style={{padding:"9px 6px",textAlign:"right",fontWeight:700,color:vs>0?P.primary:vs<0?P.red:P.textMuted,fontVariantNumeric:"tabular-nums"}}>{vs==null?"—":`${vs>0?"+":""}${vs}%`}</td>
+                </tr>;})}</tbody>
+            </table>
+          </div>}
+        </Section>
+
+
+        <div style={{background:P.gray50,borderRadius:12,padding:"12px 16px",fontSize:11.5,color:P.text,lineHeight:1.6,marginBottom:18}}>
+          <b>Cómo se lee:</b> el dash muestra qué pasó después de cada acción, no que la acción lo haya causado. Con pocos pacientes, una persona mueve el número. Por eso siempre va el promedio sin acción al lado, para que la comparación se haga bien.
+        </div>
+      </>;
+    })()}
 
     {/* ── ESTRATÉGICO - Inversión e impacto ── */}
     {mod==="estrategico"&&sub==="Consultoría Tu Terapia"&&(()=>{
@@ -1404,41 +1623,54 @@ export default function Dashboard(){
         setSolicitando(false);
       }
 
-      if(!consultoriaActiva) return <>
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 20px",textAlign:"center",minHeight:400}}>
-          {/* Pulsing circle animation */}
-          <div style={{position:"relative",width:120,height:120,marginBottom:32}}>
-            <div style={{position:"absolute",inset:0,borderRadius:"50%",background:"rgba(26,92,74,0.08)",animation:"pulse 2s ease-in-out infinite"}}/>
-            <div style={{position:"absolute",inset:12,borderRadius:"50%",background:"rgba(26,92,74,0.12)",animation:"pulse 2s ease-in-out infinite",animationDelay:"0.3s"}}/>
-            <div style={{position:"absolute",inset:24,borderRadius:"50%",background:"rgba(26,92,74,0.18)",animation:"pulse 2s ease-in-out infinite",animationDelay:"0.6s"}}/>
-            <div style={{position:"absolute",inset:36,borderRadius:"50%",background:"rgba(26,92,74,0.25)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <div style={{width:14,height:14,borderRadius:"50%",background:"#264534"}}/>
+      if(!consultoriaActiva) {
+        // Vista previa BORROSA: números ilustrativos (no son de la empresa) para mostrar lo que se desbloquea
+        const TEASER=[["Bienestar y salud mental",7.6,7.9],["Clima y comunicación",7.1,7.4],["Liderazgo efectivo",6.8,7.5],["Engagement y compromiso",7.4,7.6],["Ausentismo percibido",7.8,8.0],["Productividad sostenible",7.2,7.3]];
+        return <div style={{position:"relative",borderRadius:18,overflow:"hidden",minHeight:640}}>
+          <div aria-hidden="true" style={{filter:"blur(3.5px)",opacity:0.95,pointerEvents:"none",userSelect:"none",display:"flex",flexDirection:"column",gap:14}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:12}}>
+              {[["76%","no habría consultado sin el beneficio"],["88%","sostiene su acompañamiento"],["7,4","Índice Tu Terapia"]].map(([v,l])=><div key={l} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"18px"}}>
+                <div style={{fontSize:30,fontWeight:800,color:P.primary,fontFamily:F_HEAD}}>{v}</div><div style={{fontSize:12,fontWeight:700,color:P.text}}>{l}</div></div>)}
+            </div>
+            <div style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:18,padding:"22px 24px",display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Bienestar medido</div>
+              {TEASER.map(([l,e,ld])=><div key={l} style={{display:"flex",alignItems:"center",gap:14,border:`1px solid ${P.border}`,borderRadius:10,padding:"10px 14px"}}>
+                <div style={{width:4,height:30,borderRadius:2,background:P.primary}}/>
+                <div style={{flex:1,fontSize:13,fontWeight:600,color:P.text}}>{l}<div style={{fontSize:11,color:P.primary,fontWeight:500}}>Equipo {String(e).replace(".",",")} · Líderes {String(ld).replace(".",",")}</div></div>
+                <div style={{fontSize:20,fontWeight:800,color:P.text}}>{String(e).replace(".",",")}</div><div style={{fontSize:12,fontWeight:700,color:P.primary}}>+0,3</div>
+              </div>)}
             </div>
           </div>
-          <style>{`@keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.08);opacity:0.7} }`}</style>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(254,250,245,0.05),rgba(254,250,245,0.55))",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"40px 16px"}}>
+            <div style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:18,padding:"28px 26px",maxWidth:580,width:"100%",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",boxShadow:"0 10px 40px rgba(24,33,30,0.12)"}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#283d6b",background:"#e9eefb",padding:"4px 12px",borderRadius:20,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:14}}>🔒 Sección sin activar</div>
           {!solicitado ? <>
-            <div style={{fontSize:22,fontWeight:700,color:"#264534",marginBottom:8,letterSpacing:"-0.5px"}}>Consultoría Estratégica Tu Terapia</div>
-            <div style={{fontSize:14,color:"#5a7968",maxWidth:440,lineHeight:1.7,marginBottom:32}}>
-              Accedé al Índice Tu Terapia, métricas de impacto, análisis de inversión y seguimiento del bienestar organizacional de tu equipo.
+            <div style={{fontSize:24,fontWeight:800,color:"#264534",marginBottom:8,letterSpacing:"-0.5px",fontFamily:F_HEAD,lineHeight:1.2,textWrap:"balance"}}>Mostrá con datos lo que el bienestar le devuelve a tu empresa</div>
+            <div style={{fontSize:14,color:"#5a7968",maxWidth:480,lineHeight:1.7,marginBottom:20}}>
+              Sumate a la <b style={{color:P.text}}>encuesta semestral de bienestar</b> y llevá a la dirección resultados concretos: cómo cambia el clima, el compromiso y la productividad de tu equipo. Dos veces por año, anónima, online y en 10 minutos.
             </div>
-            {adminViewer
-              ? <div style={{fontSize:12,color:"#5a7968",fontStyle:"italic"}}>Vista admin — el cliente ve acá el botón para solicitar la activación.</div>
-              : <button onClick={solicitarConsultoria} disabled={solicitando}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10,maxWidth:520,width:"100%",marginBottom:24,textAlign:"left"}}>
+              {[["Índice Tu Terapia","La nota de bienestar de tu equipo, semestre a semestre"],["6 temáticas medidas","Salud mental, clima, liderazgo, compromiso, ausentismo y productividad"],["La mirada de los líderes","Brechas entre lo que ven los líderes y el equipo"],["Reunión semestral","Revisamos los resultados con RRHH y definimos próximos pasos"]].map(([t,d])=>
+                <div key={t} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"12px 14px"}}>
+                  <div style={{fontSize:12.5,fontWeight:700,color:P.text}}>{t}</div>
+                  <div style={{fontSize:11.5,color:P.textMuted,lineHeight:1.5,marginTop:2}}>{d}</div>
+                </div>)}
+            </div>
+            {adminViewer&&!IS_PREVIEW&&<div style={{fontSize:11.5,color:"#5a7968",fontStyle:"italic",marginBottom:10}}>Vista admin: así ve el botón el cliente. Se activa desde el admin cuando la empresa confirma la encuesta.</div>}
+            {<button onClick={IS_PREVIEW?()=>setConsultoriaActiva(true):adminViewer?undefined:solicitarConsultoria} disabled={solicitando||(!!adminViewer&&!IS_PREVIEW)}
                   style={{background:"#264534",color:"#fff",border:"none",borderRadius:10,padding:"13px 28px",fontSize:14,fontWeight:600,cursor:solicitando?"not-allowed":"pointer",opacity:solicitando?0.7:1,letterSpacing:"-0.1px"}}>
-                  {solicitando?"Enviando solicitud...":"Activar Consultoría Tu Terapia"}
+                  {solicitando?"Enviando solicitud...":"Quiero ver el impacto de nuestra inversión →"}
                 </button>}
           </> : <>
-            <div style={{fontSize:18,fontWeight:700,color:"#264534",marginBottom:8}}>Solicitud enviada</div>
-            <div style={{fontSize:13,color:"#5a7968",maxWidth:380,lineHeight:1.7,marginBottom:20}}>
-              Tu referente de Tu Terapia se pondrá en contacto pronto para activar esta sección y comenzar a trabajar juntos.
+            <div style={{fontSize:18,fontWeight:700,color:"#264534",marginBottom:8}}>¡Listo, recibimos tu solicitud!</div>
+            <div style={{fontSize:13,color:"#5a7968",maxWidth:400,lineHeight:1.7,marginBottom:20}}>
+              Tu referente de Tu Terapia te va a escribir para coordinar la primera encuesta. Con las primeras respuestas, vas a ver acá el impacto de tu inversión.
             </div>
-            <button onClick={()=>setConsultoriaActiva(true)}
-              style={{background:"none",border:`1px solid #264534`,borderRadius:8,padding:"9px 20px",fontSize:13,fontWeight:600,color:"#264534",cursor:"pointer"}}>
-              Ver panel →
-            </button>
           </>}
-        </div>
-      </>;
+            </div>
+          </div>
+        </div>;
+      }
 
       const dimKeys2=["saludMental","clima","liderazgo","engagement","asistencia","productividad"];
       const firstQ2=c.roiByQ.find(q=>dimKeys2.some(k=>q[k]!==null));
@@ -1477,248 +1709,173 @@ export default function Dashboard(){
       const invConTalleres = invSesiones + talleresCost;
       const pctInd = invConTalleres>0 ? Math.round(invSesiones/invConTalleres*100) : 0;
       const pctCol = 100 - pctInd;
-      // Mejoras medidas: delta último período vs anterior por dimensión
-      const DIMS_NEG=[["saludMental","Bienestar y salud mental"],["clima","Clima y comunicación"],["liderazgo","Liderazgo"],["engagement","Compromiso y permanencia"],["asistencia","Presencia y energía"],["productividad","Productividad sostenible"]];
-      const periodos=c.roiByQ.filter(r=>DIMS_NEG.some(([k])=>r[k]!=null));
+      // ── Consultoría simplificada: 4 números, bienestar por temática y encuestas semestrales con su informe ──
+      const DIM_LBL=[["saludMental","Salud mental","Cómo se siente el equipo emocionalmente"],["clima","Clima y comunicación","Confianza y cómo se habla en el equipo"],["liderazgo","Liderazgo","Apoyo y claridad de quienes lideran"],["engagement","Compromiso","Ganas de quedarse y motivación"],["asistencia","Presencia y energía","Llegar con energía, sin faltar por malestar"],["productividad","Productividad sostenible","Rendir sin agotarse"]];
+      const BANDS=[{min:8,label:"Muy bien",range:"8 a 10",fg:"#307070",bg:"#e6efee"},{min:7,label:"Bien",range:"7 a 7,9",fg:"#5f9a86",bg:"#eaf3ef"},{min:6,label:"A mejorar",range:"6 a 6,9",fg:"#8da7e6",bg:"#eef3fd"},{min:0,label:"Prioridad",range:"menos de 6",fg:"#e87967",bg:"#fdefec"}];
+      const bandOf=(v)=>BANDS.find(b=>v>=b.min)||BANDS[BANDS.length-1];
+      const periodos=c.roiByQ.filter(r=>DIM_LBL.some(([k])=>r[k]!=null));
       const ultimo=periodos[periodos.length-1]||null, anterior=periodos.length>1?periodos[periodos.length-2]:null;
-      const mejoras=ultimo&&anterior?DIMS_NEG.map(([k,l])=>({l,delta:ultimo[k]!=null&&anterior[k]!=null?Math.round((ultimo[k]-anterior[k])*10)/10:null})).filter(m=>m.delta!=null&&m.delta>0).sort((a,b)=>b.delta-a.delta).slice(0,3):[];
-      const bizCards=[
-        {k:"engagement",label:"Compromiso y permanencia",why:"Reemplazar a una persona cuesta entre 6 y 9 sueldos — la retención es el mayor ahorro silencioso de RRHH."},
-        {k:"asistencia",label:"Presencia y energía",why:"El ausentismo y el presentismo por malestar emocional son de los costos ocultos más grandes de una organización."},
-        {k:"productividad",label:"Productividad sostenible",why:"Los equipos que se recuperan rinden mejor por más tiempo — sin el costo del burnout."},
-      ].map(b=>({...b,val:ultimo?ultimo[b.k]:null,delta:ultimo&&anterior&&ultimo[b.k]!=null&&anterior[b.k]!=null?Math.round((ultimo[b.k]-anterior[b.k])*10)/10:null}));
+      const avgDims=(r)=>{if(!r)return null;const v=DIM_LBL.map(([k])=>r[k]).filter(x=>x!=null);return v.length?Math.round(v.reduce((a,b)=>a+Number(b),0)/v.length*10)/10:null;};
+      const idxNow=avgDims(ultimo), idxPrev=avgDims(anterior);
+      const idxDelta=idxNow!=null&&idxPrev!=null?Math.round((idxNow-idxPrev)*10)/10:null;
+      const pop=dbPopup[0]||null;
+      const m12inv=fullM2.slice(-12);
+      const inv12tot=m12inv.reduce((s2,m)=>s2+(billingMap[MONTH_TO_PERIOD(m.label||m.month)]??estMonthCost(m)),0)
+        + c.workshops.filter(w=>{const d=parseEsDate(w.date);return d&&m12inv.some(m=>m.year===d.y&&MONTH_ORDER[m.month]===d.m);}).reduce((s2,w)=>s2+(w.cost||0),0);
+      const invMes=m12inv.length?inv12tot/m12inv.length:0;
+      const actProm=m12inv.length?m12inv.reduce((s2,m)=>s2+(m.activos||0),0)/m12inv.length:0;
+      const costoPersona=invMes>0&&actProm>0?Math.round(invMes/actProm):null;
+      const d1=(v)=>v==null?"—":Number(v).toFixed(1).replace(".",",");
+      const segOf=(r,role,k)=>{const sg=r?.segments?.[role];return sg&&sg[ {saludMental:"salud_mental"}[k]||k ]!=null?Number(sg[{saludMental:"salud_mental"}[k]||k]):null;};
       return <>
-        <Section title="Inversión e impacto">
-          {totSes>0&&<div style={{padding:"16px 20px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:12,marginBottom:16}}>
-            <div style={{fontSize:17,fontWeight:700,color:P.primary,letterSpacing:"-0.2px",fontFamily:F_HEAD,lineHeight:1.3}}>
-              Tu inversión está trabajando
-            </div>
-            <div style={{fontSize:12,color:P.textMuted,marginTop:4}}>Cada $1 en salud mental retorna ~$4 en salud y productividad <span style={{opacity:0.7}}>(OMS)</span>.</div>
-          </div>}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:14}}>
-            <KpiCard label="Personas acompañadas" value={fmt(totHistorico2)} sub={`${fmt(totSes)} ${sesWord}`}/>
-            {c.firstTimeCount>0&&<KpiCard label="Primera vez en terapia" value={c.firstTimePct!=null?`${c.firstTimePct}%`:fmt(c.firstTimeCount)} sub={`${c.firstTimeCount} personas accedieron gracias a tu empresa`}/>}
-            <KpiCard label="Instancias colectivas" value={instanciasColectivas} sub={`${c.workshops.length} talleres · ${c.content.length} campañas y contenidos`}/>
-            <KpiCard label="Inversión total" value={`$ ${fmt(invConTalleres)}`} sub={talleresCost>0?"Sesiones + talleres":planKind==="fee_fijo"&&costoEfectivoFee?`$ ${fmt(costoEfectivoFee)}/sesión efectivo`:"UYU acumulado"} accent/>
-            <KpiCard label="Inversión último mes" value={`$ ${fmt(lastFull2?(billingMap[MONTH_TO_PERIOD(lastFull2.label||lastFull2.month)]??estMonthCost(lastFull2)):0)}`} sub={lastFull2?(lastFull2.label||lastFull2.month):"—"}/>
-          </div>
-          <div style={{height:250}}><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={inv12} maxBarSize={44} barCategoryGap="22%">
-              <CartesianGrid strokeDasharray="3 3" stroke={P.border} vertical={false}/>
-              <XAxis dataKey="label" tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false}/>
-              <YAxis tick={{fontSize:10,fill:P.textMuted}} axisLine={false} tickLine={false} allowDecimals={false} tickFormatter={v=>v>=1000?`$${Math.round(v/1000)}k`:`$${v}`}/>
-              <Tooltip content={<Tip/>} cursor={{fill:P.lighter}}/>
-              <Bar dataKey="investment" name="investment" radius={[3,3,0,0]}>{inv12.map((m,i)=><Cell key={i} fill={m.partial?P.greenLight:P.primary} {...goldStroke(recInv.has(m.label||m.month),curInv===(m.label||m.month))}/>)}</Bar>
-            </BarChart>
-          </ResponsiveContainer></div>
-        </Section>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:12,marginBottom:18}}>
+          <KpiCard label="Índice de bienestar" value={idxNow!=null?<span>{d1(idxNow)}<span style={{fontSize:13,color:P.textMuted,fontWeight:600}}> /10</span></span>:"—"}
+            sub={idxNow!=null?`${bandOf(idxNow).label}${idxDelta!=null?` · ${idxDelta>0?"subió":idxDelta<0?"bajó":"igual"}${idxDelta!==0?" "+d1(Math.abs(idxDelta)):""} vs. el semestre anterior`:""}`:"Con la primera encuesta"} accent/>
+          <KpiCard label="Personas acompañadas" value={fmt(totHistorico2)} sub={c.firstTimePct!=null?`${c.firstTimePct}% fue a terapia por primera vez`:"Desde el inicio"}/>
+          <KpiCard label="No habría consultado sin el beneficio" value={pop?`${pop.no_habria_consultado}%`:"—"} sub={pop?`Encuesta en la plataforma · ${pop.n} respuestas`:"Con la encuesta en la plataforma"}/>
+          <KpiCard label="Inversión por persona acompañada, por mes" value={costoPersona!=null?`$ ${fmt(costoPersona)}`:"—"} sub={costoPersona!=null?`Promedio de 12 meses: $ ${fmt(invMes)} por mes ÷ ${String(Math.round(actProm*10)/10).replace(".",",")} personas activas`:null}/>
+        </div>
 
-        {(invSesiones>0||talleresCost>0)&&<Section title="En qué se invierte" note={talleresCostUsd>0?`Los talleres se facturan en USD (≈ USD ${fmt(talleresCostUsd)} en total) y se registran en pesos al tipo de cambio de cada factura.`:null}>
-          <div style={{display:"flex",gap:14,flexWrap:"wrap",marginBottom:16}}>
-            <div style={{flex:1,minWidth:200,background:P.lighter,border:`1px solid ${P.primary}22`,borderRadius:14,padding:"16px 18px"}}>
-              <div style={{fontSize:11,fontWeight:700,color:P.primary,textTransform:"uppercase",letterSpacing:"0.06em"}}>Acompañamiento individual</div>
-              <div style={{fontSize:12,color:P.textMuted,marginBottom:6}}>Sesiones de terapia</div>
-              <div style={{fontSize:26,fontWeight:800,color:P.primary,fontFamily:F_HEAD,letterSpacing:"-0.5px"}}>$ {fmt(invSesiones)}</div>
-              <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>{pctInd}% de la inversión</div>
-            </div>
-            <div style={{flex:1,minWidth:200,background:P.purpleBg,border:`1px solid ${P.celeste}44`,borderRadius:14,padding:"16px 18px"}}>
-              <div style={{fontSize:11,fontWeight:700,color:P.accent,textTransform:"uppercase",letterSpacing:"0.06em"}}>Instancias colectivas</div>
-              <div style={{fontSize:12,color:P.textMuted,marginBottom:6}}>Talleres y ciclos</div>
-              <div style={{fontSize:26,fontWeight:800,color:P.accent,fontFamily:F_HEAD,letterSpacing:"-0.5px"}}>$ {fmt(talleresCost)}</div>
-              <div style={{fontSize:11,color:P.textMuted,marginTop:2}}>{pctCol}% de la inversión{talleresCostUsd>0?` · ≈ USD ${fmt(talleresCostUsd)}`:""}</div>
-            </div>
-          </div>
-          <div style={{display:"flex",height:14,borderRadius:8,overflow:"hidden",background:P.gray50}}>
-            {invSesiones>0&&<div style={{width:`${pctInd}%`,background:P.primary}} title={`Individual ${pctInd}%`}/>}
-            {talleresCost>0&&<div style={{width:`${pctCol}%`,background:P.celeste}} title={`Colectivo ${pctCol}%`}/>}
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",marginTop:6,fontSize:10,color:P.textMuted}}>
-            <span>Individual</span><span>Colectivo</span>
-          </div>
-        </Section>}
-
-        <Section title="Retorno medido" note="Indicadores con impacto directo en resultados de negocio.">
-          {mejoras.length>0&&<div style={{padding:"12px 16px",background:P.lighter,borderRadius:10,marginBottom:14}}>
-            <div style={{fontSize:12,fontWeight:700,color:P.primary,marginBottom:2}}>Mejoras medidas este semestre</div>
-            <div style={{fontSize:12,color:P.text}}>{mejoras.map(m=>`${m.l} +${m.delta}`).join(" · ")}</div>
-          </div>}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12}}>
-            {bizCards.map(b=><div key={b.k} style={{background:P.white,border:`1px solid ${P.border}`,borderRadius:12,padding:"16px 18px"}}>
-              <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                <div style={{fontSize:24,fontWeight:800,color:b.val!=null?P.primary:P.textMuted,letterSpacing:"-0.5px"}}>{b.val!=null?Number(b.val).toFixed(1):"—"}<span style={{fontSize:12,fontWeight:400,color:P.textMuted}}> /10</span></div>
-                {b.delta!=null&&b.delta!==0&&<span style={{fontSize:13,fontWeight:700,color:b.delta>0?"#307070":P.red}}>{b.delta>0?"▲ +":"▼ "}{b.delta}</span>}
+        <Section title={`Bienestar por temática${ultimo?` · ${semLabel(ultimo.q)}`:""}`} note="Resultados de la encuesta semestral a toda la empresa. Cada temática va de 0 a 10: cuanto más alto, mejor. Los comentarios del equipo están en el informe de cada semestre.">
+          {!ultimo?<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"16px"}}>Aparece con los resultados de la primera encuesta.</div>:(()=>{
+            const rows=DIM_LBL.map(([k,l,q])=>{const v=ultimo[k]!=null?Math.round(ultimo[k]*10)/10:null; const pv=anterior?.[k]; const d=v!=null&&pv!=null?Math.round((v-pv)*10)/10:null;
+              const e=segOf(ultimo,"colaborador",k), ld=segOf(ultimo,"lider",k); const gap=e!=null&&ld!=null?Math.round(Math.abs(ld-e)*10)/10:0;
+              return {k,l,q,v,d,gap,st:bandOf(v)};}).filter(r=>r.v!=null);
+            const best=[...rows].sort((x,y)=>y.v-x.v)[0], worst=[...rows].sort((x,y)=>x.v-y.v)[0];
+            return <>
+              <div style={{fontSize:13,color:P.text,lineHeight:1.6,background:P.gray50,borderRadius:10,padding:"10px 14px",marginBottom:14}}>
+                <b>Lo más fuerte:</b> {best.l.toLowerCase()} ({d1(best.v)}). <b>Para trabajar:</b> {worst.l.toLowerCase()} ({d1(worst.v)}).
               </div>
-              <div style={{fontSize:12,fontWeight:700,color:P.text,margin:"4px 0 6px"}}>{b.label}</div>
-              <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6}}>{b.why}</div>
-            </div>)}
-          </div>
+              <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:10.5,color:P.textMuted,marginBottom:12}}>
+                {BANDS.map(b=><span key={b.label} style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:b.fg}}/>{b.label} <span style={{opacity:0.75}}>({b.range})</span></span>)}
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                {rows.map(r=><div key={r.k} style={{display:"grid",gridTemplateColumns:"minmax(150px,1.1fr) minmax(140px,2fr) auto",gap:"6px 16px",alignItems:"center"}}>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:700,color:P.text}}>{r.l}</div>
+                    <div style={{fontSize:10.5,color:P.textMuted}}>{r.q}</div>
+                  </div>
+                  <div style={{position:"relative",height:12,borderRadius:6,background:P.gray50,overflow:"hidden"}}>
+                    <div style={{position:"absolute",inset:0,width:`${r.v*10}%`,background:r.st.fg,borderRadius:6}}/>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"flex-end",minWidth:170}}>
+                    <span style={{fontSize:10,fontWeight:700,color:r.st.fg,background:r.st.bg,padding:"3px 9px",borderRadius:20,whiteSpace:"nowrap"}}>{r.st.label}</span>
+                    <span style={{fontSize:20,fontWeight:800,color:P.text,fontFamily:F_HEAD,minWidth:34,textAlign:"right"}}>{d1(r.v)}</span>
+                  </div>
+                  <div style={{gridColumn:"2 / -1",fontSize:11,color:r.d>0?P.primary:r.d<0?P.red:P.textMuted,marginTop:-2}}>
+                    {r.d==null?"Primer semestre medido":r.d>0?`Subió ${d1(r.d)} desde el semestre anterior`:r.d<0?`Bajó ${d1(-r.d)} desde el semestre anterior`:"Igual que el semestre anterior"}
+                  </div>
+                </div>)}
+              </div>
+            </>;
+          })()}
         </Section>
 
-        <Section title="Bienestar medido" note={c.roiByQ.some(r=>r.auto)?"Los promedios se calculan automáticamente con las respuestas de la encuesta semestral de tu equipo. Para preservar el anonimato, un semestre se muestra recién a partir de 3 respuestas.":null}>
-          <div style={{display:"flex",alignItems:"center",gap:16,padding:"14px 16px",background:iii!=null?P.lighter:P.gray50,border:`1px solid ${iii!=null?P.primary+"44":P.border}`,borderRadius:10,marginBottom:14,flexWrap:"wrap"}}>
-            <div>
-              <div style={{fontSize:26,fontWeight:800,color:iii!=null?P.primary:P.textMuted,letterSpacing:"-0.5px",lineHeight:1}}>{iii!=null?iii:"—"}<span style={{fontSize:13,fontWeight:400,color:P.textMuted}}> /100</span></div>
-              <div style={{fontSize:12,fontWeight:600,color:P.text,marginTop:3}}>Índice Tu Terapia</div>
+        {ultimo&&ultimo.segments?.colaborador&&ultimo.segments?.lider&&(()=>{
+          const nE=ultimo.segments.colaborador.n, nL=ultimo.segments.lider.n;
+          const rows=DIM_LBL.map(([k,l])=>{const e=segOf(ultimo,"colaborador",k), ld=segOf(ultimo,"lider",k);
+            return e!=null&&ld!=null?{k,l,e:Math.round(e*10)/10,ld:Math.round(ld*10)/10,gap:Math.round((ld-e)*10)/10}:null;}).filter(Boolean);
+          if(!rows.length) return null;
+          const big=[...rows].sort((a,b)=>Math.abs(b.gap)-Math.abs(a.gap))[0];
+          const LO=4, HI=10, pos=(v)=>`${Math.max(0,Math.min(100,(v-LO)/(HI-LO)*100))}%`;
+          const tag=(g)=>{const a=Math.abs(g);const st={fg:P.accent,bg:P.accentBg};return a<0.5?{t:"Miradas alineadas",...st}:a<1.5?{t:"Brecha leve",...st}:{t:"Brecha importante",...st};};
+          const E_COL=P.primary, L_COL=P.celeste;
+          return <Section title="Cómo lo ven los líderes y el equipo" note={`Misma encuesta, dos miradas: ${nE} respuestas del equipo y ${nL} de líderes. Cuando las notas se separan, hay temas que unos viven distinto que otros.`}>
+            <div style={{fontSize:13,color:P.text,lineHeight:1.6,background:P.gray50,borderRadius:10,padding:"10px 14px",marginBottom:14}}>
+              {Math.abs(big.gap)<0.5?<>Líderes y equipo ven el bienestar de forma parecida en todas las temáticas.</>
+               :<><b>La mayor diferencia está en {big.l.toLowerCase()}:</b> los líderes le ponen {d1(big.ld)} y el equipo {d1(big.e)}. {big.gap>0?"Los líderes lo ven mejor de lo que lo vive el equipo.":"El equipo lo ve mejor que los líderes."}</>}
             </div>
-            <div style={{flex:1,minWidth:200,fontSize:11,color:P.textMuted,lineHeight:1.6}}>
-              {iii!=null?(iii>=70?"Impacto alto. ":iii>=50?"Impacto medio. ":"En desarrollo. "):"Se calcula con la primera encuesta trimestral. "}
-              Combina la mejora en las 6 dimensiones de bienestar medidas por encuesta{hasUtil?", la utilización del plan":""}, los talleres realizados y el engagement con el contenido.
+            <div style={{display:"flex",gap:20,fontSize:12.5,fontWeight:600,color:P.text,marginBottom:12}}>
+              <span style={{display:"flex",alignItems:"center",gap:7}}><span style={{width:16,height:16,borderRadius:"50%",background:E_COL}}/>Equipo</span>
+              <span style={{display:"flex",alignItems:"center",gap:7}}><span style={{width:16,height:16,borderRadius:"50%",background:L_COL}}/>Líderes</span>
             </div>
-          </div>
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:14,lineHeight:1.6}}>6 dimensiones medidas por encuesta. Escala 1–10.</div>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {[
-              {key:"saludMental",label:"Bienestar y salud mental",desc:"Bienestar emocional, estrés y equilibrio vida-trabajo",color:"#307070"},
-              {key:"clima",label:"Clima y comunicación",desc:"Ambiente de equipo y resolución de conflictos",color:"#5a7968"},
-              {key:"liderazgo",label:"Liderazgo efectivo",desc:"Liderazgo empático y promoción del bienestar",color:"#264534"},
-              {key:"engagement",label:"Engagement y compromiso",desc:"Motivación, propósito e intención de permanencia",color:"#283d6b"},
-              {key:"asistencia",label:"Ausentismo percibido",desc:"Energía, presencia real y afectación a la asistencia",color:"#8da7e6"},
-              {key:"productividad",label:"Productividad sostenible",desc:"Concentración, carga manejable y desconexión efectiva",color:"#aed9b6"},
-            ].map((dim,i)=>{
-              const scores=c.roiByQ.map(q=>q[dim.key]).filter(v=>v!==null);
-              const latest=scores.length>0?scores[scores.length-1]:null;
-              const prev=scores.length>1?scores[scores.length-2]:null;
-              const trend=prev!=null?Math.round((latest-prev)*10)/10:null;
-              // Congruencia equipo vs líderes del último período con ambos segmentos
-              const DIM_SQL={saludMental:"salud_mental",clima:"clima",liderazgo:"liderazgo",engagement:"engagement",asistencia:"asistencia",productividad:"productividad"};
-              const seg=[...c.roiByQ].reverse().map(r=>r.segments).find(s=>s&&s.colaborador&&s.lider);
-              const eqV=seg?Number(seg.colaborador[DIM_SQL[dim.key]]):null;
-              const ldV=seg?Number(seg.lider[DIM_SQL[dim.key]]):null;
-              const gap=eqV!=null&&ldV!=null?Math.round((ldV-eqV)*10)/10:null;
-              return <div key={i} style={{padding:"12px 14px",background:P.white,border:`1px solid ${P.border}`,borderRadius:10,display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
-                <div style={{width:4,height:36,borderRadius:2,background:dim.color,flexShrink:0}}/>
-                <div style={{flex:1,minWidth:140}}>
-                  <div style={{fontSize:12,fontWeight:600,color:P.text,marginBottom:1}}>{dim.label}</div>
-                  <div style={{fontSize:11,color:P.textMuted}}>{dim.desc}</div>
-                  {gap!=null&&<div style={{fontSize:10,marginTop:4,color:Math.abs(gap)<0.5?P.primary:Math.abs(gap)<1.5?"#283d6b":P.red,fontWeight:600}}>
-                    Equipo {eqV} · Líderes {ldV} · {Math.abs(gap)<0.5?"miradas alineadas":Math.abs(gap)<1.5?`brecha leve (${gap>0?"+":""}${gap})`:`brecha importante (${gap>0?"+":""}${gap})`}
-                  </div>}
-                </div>
-                <div style={{display:"flex",gap:14,alignItems:"center",flexShrink:0}}>
-                  {latest!=null?<>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontSize:18,fontWeight:700,color:dim.color}}>{latest}</div>
-                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>último sem</div>
-                    </div>
-                    {trend!=null&&<div style={{textAlign:"center"}}>
-                      <div style={{fontSize:14,fontWeight:700,color:trend>0?"#307070":trend<0?P.red:P.textMuted}}>{trend>0?"+":""}{trend}</div>
-                      <div style={{fontSize:9,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.04em"}}>vs anterior</div>
-                    </div>}
-                  </>:<span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente</span>}
-                </div>
-              </div>;
-            })}
-          </div>
-        </Section>
-
-        {(()=>{
-          const lid=[...c.roiByQ].reverse().map(r=>r.segments?.lider).find(l=>l&&l.lid_gestion!=null);
-          if(!lid) return null;
-          return <Section title="La mirada de los líderes" note={`Bloque exclusivo de la encuesta para líderes y mandos medios · ${lid.n} respuesta${Number(lid.n)!==1?"s":""} · escala 1–10.`}>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12}}>
-              {[["Gestión y apoyo",lid.lid_gestion],["Productividad del equipo",lid.lid_productividad],["Presencia y energía",lid.lid_presentismo],["Retención esperada",lid.lid_rotacion],["Creatividad e ideas",lid.lid_creatividad],["Bienestar del líder",lid.lid_bienestar]].map(([l,v])=>
-                <KpiCard key={l} label={l} value={v!=null?Number(v).toFixed(1):"—"} sub="/10"/>)}
+            <div style={{display:"flex",flexDirection:"column",gap:14}}>
+              {rows.map(r=>{const tg=tag(r.gap); const lo=Math.min(r.e,r.ld), hi=Math.max(r.e,r.ld);
+                return <div key={r.k} style={{display:"grid",gridTemplateColumns:"minmax(140px,1fr) minmax(160px,2fr) auto",gap:"4px 16px",alignItems:"center"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:P.text}}>{r.l}</div>
+                  <div style={{position:"relative",height:28}}>
+                    <div style={{position:"absolute",left:0,right:0,top:13,height:2,background:P.gray50,borderRadius:1}}/>
+                    <div style={{position:"absolute",left:pos(lo),width:`calc(${pos(hi)} - ${pos(lo)})`,top:11,height:6,background:tg.fg,opacity:0.3,borderRadius:3}}/>
+                    <div title={`Equipo ${d1(r.e)}`} style={{position:"absolute",left:pos(r.e),top:6,width:16,height:16,marginLeft:-8,borderRadius:"50%",background:Math.abs(r.gap)<0.15?`linear-gradient(90deg,${E_COL} 50%,${L_COL} 50%)`:E_COL,zIndex:2}}/>
+                    <div title={`Líderes ${d1(r.ld)}`} style={{position:"absolute",left:pos(r.ld),top:6,width:16,height:16,marginLeft:-8,borderRadius:"50%",background:L_COL,zIndex:1}}/>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"flex-end",minWidth:240}}>
+                    <span style={{fontSize:12,color:P.text,whiteSpace:"nowrap"}}><span style={{color:E_COL}}>Equipo</span> <b>{d1(r.e)}</b> · <span style={{color:"#5a78c4"}}>Líderes</span> <b>{d1(r.ld)}</b></span>
+                    <span style={{fontSize:10,fontWeight:700,color:tg.fg,background:tg.bg,padding:"3px 9px",borderRadius:20,whiteSpace:"nowrap"}}>{tg.t}</span>
+                  </div>
+                </div>;})}
+              <div style={{display:"grid",gridTemplateColumns:"minmax(140px,1fr) minmax(160px,2fr) auto",gap:"0 16px"}}>
+                <div/><div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:P.textMuted}}>{[4,5,6,7,8,9,10].map(v=><span key={v}>{v}</span>)}</div><div style={{minWidth:240}}/>
+              </div>
             </div>
           </Section>;
         })()}
 
-        {dbEncuestaComments.length>0&&<Section title="La voz del equipo" note="Comentarios anónimos de la encuesta de bienestar, seleccionados junto a Tu Terapia.">
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {dbEncuestaComments.slice(0,6).map((r,i)=><div key={i} style={{padding:"12px 16px",background:P.lighter,borderRadius:10,borderLeft:`3px solid ${P.primary}`,fontSize:13,color:P.text,lineHeight:1.7,fontStyle:"italic"}}>"{r.comment}"</div>)}
-          </div>
-        </Section>}
-
-        <Section title="Encuesta para tu equipo">
-          <div style={{padding:"16px 18px",background:P.lighter,border:`1px solid ${P.primary}33`,borderRadius:10,marginBottom:14}}>
-            <div style={{fontSize:13,fontWeight:700,color:P.text,marginBottom:4}}>Compartí estos links con tu equipo</div>
-            <div style={{fontSize:11,color:P.textMuted,lineHeight:1.6,marginBottom:12}}>Encuesta anónima, se responde desde el celular sin registrarse. <b>Importante:</b> el link de líderes envialo solo a quienes lideran equipos — incluye un bloque adicional sobre gestión y permite comparar la mirada de líderes y colaboradores.</div>
-            {[
-              {key:"gen",label:"Equipo en general",desc:"22 preguntas · ~10 min",url:`${window.location.origin}/#encuesta/${dbCompany?.id||""}`},
-              {key:"lid",label:"Líderes y mandos medios",desc:"30 preguntas · ~12 min",url:`${window.location.origin}/#encuesta/${dbCompany?.id||""}/lider`},
-            ].map(l=><div key={l.key} style={{marginBottom:l.key==="gen"?10:0}}>
-              <div style={{fontSize:11,fontWeight:700,color:P.text,marginBottom:4}}>{l.label} <span style={{fontWeight:400,color:P.textMuted}}>· {l.desc}</span></div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-                <code style={{flex:1,minWidth:220,fontSize:11,background:"#fff",border:`1px solid ${P.border}`,borderRadius:8,padding:"9px 12px",color:P.primary,overflowX:"auto",whiteSpace:"nowrap"}}>{l.url}</code>
-                <button onClick={()=>{navigator.clipboard.writeText(l.url); setLinkCopied(l.key); setTimeout(()=>setLinkCopied(null),2000);}}
-                  style={{background:linkCopied===l.key?P.light:P.primary,color:"#fff",border:"none",borderRadius:8,padding:"9px 16px",fontSize:12,fontWeight:600,cursor:"pointer",flexShrink:0}}>{linkCopied===l.key?"✓ Copiado":"Copiar link"}</button>
-              </div>
-            </div>)}
-          </div>
-          <div style={{fontSize:11,color:P.textMuted,marginBottom:12,lineHeight:1.6}}>¿Preferís aplicarla en papel o por otro canal? Descargá la versión documento y envianos los resultados a {c.accountManager.email}.</div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {(dbSurveys.length>0?dbSurveys:c.surveys).map((s,i)=>{
-              const isOpen = expandedSurvey===i;
-              return <div key={i} style={{background:P.lighter,border:`1px solid ${P.primary+"44"}`,borderRadius:10,overflow:"hidden"}}>
-                <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedSurvey(isOpen?null:i)}>
-                  <div style={{width:4,minHeight:40,borderRadius:2,background:P.primary,flexShrink:0}}/>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:600,color:P.text,marginBottom:3}}>{s.title}</div>
-                    <div style={{fontSize:11,color:P.textMuted}}>{s.desc}</div>
+        {/* Encuesta semestral a TODA la empresa (encuesta web Índice TT) + reunión semestral de resultados */}
+        {(()=>{
+          const yr=lastFull?.year||new Date().getFullYear();
+          const sems=[`S1 ${yr}`,`S2 ${yr}`];
+          const DIMS=["saludMental","clima","liderazgo","engagement","asistencia","productividad"];
+          const idx=(r)=>{if(!r)return null;const v=DIMS.map(k=>r[k]).filter(x=>x!=null);return v.length?Math.round(v.reduce((a,b)=>a+Number(b),0)/v.length*10)/10:null;};
+          const prevSem=(q)=>{const m=q.match(/S(\d) (\d{4})/);return m[1]==="1"?`S2 ${+m[2]-1}`:`S1 ${m[2]}`;};
+          const nomina=dbCompany?.headcount_total||null;
+          const cal=c.accountManager?.calendar;
+          const today=new Date().getTime();
+          const SEM_TXT={1:"1er semestre",2:"2do semestre"};
+          return <Section title="Encuestas semestrales">
+            <div style={{fontSize:11,color:P.textMuted,marginTop:-8,marginBottom:14,lineHeight:1.6}}>Dos veces por año, todo el equipo responde online y de forma anónima. Después de cada una te enviamos el informe y nos reunimos con RRHH.</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:12}}>
+              {sems.map(q=>{
+                const r=c.roiByQ.find(x=>x.q===q); const pr=c.roiByQ.find(x=>x.q===prevSem(q));
+                const v=idx(r), pv=idx(pr); const d=v!=null&&pv!=null?Math.round((v-pv)*10)/10:null;
+                const meet=dbReuniones.find(x=>x.period===q); const mt=meet?parseEsDate(meet.date):null;
+                const semNum=q[1]; const isOpen=!r&&dbCompany?.encuesta_abierta&&semNum===(new Date().getMonth()<6?"1":"2");
+                const status=r?"done":isOpen?"open":"next";
+                return <div key={q} style={{border:`1px solid ${status==="done"?P.primary+"44":P.border}`,background:status==="done"?P.lighter:P.white,borderRadius:14,padding:"16px 18px",display:"flex",flexDirection:"column",gap:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+                    <div style={{fontSize:11,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.06em"}}>{SEM_TXT[semNum]} {q.slice(3)}</div>
+                    <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:20,
+                      background:status==="done"?P.primary:status==="open"?"#e9eefb":P.gray50,color:status==="done"?"#fff":status==="open"?"#283d6b":P.textMuted}}>
+                      {status==="done"?"Con resultados":status==="open"?"Encuesta abierta":"Próxima"}</span>
                   </div>
-                  <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
-                    {s.file_url
-                      ? <a href={s.file_url} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{background:P.primary,color:P.white,borderRadius:7,padding:"6px 14px",fontSize:11,fontWeight:600,textDecoration:"none"}}>⬇ Descargar</a>
-                      : <span style={{fontSize:11,color:P.textMuted,fontStyle:"italic",padding:"6px 0"}}>Archivo próximamente</span>
-                    }
-                    <span style={{fontSize:16,color:P.textMuted,transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▾</span>
+                  {status==="done"?<div style={{display:"flex",alignItems:"baseline",gap:10,flexWrap:"wrap"}}>
+                      <span style={{fontSize:36,fontWeight:800,color:P.primary,fontFamily:F_HEAD,letterSpacing:"-1px",lineHeight:1}}>{String(v).replace(".",",")}</span>
+                      <span style={{fontSize:11,color:P.textMuted}}>Índice de bienestar /10</span>
+                      {d!=null&&<span style={{fontSize:12,fontWeight:700,color:d>0?P.primary:d<0?P.red:P.textMuted}}>{d>0?"▲ +":d<0?"▼ ":""}{String(d).replace(".",",")} vs. semestre anterior</span>}
+                    </div>
+                    :<div style={{fontSize:13,color:P.text,lineHeight:1.5}}>{status==="open"?"La encuesta está abierta: compartí el link con todo el equipo.":"Se abre en el "+SEM_TXT[semNum]+". Te avisamos cuando esté lista."}</div>}
+                  {status==="done"&&r.n&&<div style={{fontSize:11,color:P.textMuted}}>{r.n} respuestas{nomina?` · ${Math.round(r.n/nomina*100)}% de la nómina`:""}</div>}
+                  {status==="done"&&meet?.report_url&&<a href={meet.report_url} target="_blank" rel="noopener noreferrer" style={{alignSelf:"flex-start",fontSize:12,fontWeight:700,color:P.primary,background:P.white,border:`1px solid ${P.primary}55`,textDecoration:"none",padding:"7px 14px",borderRadius:8}}>⬇ Descargar informe de resultados</a>}
+                  {status==="open"&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    {[["gen","Copiar link para el equipo",`${window.location.origin}/#encuesta/${dbCompany?.id||""}`],["lid","Copiar link para líderes",`${window.location.origin}/#encuesta/${dbCompany?.id||""}/lider`]].map(([k,l,u])=>
+                      <button key={k} onClick={()=>{try{navigator.clipboard.writeText(u).catch(()=>{});}catch(e){} setLinkCopied(k); setTimeout(()=>setLinkCopied(null),2000);}}
+                        style={{fontSize:12,fontWeight:600,color:linkCopied===k?"#fff":P.primary,background:linkCopied===k?P.primary:P.lighter,border:`1px solid ${P.primary}44`,borderRadius:8,padding:"7px 12px",cursor:"pointer"}}>{linkCopied===k?"✓ Copiado":l}</button>)}
+                  </div>}
+                  {status==="open"&&<div style={{fontSize:10.5,color:P.textMuted,lineHeight:1.5}}>El link de líderes es solo para quienes lideran equipos: suma un bloque sobre gestión.</div>}
+                  <div style={{borderTop:`1px solid ${P.border}`,paddingTop:10,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap"}}>
+                    <div style={{fontSize:12,color:P.text,minWidth:0}}>
+                      <div style={{fontSize:10,fontWeight:700,color:P.textMuted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:2}}>Reunión de resultados</div>
+                      {mt?<b>{mt.t<today?"Fue el ":""}{fmtEsDate(meet.date)}{meet.time?` · ${meet.time}`:""}</b>:<span style={{color:P.textMuted}}>{status==="next"?"Se agenda cuando cierre la encuesta":"Sin agendar todavía"}</span>}
+                    </div>
+                    {!mt&&status!=="next"&&cal&&<a href={cal} target="_blank" rel="noopener noreferrer" style={{fontSize:12,fontWeight:600,color:"#fff",background:P.primary,textDecoration:"none",padding:"7px 14px",borderRadius:8}}>Agendar reunión →</a>}
+                    {mt&&mt.t>=today&&<span style={{fontSize:10.5,fontWeight:700,color:P.primary,background:P.white,border:`1px solid ${P.primary}44`,padding:"3px 9px",borderRadius:20}}>Agendada</span>}
+                    {mt&&mt.t<today&&meet.minutes_url&&<a href={meet.minutes_url} target="_blank" rel="noopener noreferrer" style={{fontSize:12,fontWeight:600,color:P.primary,textDecoration:"none"}}>Ver minuta →</a>}
                   </div>
-                </div>
-                {isOpen&&<div style={{borderTop:`1px solid ${P.border}`,padding:"14px 16px",background:"rgba(255,255,255,0.7)"}}>
-                  <div style={{fontSize:11,fontWeight:600,color:P.textMuted,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.06em"}}>6 dimensiones que mide</div>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
-                    {(s.dims||[]).map(d=><span key={d} style={{fontSize:11,background:P.white,border:`1px solid ${P.border}`,borderRadius:20,padding:"4px 12px",color:P.textMuted}}>{d}</span>)}
-                  </div>
-                </div>}
-              </div>;
-            })}
-          </div>
-        </Section>
+                </div>;
+              })}
+            </div>
+          </Section>;
+        })()}
 
       </>;
     })()}
 
-    {/* ── GESTIÓN ── */}
-    {mod==="gestion"&&<div style={{background:"linear-gradient(135deg,#5a7968,#87a094)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
-      <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Gestión</div>
-      <div style={{fontSize:25,fontWeight:800,color:"#fff",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>
-        {sub==="Facturación"?"Tu plan activo, todo en orden":sub==="Plan activo"?"El acuerdo que hace posible el bienestar de tu equipo":"Las personas detrás del beneficio, siempre disponibles"}
-      </div>
-      <div style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>
-        {sub==="Facturación"?`Renovación ${c.plan.renewal} · ${c.billing.filter(b=>b.status==="pagado").length} períodos pagados`:sub==="Plan activo"?planSummary:"Nuestro equipo está disponible para vos"}
-      </div>
-    </div>}
-    {mod==="gestion"&&sub==="Facturación"&&<>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:18}}>
-        <KpiCard label="Total pagado" value={`$ ${fmt(billingPaid)}`}/>
-        <KpiCard label="Pendiente de pago" value={`$ ${fmt(billingPending)}`} warn={billingPending>0}/>
-        <KpiCard label="Períodos facturados" value={c.billing.length}/>
-      </div>
-      <Section title="Historial de facturación">
-        <div style={{overflowX:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-            <thead><tr style={{borderBottom:`1.5px solid ${P.border}`}}>
-              {["Período","Factura","Monto (UYU)","Estado",""].map(h=><th key={h} style={{padding:"8px 12px",textAlign:"left",color:P.textMuted,fontWeight:600,fontSize:11,letterSpacing:"0.04em",textTransform:"uppercase"}}>{h}</th>)}
-            </tr></thead>
-            <tbody>{[...c.billing].reverse().map((b,i)=><tr key={i} style={{borderBottom:`1px solid ${P.border}`,background:i%2===0?P.white:P.bg}}>
-              <td style={{padding:"10px 12px",color:P.text,fontWeight:500}}>{b.period}</td>
-              <td style={{padding:"10px 12px",color:P.textMuted,fontFamily:"monospace",fontSize:11}}>{b.invoice}</td>
-              <td style={{padding:"10px 12px",color:P.text,fontWeight:600}}>$ {fmt(b.amount)}</td>
-              <td style={{padding:"10px 12px"}}><Label text={b.status==="pagado"?"Pagado":"Pendiente"} bg={b.status==="pagado"?P.lighter:P.accentBg} tx={b.status==="pagado"?P.primary:P.accent}/></td>
-              <td style={{padding:"10px 12px"}}>
-                {b.fileUrl
-                  ?<a href={b.fileUrl} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:5,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"5px 12px",borderRadius:7,border:`1px solid ${P.border}`}}>⬇ Descargar</a>
-                  :<span style={{fontSize:11,color:P.textMuted,fontStyle:"italic"}}>Pendiente</span>
-                }
-              </td>
-            </tr>)}</tbody>
-          </table>
-        </div>
-      </Section>
-    </>}
-
-    {mod==="gestion"&&sub==="Plan activo"&&<Section title="Detalles del plan"
-      note={planKind==="a_demanda"&&coveragePct<1?`Los costos por sesión indicados corresponden al ${Math.round(coveragePct*100)}% que financia la empresa (con descuento por convenio) — el resto lo aporta cada colaborador como co-pago.`:null}>
-      {(()=>{
+    {/* ── GESTIÓN (una sola página: plan, facturación, inversión y equipo) ── */}
+    {mod==="gestion"&&(()=>{
+      const talleresCostG=c.workshops.reduce((s,w)=>s+(w.cost||0),0);
+      const invSesG=invTotal; const invAllG=invSesG+talleresCostG;
+      const pctIndG=invAllG>0?Math.round(invSesG/invAllG*100):0;
+      const planRows=(()=>{
         const rows=[["Tipo",c.plan.type]];
         if(planKind==="cuponera_fija") rows.push(["Sesiones incluidas",c.plan.sessionsMonth?`${c.plan.sessionsMonth}/mes`:"—"],["Costo por sesión (único blended)",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}`:"—"]);
         else if(planKind==="fee_fijo") rows.push(["Fee mensual",c.plan.monthlyFee?`UY$ ${fmt(c.plan.monthlyFee)}`:"—"],["Beneficio para colaboradores",`${Math.round((1-coveragePct)*100)}% OFF por sesión`]);
@@ -1735,30 +1892,67 @@ export default function Dashboard(){
                   ["Límite por colaborador por mes",c.userMonthlyLimit?`${c.userMonthlyLimit} sesiones/mes`:"Sin límite"]);
         rows.push(["Inicio",c.plan.start],["Renovación",c.plan.renewal],["Estado",c.plan.status]);
         return rows;
-      })().map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"11px 0",borderBottom:`1px solid ${P.border}`}}>
-        <span style={{fontSize:12,color:P.textMuted}}>{l}</span>
-        <span style={{fontSize:12,fontWeight:600,color:P.text}}>{v}</span>
-      </div>)}
-    </Section>}
-
-    {mod==="gestion"&&sub==="Equipo TT"&&<>
-      <div style={{fontSize:12,color:P.textMuted,marginBottom:16,lineHeight:1.6}}>Tu equipo de referencia en Tu Terapia para consultas administrativas, comerciales o de contenido.</div>
-      <div style={{display:"flex",flexDirection:"column",gap:12}}>
-        {equipoUI.map((p,i)=><div key={i} style={{background:P.white,borderRadius:12,border:`1px solid ${P.border}`,padding:"20px 24px",display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
-          {p.photoUrl?<img src={p.photoUrl} alt={p.name} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",objectPosition:"center 15%",flexShrink:0,border:`2px solid ${P.lighter}`}}/>:<Avatar initials={p.initials} size={48}/>}
-          <div style={{flex:1,minWidth:150}}>
-            <div style={{fontSize:14,fontWeight:700,color:P.text,letterSpacing:"-0.2px",marginBottom:2}}>{p.fullName||p.name}</div>
-            <div style={{fontSize:12,color:P.textMuted,marginBottom:4}}>{p.role}</div>
-            {p.area&&<Label text={p.area} bg={P.lighter} tx={P.primary}/>}
+      })();
+      const bills=[...c.billing].sort((x,y)=>(parseEsDate(y.period)?.t||0)-(parseEsDate(x.period)?.t||0));
+      const shown=showAllBills?bills:bills.slice(0,6);
+      const ref=c.accountManager; const others=equipoUI.filter(p=>p.email!==ref?.email);
+      const pending=c.billing.filter(b=>b.status==="pendiente");
+      return <>
+        <div style={{background:"linear-gradient(135deg,#1e3a2c 0%,#264534 100%)",borderRadius:18,padding:"32px 30px 24px",marginBottom:18,textAlign:"center"}}>
+          <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.6)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Gestión</div>
+          <div style={{fontSize:25,fontWeight:800,color:"#fff",letterSpacing:"-0.3px",marginBottom:4,fontFamily:F_HEAD}}>{pending.length?`${pending.length} ${pending.length===1?"factura pendiente":"facturas pendientes"}`:"Tu cuenta, todo en orden"}</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,0.8)"}}>{planSummary} · renovación {c.plan.renewal}</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column"}}>
+          <div style={{minWidth:0}}>
+            <Section title="Facturación">
+              {bills.length===0?<div style={{fontSize:12,color:P.textMuted,textAlign:"center",padding:"16px"}}>Sin facturas cargadas aún.</div>:<>
+              <div style={{overflowX:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                  <thead><tr style={{borderBottom:`1.5px solid ${P.border}`}}>
+                    {["Período","Estado",""].map(h=><th key={h} style={{padding:"8px 10px",textAlign:"left",color:P.textMuted,fontWeight:600,fontSize:10.5,letterSpacing:"0.04em",textTransform:"uppercase"}}>{h}</th>)}
+                  </tr></thead>
+                  <tbody>{shown.map((b,i)=><tr key={i} style={{borderBottom:`1px solid ${P.border}`}}>
+                    <td style={{padding:"9px 10px",color:P.text,fontWeight:500}}>{b.period}<div style={{fontSize:10.5,color:P.textMuted,fontFamily:"monospace"}}>{b.invoice}</div></td>
+                    <td style={{padding:"9px 10px"}}><Label text={b.status==="pagado"?"Pagado":"Pendiente"} bg={b.status==="pagado"?P.lighter:P.accentBg} tx={b.status==="pagado"?P.primary:P.accent}/></td>
+                    <td style={{padding:"9px 10px",textAlign:"right"}}>{b.fileUrl?<a href={b.fileUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:12,fontWeight:600,color:P.primary,background:P.lighter,textDecoration:"none",padding:"6px 12px",borderRadius:8}}>⬇ Descargar factura</a>:<span style={{fontSize:11,color:P.textMuted}}>—</span>}</td>
+                  </tr>)}</tbody>
+                </table>
+              </div>
+              {bills.length>6&&<button onClick={()=>setShowAllBills(v=>!v)} style={{marginTop:12,background:"none",border:"none",color:P.primary,fontSize:12,fontWeight:600,cursor:"pointer",padding:0}}>{showAllBills?"Ver menos":`Ver las ${bills.length} facturas`}</button>}
+              </>}
+            </Section>
           </div>
-          <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-            <a href={`mailto:${p.email}`} style={{display:"flex",alignItems:"center",gap:5,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:7,border:`1px solid ${P.border}`}}>✉ Mail</a>
-            {p.whatsapp&&<a href={`https://wa.me/${p.whatsapp}?text=Hola%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:5,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:7,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>}
-
+          <div style={{minWidth:0}}>
+            <Section title="Tu plan" note={planKind==="a_demanda"&&coveragePct<1?`Los costos por sesión indicados corresponden al ${Math.round(coveragePct*100)}% que financia la empresa (con descuento por convenio) — el resto lo aporta cada colaborador como co-pago.`:null}>
+              {planRows.filter(([l])=>l!=="Inicio"&&l!=="Renovación").map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",gap:12,padding:"9px 0",borderBottom:`1px solid ${P.border}`}}>
+                <span style={{fontSize:12,color:P.textMuted}}>{l}</span>
+                <span style={{fontSize:12,fontWeight:600,color:P.text,textAlign:"right"}}>{v}</span>
+              </div>)}
+            </Section>
+            <Section title="Tu equipo en Tu Terapia">
+              {ref&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"4px 0 14px",borderBottom:others.length?`1px solid ${P.border}`:"none",flexWrap:"wrap"}}>
+                {ref.photoUrl?<img src={ref.photoUrl} alt={ref.name} style={{width:52,height:52,borderRadius:"50%",objectFit:"cover",objectPosition:"center 15%"}}/>:<Avatar initials={ref.initials} size={52}/>}
+                <div style={{flex:1,minWidth:140}}>
+                  <div style={{fontSize:10,fontWeight:700,color:P.primary,textTransform:"uppercase",letterSpacing:"0.06em"}}>Tu referente</div>
+                  <div style={{fontSize:14,fontWeight:700,color:P.text}}>{ref.fullName||ref.name}</div>
+                  <div style={{fontSize:11.5,color:P.textMuted}}>{ref.role} · {ref.email}</div>
+                </div>
+                <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                  {ref.whatsapp&&<a href={`https://wa.me/${ref.whatsapp}`} target="_blank" rel="noopener noreferrer" style={{fontSize:11.5,fontWeight:600,color:"#fff",background:P.primary,textDecoration:"none",padding:"7px 12px",borderRadius:8}}>WhatsApp</a>}
+                  {ref.calendar&&<a href={ref.calendar} target="_blank" rel="noopener noreferrer" style={{fontSize:11.5,fontWeight:600,color:P.primary,background:P.lighter,textDecoration:"none",padding:"7px 12px",borderRadius:8}}>Agendar</a>}
+                </div>
+              </div>}
+              {others.map((p,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<others.length-1?`1px solid ${P.border}`:"none"}}>
+                {p.photoUrl?<img src={p.photoUrl} alt={p.name} style={{width:34,height:34,borderRadius:"50%",objectFit:"cover"}}/>:<Avatar initials={p.initials} size={34}/>}
+                <div style={{flex:1,minWidth:0}}><div style={{fontSize:12.5,fontWeight:600,color:P.text}}>{p.fullName||p.name}</div><div style={{fontSize:11,color:P.textMuted}}>{p.role}</div></div>
+                <span style={{fontSize:11,color:P.textMuted,userSelect:"all"}}>{p.email}</span>
+              </div>)}
+            </Section>
           </div>
-        </div>)}
-      </div>
-    </>}
+        </div>
+      </>;
+    })()}
 
     <div style={{textAlign:"center",marginTop:32,paddingBottom:32,fontSize:10,color:P.textMuted,letterSpacing:"0.02em"}}>
       {lastM?`Datos actualizados a ${lastM.label} · `:""}Tu Terapia · Una sesión a la vez.
