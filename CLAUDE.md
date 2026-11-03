@@ -25,7 +25,7 @@ Dashboard de bienestar que Tu Terapia (marketplace de psicología, Uruguay/Argen
 ## Tres cosas que muerden y conviene saber antes de empezar
 
 1. **Push ≠ deployado.** Vercel tuvo un incidente (jul 2026) que dejó builds sin publicar pese a que el push salió bien. Después de pushear, **verificá el bundle de producción** (grep de algún string nuevo en el JS servido). Nunca asumir.
-2. **El proyecto de Supabase es Free tier y se pausa solo por inactividad** (~7 días). Ya pasó dos veces (jul y sep 2026). Síntoma: los DOS paneles dejan de aceptar logins a la vez y el error dice "email o contraseña incorrectos". No es el código — hay que restaurar el proyecto desde el dashboard de Supabase. El upgrade a Pro está pendiente.
+2. **Si los DOS paneles dejan de aceptar logins a la vez, no es el código.** El síntoma es un error de credenciales en ambos al mismo tiempo. Casi siempre es el proyecto de Supabase que no está respondiendo; se resuelve desde su panel, no tocando el código. Avisar al equipo antes de salir a buscar el bug.
 3. **La base es producción y no hay ambiente de prueba.** Antes de crear, borrar o modificar datos en Supabase, preguntar.
 
 ## Datos: 100% Supabase (sin fallbacks)
@@ -36,18 +36,18 @@ El componente carga datos de Supabase al montar. Los fallbacks hardcodeados (obj
 ### Conteo de personas: SIEMPRE `total_historico`, nunca la suma de `nuevos`
 Regla confirmada con datos reales (sep 2026). Toda métrica de personas/pacientes — home "personas acompañadas", Adherencia "Total de pacientes", Consultoría, títulos de módulo — sale de `totHistorico` (el `total_historico` del último mes cargado).
 
-**Por qué:** la columna `nuevos` del reporte de plataforma no son personas únicas — cuenta de nuevo a quien reingresa tras un tiempo. En ANII la suma daba 50 contra 19 reales; en Qubika SUBreportaba (32 vs 55) porque la empresa tenía pacientes previos al período cargado. `nuevos` sigue siendo válido como serie mensual (ritmo de incorporación, sparkline, gráfica "Nuevos pacientes por mes"), nunca como total.
+**Por qué:** la columna `nuevos` del reporte de plataforma no son personas únicas — cuenta de nuevo a quien reingresa tras un tiempo. Comprobado contra datos reales: en varias empresas la suma de `nuevos` sobrereporta fuerte, y en las que tenían pacientes previos al período cargado SUBreporta. `nuevos` sigue siendo válido como serie mensual (ritmo de incorporación, sparkline, gráfica "Nuevos pacientes por mes"), nunca como total.
 
 ### Tipos de plan (multi-empresa)
 `companies.plan_kind`: `cuponera_fija | fee_fijo | a_demanda` (son **tres**) + `coverage_pct` (0-1), `monthly_plan` (cuponera), `monthly_fee` (fee fijo), `monthly_cap` (a demanda, opcional), `renewal`. **Los talleres NO son un plan** — son acciones complementarias a cualquier convenio.
 
 ### Pricing y ROI
-- Precios de lista TT (constantes en App.jsx): online $1.600, presencial $1.850, promedio $1.725 (IVA 10% incl). Descuentos a demanda: cobertura 50% → 5% OFF sobre la parte de la empresa; 100% → 10% OFF.
+- Los precios de lista y los descuentos por convenio viven como constantes en `src/App.jsx` (`LIST_PRICE_ONLINE`, `LIST_PRICE_PRESENCIAL`, `LIST_PRICE_AVG`) — mirarlos ahí, no duplicarlos en este archivo. Los descuentos de a demanda dependen de `coverage_pct` y se aplican sobre la parte que paga la empresa.
 - `session_cost_online`/`session_cost_presencial`: lo que paga la EMPRESA por sesión en a demanda (ya con descuento; se cargan manualmente en el admin, que sugiere el valor calculado). `session_price_ref` queda SOLO para cuponera (costo único blended). Fee fijo no tiene costo por sesión — se muestra el costo efectivo (fee ÷ sesiones del mes).
 - `companySessionCost` (derivado): a demanda = promedio de online/presencial cargados (los datos de sesiones no distinguen modalidad); cuponera = blended. Estimación de inversión = sesiones × companySessionCost (fee: fee plano); la facturación real siempre pisa la estimación.
 - Co-pago a demanda <100%: aporte del colaborador por sesión = su % a precio de lista (sin descuento) — derivado como `companySessionCost×(1−cov)/(cov×0.95)`. Se muestra "inversión conjunta empresa+colaboradores".
 - `user_session_limit`/`user_monthly_limit`: límites por colaborador (informativos, en Plan activo; aplican a todos los planes).
-- **Talleres con costo:** `workshops.cost` (UYU, lo que se carga) + `workshops.cost_usd` (referencia, se factura en USD y se pasa a pesos a mano para no distorsionar históricos). Suma a la inversión total de Consultoría, con un bloque comparativo individual (sesiones) vs colectivo (talleres).
+- **Talleres con costo:** `workshops.cost` (UYU, lo que se carga) + `workshops.cost_usd` (referencia: se factura en USD y se pasa a pesos a mano para no distorsionar históricos). Suma a la inversión total de Consultoría, con un bloque comparativo individual (sesiones) vs colectivo (talleres). El precio de lista y los descuentos por convenio no se documentan acá — preguntarlos al equipo.
 - Consultoría TT (regla de Juan: **el retorno se muestra con impacto medido, NUNCA con el descuento**): "Inversión e impacto" (banner + alcance: personas acompañadas, % primera vez, instancias colectivas, inversión + chart) → "Retorno medido" (mejoras semestrales de la encuesta + 3 indicadores de negocio, con framing de costos y cita OMS $1→$4) → "Bienestar medido" (Índice TT + 6 dimensiones con brechas equipo/líderes) → "La mirada de los líderes" → "La voz del equipo" → Encuesta. El ahorro vs lista vive en Gestión → Plan activo.
 - Cuponera muestra canjeadas + realizadas; a demanda y fee fijo muestran SOLO canjeadas tituladas "Sesiones" (regla de negocio — helpers `usesRealizadas`/`sesOf`/`totSes`/`sesWord`; **toda métrica nueva de sesiones usa `sesOf`**, nunca `m.realizadas` directo).
 - Utilización del plan y línea de referencia solo en cuponera (o tope de a-demanda); el Índice Tu Terapia repondera sin el 30% de utilización fuera de cuponera (70/20/10).
@@ -62,14 +62,14 @@ Regla confirmada con datos reales (sep 2026). Toda métrica de personas/paciente
 `companies.visible_modules` (jsonb): `{módulo: [subpestañas visibles]}`, null = todo visible. Se configura desde el panel admin (módulos y subpestañas). El dashboard filtra nav, subnav y cards del home con `moduleVisible()`/`visibleSubs()`; se combina con `user_permissions` (capa por usuario). Soporta el formato legacy (array de ids de módulo).
 
 ### Accesos y login
-- **Multi-empresa:** `company_users` tiene UNIQUE(company_id, email) — un mismo mail puede acceder a varios dashes (caso Farmashop, con dos planes distintos = dos filas en `companies`). El login trae todas las filas del mail; con más de una aparece un **selector de empresa en el header** (`switchUserCompany` recarga permisos al cambiar).
+- **Multi-empresa:** `company_users` tiene UNIQUE(company_id, email) — un mismo mail puede acceder a varios dashes (pasa cuando una empresa tiene dos convenios distintos: son dos filas en `companies` y la misma persona entra a las dos). El login trae todas las filas del mail; con más de una aparece un **selector de empresa en el header** (`switchUserCompany` recarga permisos al cambiar).
 - **Vista admin:** los usuarios de `admin_users` se loguean en este dash con su propia cuenta y ven el dash de cualquier empresa tal como lo ve el cliente (respetando `visible_modules`; los permisos por usuario no aplican). El botón de solicitar consultoría se oculta en vista admin. **Hoy el equipo entra por acá** — `company_users` está vacío, ninguna empresa cliente tiene usuarios propios todavía.
 - Pantalla de crear contraseña: detecta `type=recovery` / `type=invite` en el hash de la URL.
 
 ### Equipo TT y referentes
 `admin_users` es la fuente ÚNICA: un miembro del equipo = admin del panel = posible referente de empresas. Se gestiona desde el admin → **Equipo TT** (CRUD, foto a `contenido/equipo/`, invitación automática). El dash lo lee con la política `team_read` y cae a las fotos históricas en base64 (`FOTO_FALLBACK` por email) si el miembro no subió una. El array `TT_TEAM` quedó **solo como fallback** si la tabla no carga — no agregar gente ahí.
 
-`accountManager` se resuelve matcheando `companies.referente_email` contra el equipo, **case-insensitive**. (Un typo en un mail hizo que Genexus mostrara a la persona equivocada durante semanas; por eso en el admin el referente es un select y no texto libre.)
+`accountManager` se resuelve matcheando `companies.referente_email` contra el equipo, **case-insensitive**. (Un typo en un mail hizo que una empresa mostrara a la persona equivocada durante semanas; por eso en el admin el referente es un select y no texto libre.)
 
 ### Tablas Supabase relevantes
 - `companies` — nombre, plan_kind y campos de plan, referente, `visible_modules`, `encuesta_abierta`, headcounts
@@ -106,24 +106,19 @@ Vista PÚBLICA sin login en `#encuesta/<company_uuid>`, estilo typeform mobile-f
 1. La encuesta web de 6 dimensiones (Consultoría, "Bienestar medido"): a TODA la empresa, semestral, por link.
 2. "Seguimiento de personas que usan el beneficio" (Bienestar del equipo): encuesta INTRAPLATAFORMA de TT a usuarios activos, trimestral, cargada A MANO desde el admin → tabla `seguimiento_beneficio`. **Nunca alimentar esta sección con datos de la encuesta web.**
 
-## Clientes (al 30 oct 2026)
-Nueve empresas con datos reales cargados:
+## Clientes
 
-| Empresa | Plan | Meses | Pacientes |
-|---|---|---|---|
-| ANII | fee fijo | 37 | 19 |
-| Genexus Consulting | fee fijo | 27 | 28 |
-| Greycon | fee fijo | 26 | 4 |
-| Nodum | fee fijo | 26 | 26 |
-| Uruware | fee fijo | 26 | 8 |
-| Kaizen | a demanda | 19 | 19 |
-| Quanam | a demanda | 16 | 13 |
-| Qubika | a demanda | 7 | 55 |
-| Farmashop | a demanda (100%) | — | sin datos aún |
+**Este repo NO documenta quiénes son los clientes ni sus datos.** Esa información vive en la base y se consulta ahí:
 
-- **No hay ninguna empresa con cuponera fija hoy** (TCS era la única y dejó de ser cliente en sep 2026; se eliminó por completo). El código de cuponera sigue vivo y hay que mantenerlo.
-- **BigCheese es data de prueba del equipo** — su `total_historico` va 10 → 5 → 25 → 3333 → 2 → 0. Nunca usarla para validar métricas.
-- Solo Kaizen tiene motivos de consulta cargados. `billing` y `workshops` están vacías: las secciones de facturación y talleres muestran estados vacíos.
+```sql
+select name, plan_kind, coverage_pct from companies order by name;
+```
+
+Lo único que hace falta saber para programar:
+
+- Los tres `plan_kind` conviven en el código y hay que mantener los tres, incluso si hoy ninguna empresa usa alguno. No asumir que un plan "ya no se usa" sin mirar la tabla.
+- **`BigCheese` es data de prueba del equipo**, no un cliente. Su `total_historico` es incoherente a propósito (va 10 → 5 → 25 → 3333 → 2 → 0). Nunca usarla para validar métricas ni para sacar conclusiones sobre cómo se comportan los datos reales.
+- Varias tablas pueden estar vacías para algunas empresas (`billing`, `workshops`, `consultation_reasons`). Eso es normal — las secciones muestran estados vacíos explícitos. Antes de "arreglar" una sección que no muestra nada, verificar en la base si simplemente no hay datos cargados.
 
 ## Convenciones
 - **Idioma de la UI: español rioplatense con voseo.** "Podés", "tenés", "ingresá". Nunca "puedes".
@@ -133,10 +128,5 @@ Nueve empresas con datos reales cargados:
 - Estilos inline, no hay CSS framework.
 - **El admin todavía usa la paleta vieja** (`#1A5C4A`) — el rebrand se aplicó al dash, el admin quedó pendiente.
 
-## Pendientes conocidos
-- Upgrade a Supabase Pro (el riesgo de pausa por inactividad sigue vivo).
-- Activar "Leaked password protection" en Supabase Auth.
-- Consolidar políticas RLS (`multiple_permissive_policies` en ~18 tablas) — pendiente a propósito hasta poder probar con sesiones reales de cada rol.
-- Limpiar la data de prueba de BigCheese.
-- Validación de las 30 preguntas de la encuesta por los psicólogos.
-- Costos reales y usuarios de Farmashop (primer caso real de co-pago).
+## Pendientes
+La lista de pendientes del proyecto **no se documenta en este repo** — incluye temas de seguridad y de negocio que no corresponde publicar junto al código. Preguntarle al equipo antes de dar algo por hecho o por pendiente.
