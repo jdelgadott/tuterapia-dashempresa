@@ -1161,8 +1161,12 @@ export default function Dashboard(){
     </div>}
     {mod==="individual"&&sub==="Sesiones"&&(()=>{
       // Cupones: cada código con su color dentro de la misma barra (el general primero = el de más sesiones)
+      // EXCEPTO si la empresa usa un cupón por persona (companies.coupons_per_person): ahí cada
+      // color sería una persona y la barra le diría al cliente cuántas sesiones hizo cada
+      // colaborador. En esas empresas se muestra el total y nada más. Se controla desde el admin,
+      // en Configuración → Cupones de la plataforma.
       const couponTotals={};
-      md12.forEach(m=>Object.entries(m.coupons||{}).forEach(([k,v])=>{couponTotals[k]=(couponTotals[k]||0)+v;}));
+      if(!dbCompany?.coupons_per_person) md12.forEach(m=>Object.entries(m.coupons||{}).forEach(([k,v])=>{couponTotals[k]=(couponTotals[k]||0)+v;}));
       const codes=Object.keys(couponTotals).sort((a,b)=>couponTotals[b]-couponTotals[a]);
       const CUP_COLORS=["#307070","#aed9b6","#8da7e6","#5a7968","#283d6b"];
       const sesData=md12.map(m=>{
