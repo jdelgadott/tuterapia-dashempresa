@@ -913,7 +913,8 @@ export default function Dashboard(){
 
   // Resumen del plan para headers
   const planSummary = planKind==="cuponera_fija" ? `${c.plan.type} · ${c.plan.sessionsMonth||"—"} sesiones por mes`
-    : planKind==="fee_fijo" ? `${c.plan.type} · ${Math.round((1-coveragePct)*100)>0?`${Math.round((1-coveragePct)*100)}% OFF`:"beneficio"} para colaboradores`
+    // Fee fijo: coverage_pct es lo que cubre la empresa de cada sesión = el descuento que recibe el colaborador (ANII 40% → "40% OFF")
+    : planKind==="fee_fijo" ? `${c.plan.type} · ${Math.round(coveragePct*100)>0?`${Math.round(coveragePct*100)}% OFF`:"beneficio"} para colaboradores`
     : `${c.plan.type} · cobertura ${Math.round(coveragePct*100)}% por sesión${c.monthlyCap?` · tope ${c.monthlyCap}/mes`:""}`;
 
   // Visibilidad por empresa: objeto {módulo:[subs visibles]}; null = todo visible.
@@ -1160,28 +1161,26 @@ export default function Dashboard(){
       </div>
     </div>}
     {mod==="individual"&&sub==="Sesiones"&&(()=>{
-      // Cupones: cada código con su color dentro de la misma barra (el general primero = el de más sesiones)
-      // EXCEPTO si la empresa usa un cupón por persona (companies.coupons_per_person): ahí cada
-      // color sería una persona y la barra le diría al cliente cuántas sesiones hizo cada
-      // colaborador. En esas empresas se muestra el total y nada más. Se controla desde el admin,
-      // en Configuración → Cupones de la plataforma.
-      const couponTotals={};
-      if(!dbCompany?.coupons_per_person) md12.forEach(m=>Object.entries(m.coupons||{}).forEach(([k,v])=>{couponTotals[k]=(couponTotals[k]||0)+v;}));
-      const codes=Object.keys(couponTotals).sort((a,b)=>couponTotals[b]-couponTotals[a]);
-      const CUP_COLORS=["#307070","#aed9b6","#8da7e6","#5a7968","#283d6b"];
+      // Cupones agrupados por TIPO (plan · caso particular · demo · familia), cada tipo con su tono de verde:
+      // el plan es el más intenso. Se agrupa por tipo y nunca por código, así una empresa con un cupón
+      // por persona (companies.coupons_per_person) no expone cuántas sesiones hizo cada colaborador.
+      // El detalle por código (en el tooltip) solo aparece cuando NO es un cupón por persona.
+      const KINDS=[{k:"plan",name:"Plan",color:"#307070"},{k:"particular",name:"Casos particulares",color:"#6fa89c"},{k:"demo",name:"Demo",color:"#aed9b6"},{k:"familia",name:"Familia",color:"#cfe7d3"}];
+      const kindOf=(code)=>(dbCoupons.find(x=>x.coupon_code===code)?.kind)||"plan";
+      const perPerson=!!dbCompany?.coupons_per_person;
       const sesData=md12.map(m=>{
-        const row={label:m.label,month:m.month,year:m.year,partial:m.partial,total:sesOf(m)};
-        if(codes.length){
-          const sum=codes.reduce((s,k)=>s+(m.coupons?.[k]||0),0);
-          codes.forEach((k,ci)=>{row[`cup${ci}`]=m.coupons?.[k]||0;});
-          if(sum<row.total) row.cupOtros=row.total-sum;
-        }
+        const row={label:m.label,month:m.month,year:m.year,partial:m.partial,total:sesOf(m),byKind:{}};
+        Object.entries(m.coupons||{}).forEach(([code,v])=>{const kd=kindOf(code);(row.byKind[kd]=row.byKind[kd]||[]).push([code,v]);row[`k_${kd}`]=(row[`k_${kd}`]||0)+v;});
+        const sum=KINDS.reduce((s2,x)=>s2+(row[`k_${x.k}`]||0),0);
+        if(sum>0&&sum<row.total) row.k_otros=row.total-sum;
         return row;
       });
-      // claves internas cup0, cup1… (los códigos llevan "#" y no sirven como dataKey)
-      const series=codes.length?[...codes.map((_,ci)=>`cup${ci}`),...(sesData.some(r=>r.cupOtros)?["cupOtros"]:[])]:["total"];
-      const sName=(k)=>k==="cupOtros"?"Otros":k==="total"?"Sesiones":codes[Number(k.slice(3))];
-      const sColor=(k)=>k==="cupOtros"?"#c9c2b4":CUP_COLORS[Number(k.slice(3))%CUP_COLORS.length];
+      const kindsUsed=KINDS.filter(x=>sesData.some(r=>r[`k_${x.k}`]>0));
+      // `codes` = tipos presentes (se usa abajo para la nota y la leyenda)
+      const codes=kindsUsed.map(x=>x.k);
+      const series=kindsUsed.length?[...kindsUsed.map(x=>`k_${x.k}`),...(sesData.some(r=>r.k_otros)?["k_otros"]:[])]:["total"];
+      const sName=(k)=>k==="k_otros"?"Sin cupón identificado":k==="total"?"Sesiones":(KINDS.find(x=>`k_${x.k}`===k)?.name||k);
+      const sColor=(k)=>k==="k_otros"?"#c9c2b4":(KINDS.find(x=>`k_${x.k}`===k)?.color||P.primary);
       const prevFull=fullM[fullM.length-2];
       const delta=lastFull&&prevFull&&sesOf(prevFull)>0?Math.round((sesOf(lastFull)-sesOf(prevFull))/sesOf(prevFull)*100):null;
       const MONTH_FULL={Ene:"Enero",Feb:"Febrero",Mar:"Marzo",Abr:"Abril",May:"Mayo",Jun:"Junio",Jul:"Julio",Ago:"Agosto",Sep:"Septiembre",Oct:"Octubre",Nov:"Noviembre",Dic:"Diciembre"};
@@ -1190,9 +1189,13 @@ export default function Dashboard(){
         const r=payload[0].payload;
         return <div style={{background:P.text,color:"#fff",borderRadius:10,padding:"10px 14px",fontSize:12,boxShadow:"0 4px 14px rgba(0,0,0,0.18)",minWidth:170}}>
           <div style={{fontWeight:700,marginBottom:6}}>{MONTH_FULL[r.month]||r.month} {r.year} · {fmt(r.total)} sesiones{r.partial?" (parcial)":""}</div>
-          {codes.length>0&&[...series].reverse().filter(k=>r[k]>0).map(k=><div key={k} style={{display:"flex",alignItems:"center",gap:8,marginTop:3}}>
-            <span style={{width:9,height:9,borderRadius:2,background:sColor(k)}}/>
-            <span style={{fontWeight:600}}>{fmt(r[k])}</span><span style={{opacity:0.85}}>· {sName(k)}</span>
+          {codes.length>0&&[...series].reverse().filter(k=>r[k]>0).map(k=><div key={k} style={{marginTop:4}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{width:9,height:9,borderRadius:2,background:sColor(k)}}/>
+              <span style={{fontWeight:600}}>{fmt(r[k])}</span><span style={{opacity:0.85}}>· {sName(k)}</span>
+            </div>
+            {!perPerson&&k!=="k_otros"&&(r.byKind[k.slice(2)]||[]).length>1&&<div style={{marginLeft:17,opacity:0.7,fontSize:11}}>{r.byKind[k.slice(2)].map(([cd,v])=>`${cd.trim()} ${v}`).join(" · ")}</div>}
+            {!perPerson&&k!=="k_otros"&&(r.byKind[k.slice(2)]||[]).length===1&&<div style={{marginLeft:17,opacity:0.7,fontSize:11}}>{r.byKind[k.slice(2)][0][0].trim()}</div>}
           </div>)}
         </div>;
       };
@@ -1209,7 +1212,7 @@ export default function Dashboard(){
           {usesRealizadas&&<KpiCard label="Tasa de realización" value={`${compRate}%`} sub={`${fmt(totCanj)} canjeadas · ${fmt(totReal)} realizadas`}/>}
         </div>
         <Section title={`Sesiones${usesRealizadas?" realizadas":""} por mes${planRefLine?` — ${planKind==="a_demanda"?"tope":"plan"} ${planRefLine}/mes`:""}`}
-          note={codes.length>1?"Cada cupón tiene su propio color dentro de la misma barra. El total sigue siendo la altura completa.":null}>
+          note={codes.length>1?"Cada tipo de cupón tiene su tono de verde dentro de la misma barra: el más intenso es el plan. El total sigue siendo la altura completa.":null}>
           {lastM?.partial&&<div style={{marginBottom:10,padding:"8px 12px",background:P.accentBg,borderRadius:6,fontSize:11,color:P.accent}}>{lastM.month} en curso — datos parciales.</div>}
           {codes.length>1&&<div style={{display:"flex",gap:14,flexWrap:"wrap",marginBottom:10}}>
             {series.map(k=><span key={k} style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:P.textMuted}}>
@@ -1909,7 +1912,7 @@ export default function Dashboard(){
       const planRows=(()=>{
         const rows=[["Tipo",c.plan.type]];
         if(planKind==="cuponera_fija") rows.push(["Sesiones incluidas",c.plan.sessionsMonth?`${c.plan.sessionsMonth}/mes`:"—"],["Costo por sesión (único blended)",c.plan.priceRef?`UY$ ${fmt(c.plan.priceRef)}`:"—"]);
-        else if(planKind==="fee_fijo") rows.push(["Fee mensual",c.plan.monthlyFee?`UY$ ${fmt(c.plan.monthlyFee)}`:"—"],["Beneficio para colaboradores",`${Math.round((1-coveragePct)*100)}% OFF por sesión`]);
+        else if(planKind==="fee_fijo") rows.push(["Fee mensual",c.plan.monthlyFee?`UY$ ${fmt(c.plan.monthlyFee)}`:"—"],["Beneficio para colaboradores",`${Math.round(coveragePct*100)}% OFF por sesión`]);
         else {
           rows.push(["Cobertura por sesión",`${Math.round(coveragePct*100)}%`]);
           if(c.sessionCostOnline) rows.push(["Costo sesión online (empresa)",`UY$ ${fmt(c.sessionCostOnline)}`]);
