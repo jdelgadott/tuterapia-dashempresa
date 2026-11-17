@@ -81,12 +81,17 @@ const PLAN_LABELS = {cuponera_fija:"Cuponera Fija", fee_fijo:"Fee Fijo Mensual",
 // Precios de lista Tu Terapia (UYU, IVA 10% incluido) — base del cálculo de valor recibido
 const LIST_PRICE_ONLINE=1600, LIST_PRICE_PRESENCIAL=1850, LIST_PRICE_AVG=Math.round((LIST_PRICE_ONLINE+LIST_PRICE_PRESENCIAL)/2);
 
-// Fotos históricas del equipo (fallback si el miembro aún no subió una desde el admin)
-const FOTO_FALLBACK={"firoldi@tuterapia.com.uy":FLOR_PHOTO,"jdelgado@tuterapia.com.uy":NACHO_PHOTO,"imazzilli@tuterapia.com.uy":ISMA_PHOTO};
+// Fotos históricas del equipo, por si alguien todavía no subió la suya desde el admin.
+// Se matchea por short_name y NO por mail: este repo es público y los mails del equipo no van acá.
+// Cuando los tres hayan subido su foto en Equipo TT, esto se borra entero.
+const FOTO_FALLBACK={Flor:FLOR_PHOTO,Nacho:NACHO_PHOTO,Isma:ISMA_PHOTO};
+// Último recurso si la tabla admin_users no carga: lo justo para que la pantalla no quede rota.
+// Los datos de contacto (mail, teléfono, WhatsApp, agenda) viven SOLO en la base — son datos
+// personales del equipo y este repo es público. Sin tabla no hay botón de contacto, y está bien.
 const TT_TEAM=[
-  {name:"Nacho",fullName:"Juan Ignacio Delgado",role:"Desarrollo de Negocio",email:"jdelgado@tuterapia.com.uy",phone:"099495218",whatsapp:"598099495218",calendar:null,initials:"JD",area:"Alianzas B2B",photo:"nacho"},
-  {name:"Flor",fullName:"Florencia Iroldi",role:"Customer Success Manager",email:"firoldi@tuterapia.com.uy",phone:"093399250",whatsapp:"59893399250",calendar:"https://calendar.google.com/calendar/r/eventnew?add=firoldi@tuterapia.com.uy&text=Reunión+con+Tu+Terapia&details=Reunión+de+seguimiento+del+beneficio+de+salud+mental",initials:"FI",area:"Gestión de cuentas",photo:"flor"},
-  {name:"Isma",fullName:"Ismael Mazzilli",role:"Prospección y Cuentas",email:"imazzilli@tuterapia.com.uy",phone:"091738836",whatsapp:"598091738836",calendar:null,initials:"IM",area:"Gestión de cuentas",photo:"isma"},
+  {name:"Nacho",fullName:"Juan Ignacio Delgado",role:"Desarrollo de Negocio",initials:"JD",area:"Alianzas B2B"},
+  {name:"Flor",fullName:"Florencia Iroldi",role:"Customer Success Manager",initials:"FI",area:"Gestión de cuentas"},
+  {name:"Isma",fullName:"Ismael Mazzilli",role:"Prospección y Cuentas",initials:"IM",area:"Gestión de cuentas"},
 ];
 
 const MODULES=[
@@ -710,10 +715,11 @@ export default function Dashboard(){
   const equipo = dbEquipo.map(m=>({
     name:m.short_name||m.name, fullName:m.name, role:m.role||"", email:m.email,
     phone:m.phone, whatsapp:m.whatsapp, calendar:m.calendar_url, initials:m.initials||(m.name||"?").slice(0,2).toUpperCase(),
-    area:m.area||"", photoUrl:m.photo_url||FOTO_FALLBACK[(m.email||"").toLowerCase()]||null, isReferente:m.is_referente!==false,
+    area:m.area||"", photoUrl:m.photo_url||FOTO_FALLBACK[m.short_name]||null, isReferente:m.is_referente!==false,
   }));
-  const equipoUI = equipo.length?equipo:TT_TEAM.map(t=>({...t,photoUrl:FOTO_FALLBACK[t.email]||null}));
-  const accountManager = equipoUI.find(t=>t.email.toLowerCase()===refEmail) || equipoUI.find(t=>t.isReferente!==false) || equipoUI[0];
+  const equipoUI = equipo.length?equipo:TT_TEAM.map(t=>({...t,photoUrl:FOTO_FALLBACK[t.name]||null}));
+  // El fallback no trae mail (ver TT_TEAM), así que el match por referente no puede asumir que haya.
+  const accountManager = equipoUI.find(t=>(t.email||"").toLowerCase()===refEmail) || equipoUI.find(t=>t.isReferente!==false) || equipoUI[0];
 
   // Placeholder de trimestres cuando no hay datos de encuestas
   const emptyQuarters = (()=>{
@@ -1142,8 +1148,10 @@ export default function Dashboard(){
             <div style={{fontSize:12,color:P.textMuted}}>{c.accountManager.role}</div>
           </div>
           <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center",marginTop:4}}>
-            <a href={`mailto:${c.accountManager.email}`} style={{display:"flex",alignItems:"center",gap:6,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:`1px solid ${P.border}`}}>✉ Mail</a>
-            <a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>
+            {/* Los datos de contacto salen de admin_users. Si la tabla no cargó no hay ninguno,
+                así que cada botón se dibuja solo si existe en vez de quedar en mailto:undefined. */}
+            {c.accountManager.email&&<a href={`mailto:${c.accountManager.email}`} style={{display:"flex",alignItems:"center",gap:6,background:P.lighter,color:P.primary,textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:`1px solid ${P.border}`}}>✉ Mail</a>}
+            {c.accountManager.whatsapp&&<a href={`https://wa.me/${c.accountManager.whatsapp}?text=Hola%2C%20te%20escribo%20desde%20el%20panel%20de%20Tu%20Terapia.`} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#E8F5E9",color:"#2E7D32",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C8E6C9"}}>💬 WhatsApp</a>}
             {c.accountManager.calendar&&<a href={c.accountManager.calendar} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,background:"#e9eefb",color:"#307070",textDecoration:"none",fontSize:11,fontWeight:600,padding:"7px 16px",borderRadius:8,border:"1px solid #C5D5F5"}}>📅 Agendar reunión</a>}
           </div>
         </div>
@@ -1974,7 +1982,7 @@ export default function Dashboard(){
                 <div style={{flex:1,minWidth:140}}>
                   <div style={{fontSize:10,fontWeight:700,color:P.primary,textTransform:"uppercase",letterSpacing:"0.06em"}}>Tu referente</div>
                   <div style={{fontSize:14,fontWeight:700,color:P.text}}>{ref.fullName||ref.name}</div>
-                  <div style={{fontSize:11.5,color:P.textMuted}}>{ref.role} · {ref.email}</div>
+                  <div style={{fontSize:11.5,color:P.textMuted}}>{[ref.role,ref.email].filter(Boolean).join(" · ")}</div>
                 </div>
                 <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                   {ref.whatsapp&&<a href={`https://wa.me/${ref.whatsapp}`} target="_blank" rel="noopener noreferrer" style={{fontSize:11.5,fontWeight:600,color:"#fff",background:P.primary,textDecoration:"none",padding:"7px 12px",borderRadius:8}}>WhatsApp</a>}
