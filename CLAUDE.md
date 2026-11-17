@@ -67,7 +67,9 @@ Regla confirmada con datos reales (sep 2026). Toda métrica de personas/paciente
 - Pantalla de crear contraseña: detecta `type=recovery` / `type=invite` en el hash de la URL.
 
 ### Equipo TT y referentes
-`admin_users` es la fuente ÚNICA: un miembro del equipo = admin del panel = posible referente de empresas. Se gestiona desde el admin → **Equipo TT** (CRUD, foto a `contenido/equipo/`, invitación automática). El dash lo lee con la política `team_read` y cae a las fotos históricas en base64 (`FOTO_FALLBACK` por email) si el miembro no subió una. El array `TT_TEAM` quedó **solo como fallback** si la tabla no carga — no agregar gente ahí.
+`admin_users` es la fuente ÚNICA: un miembro del equipo = admin del panel = posible referente de empresas. Se gestiona desde el admin → **Equipo TT** (CRUD, foto a `contenido/equipo/`, invitación automática). El dash lo lee con la política `team_read` y cae a las fotos históricas en base64 (`FOTO_FALLBACK`, **por `short_name`**) si el miembro no subió una. Cuando los tres suban su foto desde el admin, `FOTO_FALLBACK` se puede borrar entero.
+
+El array `TT_TEAM` quedó **solo como fallback** si la tabla no carga — no agregar gente ahí. **Nunca datos de contacto**: mail, teléfono, WhatsApp y agenda viven SOLO en la base. Son datos personales del equipo y este repo es público; estuvieron hardcodeados hasta el 17 nov 2026. Sin tabla el dash muestra nombre y rol y ningún botón de contacto, y está bien así. Por eso cada botón de contacto se dibuja solo si el dato existe, y el match del referente usa `(t.email||"")`.
 
 `accountManager` se resuelve matcheando `companies.referente_email` contra el equipo, **case-insensitive**. (Un typo en un mail hizo que una empresa mostrara a la persona equivocada durante semanas; por eso en el admin el referente es un select y no texto libre.)
 
