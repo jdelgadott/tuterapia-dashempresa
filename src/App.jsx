@@ -1172,7 +1172,11 @@ export default function Dashboard(){
         const row={label:m.label,month:m.month,year:m.year,partial:m.partial,total:sesOf(m),byKind:{}};
         Object.entries(m.coupons||{}).forEach(([code,v])=>{const kd=kindOf(code);(row.byKind[kd]=row.byKind[kd]||[]).push([code,v]);row[`k_${kd}`]=(row[`k_${kd}`]||0)+v;});
         const sum=KINDS.reduce((s2,x)=>s2+(row[`k_${x.k}`]||0),0);
-        if(sum>0&&sum<row.total) row.k_otros=row.total-sum;
+        // Un mes puede tener sesiones cargadas y NINGÚN cupón identificado (los meses viejos
+        // cargados a mano, antes de que existiera sessions_by_coupon). Ahí sum es 0 y el mes
+        // entero va a "Sin cupón identificado": si se pidiera sum>0 la barra quedaría en cero
+        // y el mes desaparecería del gráfico aunque el tooltip siga diciendo que hubo sesiones.
+        if(sum<row.total) row.k_otros=row.total-sum;
         return row;
       });
       const kindsUsed=KINDS.filter(x=>sesData.some(r=>r[`k_${x.k}`]>0));
